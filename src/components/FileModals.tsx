@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useLocale } from '../i18n/LocaleProvider';
 import type { JsonCanvas } from '../types/jsonCanvas';
 import {
   SaveCancelledError,
@@ -47,7 +48,8 @@ export function SaveBoardModal({
   onClose: () => void;
   onSaved: (name: string, message: string) => void;
 }) {
-  const [name, setName] = useState(defaultName ?? 'моя-схема');
+  const { m } = useLocale();
+  const [name, setName] = useState(defaultName ?? m.saveModal.defaultName);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
@@ -57,32 +59,33 @@ export function SaveBoardModal({
   const handleSave = async () => {
     const trimmed = name.trim();
     if (!trimmed) {
-      setError('Введите название схемы');
+      setError(m.saveModal.enterName);
       return;
     }
 
     setBusy(true);
     setError(null);
     try {
-      const result = await saveBoardToDisk(trimmed, canvas);
-      const message = saveSuccessMessage(result);
+      const result = await saveBoardToDisk(trimmed, canvas, {
+        defaultTitle: m.file.defaultTitle,
+        typeDescription: m.file.typeDescription,
+      });
+      const message = saveSuccessMessage(result, m.file);
       setDone(message);
       onSaved(trimmed, message);
       window.setTimeout(() => onClose(), 1200);
     } catch (err) {
       if (err instanceof SaveCancelledError) return;
-      setError(err instanceof Error ? err.message : 'Не удалось сохранить файл');
+      setError(err instanceof Error ? err.message : m.saveModal.saveFailed);
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <ModalShell title="Сохранить схему" onClose={onClose}>
-      <p className="mb-3 text-xs leading-relaxed text-white/55">
-        Укажите имя — файл появится на вашем компьютере. Потом его можно снова открыть через «Загрузить».
-      </p>
-      <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">Название</label>
+    <ModalShell title={m.saveModal.title} onClose={onClose}>
+      <p className="mb-3 text-xs leading-relaxed text-white/55">{m.saveModal.description}</p>
+      <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">{m.saveModal.nameLabel}</label>
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -91,11 +94,11 @@ export function SaveBoardModal({
         }}
         disabled={busy || Boolean(done)}
         className="mb-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none ring-indigo-400/40 focus:ring-2 disabled:opacity-60"
-        placeholder="брейншторм-2026"
+        placeholder={m.saveModal.namePlaceholder}
         autoFocus
       />
       <p className="mb-4 text-[11px] text-white/40">
-        Будет сохранён файл: <code className="text-cyan-300">{previewFilename}</code>
+        {m.saveModal.filenamePrefix} <code className="text-cyan-300">{previewFilename}</code>
       </p>
       {error && <p className="mb-3 text-xs text-red-300">{error}</p>}
       {done && (
@@ -109,7 +112,7 @@ export function SaveBoardModal({
         onClick={() => void handleSave()}
         className="w-full rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-400 disabled:opacity-50"
       >
-        {busy ? 'Сохраняю…' : done ? 'Готово' : 'Сохранить на компьютер'}
+        {busy ? m.saveModal.saving : done ? m.saveModal.done : m.saveModal.saveButton}
       </button>
     </ModalShell>
   );

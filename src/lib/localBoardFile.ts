@@ -94,8 +94,12 @@ function triggerDownload(filename: string, json: string) {
 }
 
 /** Системный диалог «Сохранить как» (Chrome/Edge) или скачивание в «Загрузки». */
-export async function saveBoardToDisk(title: string, canvas: JsonCanvas): Promise<SaveBoardResult> {
-  const safeTitle = title.trim() || 'моя-схема';
+export async function saveBoardToDisk(
+  title: string,
+  canvas: JsonCanvas,
+  options?: { defaultTitle?: string; typeDescription?: string },
+): Promise<SaveBoardResult> {
+  const safeTitle = title.trim() || options?.defaultTitle || 'my-board';
   const filename = buildFilename(safeTitle);
   const json = JSON.stringify(buildBoardFile(safeTitle, canvas), null, 2);
 
@@ -106,7 +110,7 @@ export async function saveBoardToDisk(title: string, canvas: JsonCanvas): Promis
         suggestedName: filename,
         types: [
           {
-            description: 'Схема MindStorm',
+            description: options?.typeDescription ?? 'MindStorm board',
             accept: { 'application/json': ['.mindstorm'] },
           },
         ],
@@ -147,9 +151,12 @@ export function titleFromFilename(filename: string): string {
   return filename.replace(/\.(mindstorm|mindshtorm|canvas)$/i, '') || 'моя-схема';
 }
 
-export function saveSuccessMessage(result: SaveBoardResult): string {
+export function saveSuccessMessage(
+  result: SaveBoardResult,
+  messages: { savedAs: (filename: string) => string; savedDownloads: (filename: string) => string },
+): string {
   if (result.method === 'picker') {
-    return `Сохранено: ${result.filename}`;
+    return messages.savedAs(result.filename);
   }
-  return `Файл ${result.filename} отправлен в папку «Загрузки»`;
+  return messages.savedDownloads(result.filename);
 }

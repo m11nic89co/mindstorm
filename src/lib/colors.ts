@@ -39,6 +39,10 @@ export function swatchFill(color: CanvasColor): string {
   return PRESET_COLORS[color]?.border ?? DEFAULT_CARD.border;
 }
 
-export function swatchTitle(color: CanvasColor): string {
-  return PRESET_COLORS[color]?.name ?? 'Свой цвет';
+export function swatchTitle(
+  color: CanvasColor,
+  colorNames?: Record<string, string>,
+  customLabel = 'Custom color',
+): string {
+  return colorNames?.[color] ?? PRESET_COLORS[color]?.name ?? customLabel;
 }

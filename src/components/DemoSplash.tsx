@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocale } from '../i18n/LocaleProvider';
 
 type DemoSplashProps = {
   visible: boolean;
@@ -18,6 +19,7 @@ export function DemoSplash({
   edgeCount,
   groupCount,
 }: DemoSplashProps) {
+  const { m } = useLocale();
   const [exiting, setExiting] = useState(false);
   const autoCloseTimer = useRef<number | undefined>(undefined);
   const exitTimer = useRef<number | undefined>(undefined);
@@ -70,30 +72,28 @@ export function DemoSplash({
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-cyan-300/70 sm:text-[11px]">
-                Добро пожаловать
+                {m.demoSplash.welcome}
               </p>
               <h2 className="truncate text-sm font-semibold tracking-tight text-white sm:text-base">
-                Демо MindStorm
+                {m.demoSplash.title}
               </h2>
-              <p className="mt-0.5 text-xs leading-snug text-white/50 sm:text-[13px]">
-                Исследуйте схему запуска продукта на холсте ниже
-              </p>
+              <p className="mt-0.5 text-xs leading-snug text-white/50 sm:text-[13px]">{m.demoSplash.subtitle}</p>
             </div>
 
             <button
               type="button"
               onClick={dismiss}
               className="demo-welcome-close -mr-1 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 text-sm text-white/45 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
-              aria-label="Закрыть"
+              aria-label={m.demoSplash.close}
             >
               ✕
             </button>
           </div>
 
           <div className="mt-2.5 flex flex-wrap gap-1.5 sm:mt-3">
-            <StatChip label={`${nodeCount} карточек`} />
-            <StatChip label={`${groupCount} группы`} />
-            <StatChip label={`${edgeCount} связи`} />
+            <StatChip label={m.demoSplash.cards(nodeCount)} />
+            <StatChip label={m.demoSplash.groups(groupCount)} />
+            <StatChip label={m.demoSplash.links(edgeCount)} />
           </div>
         </div>
       </div>

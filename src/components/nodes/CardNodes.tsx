@@ -5,6 +5,7 @@ import {
 } from '@xyflow/react';
 import { useEffect, useRef, useState } from 'react';
 import { useCanvasActions } from '../../context/canvasActions';
+import { useLocale } from '../../i18n/LocaleProvider';
 import { resolveColor } from '../../lib/colors';
 import type { CardNodeData } from '../../types/jsonCanvas';
 import { EdgeHandles } from './edgeHandles';
@@ -18,6 +19,7 @@ const resizerLines = '!border-indigo-400/45';
 
 export function TextCardNode({ id, data, selected }: TextCardProps) {
   const { updateNode } = useCanvasActions();
+  const { m } = useLocale();
   const [editing, setEditing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const palette = resolveColor(data.color);
@@ -71,11 +73,11 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
               onChange={(e) => updateNode(id, { text: e.target.value })}
               onBlur={() => setEditing(false)}
               className="h-full min-h-[3rem] w-full resize-none bg-transparent text-sm leading-relaxed text-white/90 outline-none placeholder:text-white/35"
-              placeholder="Markdown-текст..."
+              placeholder={m.card.placeholder}
             />
           ) : (
             <div className="prose-card whitespace-pre-wrap text-sm leading-relaxed text-white/88">
-              {(data.text ?? 'Новая идея').split('\n').map((line: string, i: number) => {
+              {(data.text ?? m.card.newIdea).split('\n').map((line: string, i: number) => {
                 if (line.startsWith('# ')) {
                   return (
                     <h1 key={i} className="mb-2 text-base font-semibold text-white">
@@ -106,6 +108,7 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
 
 export function GroupCardNode({ id, data, selected }: TextCardProps) {
   const { updateNode } = useCanvasActions();
+  const { m } = useLocale();
   const [editingLabel, setEditingLabel] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const palette = resolveColor(data.color);
@@ -148,7 +151,7 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
               if (e.key === 'Enter') setEditingLabel(false);
             }}
             className="pointer-events-auto absolute -top-3 left-4 z-[1] max-w-48 rounded-full border border-white/20 bg-[#1a1f35] px-3 py-0.5 text-xs font-medium text-white outline-none ring-2 ring-cyan-400/40"
-            placeholder="Название группы"
+            placeholder={m.group.namePlaceholder}
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
@@ -159,9 +162,9 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
               e.stopPropagation();
               setEditingLabel(true);
             }}
-            title="Двойной клик — переименовать"
+            title={m.group.renameTitle}
           >
-            {data.label ?? 'Группа'}
+            {data.label ?? m.group.defaultLabel}
           </div>
         )}
       </div>

@@ -1,3 +1,5 @@
+import { useLocale } from '../i18n/LocaleProvider';
+
 export function LogoMark({ className = 'h-9 w-9' }: { className?: string }) {
   return (
     <div
@@ -28,24 +30,7 @@ export function LogoMark({ className = 'h-9 w-9' }: { className?: string }) {
   );
 }
 
-function pluralCards(n: number) {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod100 >= 11 && mod100 <= 14) return `${n} карточек`;
-  if (mod10 === 1) return `${n} карточка`;
-  if (mod10 >= 2 && mod10 <= 4) return `${n} карточки`;
-  return `${n} карточек`;
-}
-
-function pluralLinks(n: number) {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod100 >= 11 && mod100 <= 14) return `${n} связей`;
-  if (mod10 === 1) return `${n} связь`;
-  if (mod10 >= 2 && mod10 <= 4) return `${n} связи`;
-  return `${n} связей`;
-}
-
-export function boardStats(nodeCount: number, edgeCount: number) {
-  return `${pluralCards(nodeCount)} · ${pluralLinks(edgeCount)}`;
+export function BoardStatsText({ nodeCount, edgeCount }: { nodeCount: number; edgeCount: number }) {
+  const { m } = useLocale();
+  return `${m.boardStats.cards(nodeCount)} · ${m.boardStats.links(edgeCount)}`;
 }

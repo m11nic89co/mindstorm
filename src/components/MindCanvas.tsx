@@ -23,7 +23,8 @@ import { DemoSplash, DEMO_WELCOME_SEEN_KEY } from './DemoSplash';
 import { Toast } from './Toast';
 import { canvasToFlow, flowToCanvas, EMPTY_CANVAS } from '../lib/jsonCanvas';
 import { applyConnection, connectionFromDragStart, FLOW_EDGE_STYLE, setEdgeLabel, strokeForNodeColor, syncEdgesWithSourceColors } from '../lib/flowEdges';
-import { DEMO_BOARD_NAME, demoFlowPresentation, demoStats } from '../lib/demoCanvas';
+import { useLocale } from '../i18n/LocaleProvider';
+import { getDemoBoardName, demoFlowPresentation, demoStats } from '../lib/demoCanvas';
 import { createId } from '../lib/id';
 import {
   CANVAS_STORAGE_KEY,
@@ -56,6 +57,7 @@ const nodeTypes: NodeTypes = {
 };
 
 function MindCanvasInner() {
+  const { locale, m } = useLocale();
   const initialFlow = useMemo(() => canvasToFlow(loadStoredCanvas()), []);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<CardNodeData>>(initialFlow.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialFlow.edges);
@@ -83,7 +85,7 @@ function MindCanvasInner() {
   const [canvasDragging, setCanvasDragging] = useState(false);
   const [demoRevealing, setDemoRevealing] = useState(false);
   const [demoSplash, setDemoSplash] = useState(false);
-  const demoStatsMemo = useMemo(() => demoStats(), []);
+  const demoStatsMemo = useMemo(() => demoStats(locale), [locale]);
   const [activeBoardName, setActiveBoardName] = useState<string | null>(() => readBoardName());
 
   useDebouncedPersist(nodes, edges, dragPausedRef);
@@ -224,14 +226,14 @@ function MindCanvasInner() {
         style: { width: 260, height: 120 },
         data: {
           canvasType: 'text',
-          text: '## Новая идея\nОпишите мысль...',
+          text: m.card.defaultText,
           color: '5',
         },
         zIndex: 1,
       };
       setNodes((nds) => [...nds, node]);
     },
-    [screenToFlowPosition, setNodes],
+    [m.card.defaultText, screenToFlowPosition, setNodes],
   );
 
   const addGroup = useCallback(() => {
@@ -244,13 +246,13 @@ function MindCanvasInner() {
       type: 'groupCard',
       position: { x: center.x - 200, y: center.y - 120 },
       style: { width: 420, height: 260 },
-      data: { canvasType: 'group', label: 'Группа', color: '5' },
+      data: { canvasType: 'group', label: m.group.defaultLabel, color: '5' },
       zIndex: -1,
       selectable: true,
       draggable: true,
     };
     setNodes((nds) => [node, ...nds]);
-  }, [screenToFlowPosition, setNodes]);
+  }, [m.group.defaultLabel, screenToFlowPosition, setNodes]);
 
   const paneClickRef = useRef<{ time: number; x: number; y: number } | null>(null);
   const onPaneClick = useCallback(
@@ -296,9 +298,7 @@ function MindCanvasInner() {
   );
 
   const onNewBoard = useCallback(() => {
-    const ok = window.confirm(
-      'Создать пустую схему?\n\nТекущую доску можно вернуть кнопкой «Отменить» (Ctrl+Z).',
-    );
+    const ok = window.confirm(m.confirm.newBoard);
     if (!ok) return;
 
     commitNow();
@@ -312,12 +312,12 @@ function MindCanvasInner() {
     setLoadError(null);
     setDemoRevealing(false);
     setDemoSplash(false);
-  }, [commitNow, setEdges, setNodes]);
+  }, [commitNow, m.confirm.newBoard, setEdges, setNodes]);
 
   const onReset = useCallback(() => {
-    const flow = demoFlowPresentation();
+    const flow = demoFlowPresentation(locale);
     applyFlow(flow);
-    setActiveBoardName(DEMO_BOARD_NAME);
+    setActiveBoardName(getDemoBoardName(locale));
     setLoadError(null);
     setDemoRevealing(true);
     setDemoSplash(true);
@@ -327,17 +327,20 @@ function MindCanvasInner() {
     }, 60);
 
     window.setTimeout(() => setDemoRevealing(false), 2800);
-  }, [applyFlow, fitView]);
+  }, [applyFlow, fitView, locale]);
 
   const onSave = useCallback(async () => {
-    const title = activeBoardName?.trim() || 'моя-схема';
+    const title = activeBoardName?.trim() || m.file.defaultTitle;
 
     if (canUseSaveFilePicker()) {
       try {
-        const result = await saveBoardToDisk(title, flowToCanvas(nodes, edges));
+        const result = await saveBoardToDisk(title, flowToCanvas(nodes, edges), {
+          defaultTitle: m.file.defaultTitle,
+          typeDescription: m.file.typeDescription,
+        });
         const savedTitle = titleFromFilename(result.filename);
         setActiveBoardName(savedTitle);
-        showToast(saveSuccessMessage(result));
+        showToast(saveSuccessMessage(result, m.file));
         return;
       } catch (err) {
         if (err instanceof SaveCancelledError) return;
@@ -345,7 +348,7 @@ function MindCanvasInner() {
     }
 
     setSaveModalOpen(true);
-  }, [activeBoardName, nodes, edges, showToast]);
+  }, [activeBoardName, m.file, nodes, edges, showToast]);
 
   const onPickFile = useCallback(() => {
     setLoadError(null);
@@ -361,12 +364,12 @@ function MindCanvasInner() {
       try {
         const { title, canvas } = await readBoardFromFile(file);
         loadCanvas(canvas, title);
-        showToast(`Открыто: ${file.name}`);
-      } catch (err) {
-        setLoadError(err instanceof Error ? err.message : 'Не удалось загрузить файл');
+        showToast(m.toast.opened(file.name));
+      } catch {
+        setLoadError(m.errors.loadFailed);
       }
     },
-    [loadCanvas, showToast],
+    [loadCanvas, m.errors.loadFailed, m.toast, showToast],
   );
 
   const deleteSelection = useCallback(() => {

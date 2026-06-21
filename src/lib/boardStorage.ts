@@ -1,8 +1,8 @@
-import type { JsonCanvas } from '../types/jsonCanvas';
-import { DEMO_CANVAS } from './demoCanvas';
-import { flowToCanvas } from './jsonCanvas';
 import type { Edge, Node } from '@xyflow/react';
-import type { CardNodeData } from '../types/jsonCanvas';
+import { readLocale } from '../i18n/localeStorage';
+import type { CardNodeData, JsonCanvas } from '../types/jsonCanvas';
+import { getDemoCanvas } from './demoCanvas';
+import { flowToCanvas } from './jsonCanvas';
 
 export const CANVAS_STORAGE_KEY = 'mindstorm.canvas.v1';
 export const LEGACY_CANVAS_STORAGE_KEY = 'mindshtorm.canvas.v1';
@@ -20,7 +20,7 @@ export function loadStoredCanvas(): JsonCanvas {
   } catch {
     /* fallback to demo */
   }
-  return DEMO_CANVAS;
+  return getDemoCanvas(readLocale());
 }
 
 export function persistCanvas(nodes: Node<CardNodeData>[], edges: Edge[]): void {

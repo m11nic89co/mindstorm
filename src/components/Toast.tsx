@@ -1,3 +1,5 @@
+import { useLocale } from '../i18n/LocaleProvider';
+
 type ToastProps = {
   message: string;
   onClose: () => void;
@@ -5,6 +7,7 @@ type ToastProps = {
 };
 
 export function Toast({ message, onClose, variant = 'success' }: ToastProps) {
+  const { m } = useLocale();
   const isError = variant === 'error';
 
   return (
@@ -32,7 +35,7 @@ export function Toast({ message, onClose, variant = 'success' }: ToastProps) {
               ? 'text-red-200/60 hover:text-red-100'
               : 'text-emerald-200/60 hover:text-emerald-100'
           }`}
-          aria-label="Закрыть"
+          aria-label={m.toast.close}
         >
           ✕
         </button>

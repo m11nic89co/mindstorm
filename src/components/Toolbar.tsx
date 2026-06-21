@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
-import { LogoMark, boardStats } from './LogoMark';
+import { useLocale } from '../i18n/LocaleProvider';
+import type { Locale } from '../i18n/messages';
+import { LogoMark, BoardStatsText } from './LogoMark';
 import { AUTHOR_NAME, REPO_URL } from '../lib/siteMeta';
 import { COLOR_IDS, swatchFill, swatchTitle } from '../lib/colors';
 
@@ -34,6 +36,8 @@ export function Toolbar({
   edgeCount,
   activeBoardName,
 }: ToolbarProps) {
+  const { m } = useLocale();
+
   return (
     <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center p-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:p-4">
       <div className="pointer-events-auto flex max-w-full items-center gap-1 rounded-2xl border border-white/10 bg-white/5 px-2 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-2xl sm:gap-2 sm:px-3">
@@ -46,59 +50,90 @@ export function Toolbar({
           <HistoryButton
             onClick={onUndo}
             disabled={!canUndo}
-            title="Отменить (Ctrl+Z)"
-            ariaLabel="Отменить"
+            title={m.toolbar.undo}
+            ariaLabel={m.toolbar.undoAria}
           >
             <UndoIcon />
           </HistoryButton>
           <HistoryButton
             onClick={onRedo}
             disabled={!canRedo}
-            title="Вернуть (Ctrl+Shift+Z)"
-            ariaLabel="Вернуть"
+            title={m.toolbar.redo}
+            ariaLabel={m.toolbar.redoAria}
           >
             <RedoIcon />
           </HistoryButton>
         </div>
 
-        <div className="flex max-w-[calc(100vw-6rem)] items-center gap-1 overflow-x-auto sm:gap-2">
-          <ToolbarButton onClick={onAddText} title="Добавить карточку">
+        <div className="flex max-w-[calc(100vw-8rem)] items-center gap-1 overflow-x-auto sm:max-w-[calc(100vw-10rem)] sm:gap-2">
+          <ToolbarButton onClick={onAddText} title={m.toolbar.addCard}>
             <span className="sm:hidden">+</span>
-            <span className="hidden sm:inline">+ Карточка</span>
+            <span className="hidden sm:inline">{m.toolbar.addCardShort}</span>
           </ToolbarButton>
-          <ToolbarButton onClick={onAddGroup} title="Добавить группу">
+          <ToolbarButton onClick={onAddGroup} title={m.toolbar.addGroup}>
             <span className="sm:hidden">◻</span>
-            <span className="hidden sm:inline">◻ Группа</span>
+            <span className="hidden sm:inline">{m.toolbar.addGroupShort}</span>
           </ToolbarButton>
-          <ToolbarButton onClick={onSave} title="Сохранить схему в файл на компьютер">
+          <ToolbarButton onClick={onSave} title={m.toolbar.saveTitle}>
             <span className="sm:hidden">💾</span>
-            <span className="hidden sm:inline">Сохранить</span>
+            <span className="hidden sm:inline">{m.toolbar.save}</span>
           </ToolbarButton>
-          <ToolbarButton onClick={onLoad} title="Загрузить схему с компьютера">
+          <ToolbarButton onClick={onLoad} title={m.toolbar.loadTitle}>
             <span className="sm:hidden">📂</span>
-            <span className="hidden sm:inline">Загрузить</span>
+            <span className="hidden sm:inline">{m.toolbar.load}</span>
           </ToolbarButton>
-          <ToolbarButton onClick={onNewBoard} title="Новая пустая схема">
+          <ToolbarButton onClick={onNewBoard} title={m.toolbar.newBoardTitle}>
             <span className="sm:hidden">○</span>
-            <span className="hidden sm:inline">Сначала</span>
+            <span className="hidden sm:inline">{m.toolbar.newBoard}</span>
           </ToolbarButton>
-          <ToolbarButton onClick={onReset} title="Загрузить демо-схему MindStorm" accent>
+          <ToolbarButton onClick={onReset} title={m.toolbar.demoTitle} accent>
             <span className="sm:hidden">↺</span>
-            <span className="hidden sm:inline">↺ Демо</span>
+            <span className="hidden sm:inline">{m.toolbar.demo}</span>
           </ToolbarButton>
         </div>
 
+        <LanguageToggle />
+
         <div
-          className="ml-2 hidden border-l border-white/10 pl-3 text-[11px] text-white/35 sm:block"
-          title="Сколько карточек и линий на доске"
+          className="ml-1 hidden border-l border-white/10 pl-2 text-[11px] text-white/35 sm:ml-2 sm:block sm:pl-3"
+          title={m.toolbar.statsTitle}
         >
           {activeBoardName ? (
             <span className="text-white/50">{activeBoardName} · </span>
           ) : null}
-          {boardStats(nodeCount, edgeCount)}
+          <BoardStatsText nodeCount={nodeCount} edgeCount={edgeCount} />
         </div>
       </div>
     </header>
+  );
+}
+
+function LanguageToggle() {
+  const { locale, setLocale, m } = useLocale();
+
+  return (
+    <div
+      className="flex shrink-0 items-center rounded-lg border border-white/10 bg-black/20 p-0.5"
+      role="group"
+      aria-label="Language"
+    >
+      {(['ru', 'en'] as const satisfies Locale[]).map((code) => (
+        <button
+          key={code}
+          type="button"
+          onClick={() => setLocale(code)}
+          className={`min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition sm:min-w-[2rem] sm:px-2 sm:text-[11px] ${
+            locale === code
+              ? 'bg-indigo-500/35 text-white shadow-sm'
+              : 'text-white/40 hover:text-white/70'
+          }`}
+          aria-pressed={locale === code}
+          title={code === 'ru' ? m.lang.ariaRu : m.lang.ariaEn}
+        >
+          {code}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -211,13 +246,13 @@ function ToolbarButton({
 }
 
 export function HintBar() {
+  const { m } = useLocale();
+
   return (
     <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-1 p-1.5 pb-[max(0.35rem,env(safe-area-inset-bottom))] sm:gap-1 sm:p-2">
       <div className="rounded-full border border-white/5 bg-black/15 px-2.5 py-0.5 text-[8px] text-white/28 backdrop-blur-md sm:px-3 sm:text-[9px]">
-        <span className="hidden sm:inline">
-          Двойной клик — карточка · Клик по узлу — цвет и название · Линия — подпись · Delete
-        </span>
-        <span className="sm:hidden">Тап×2 — карточка · Узел — цвет · Линия — подпись</span>
+        <span className="hidden sm:inline">{m.hints.desktop}</span>
+        <span className="sm:hidden">{m.hints.mobile}</span>
       </div>
       <div className="pointer-events-auto rounded-full border border-white/6 bg-white/[0.02] px-2 py-0.5 text-[8px] text-white/25 backdrop-blur-md sm:text-[9px]">
         <span className="text-white/20">by </span>
@@ -254,25 +289,25 @@ export function EdgeSelectionPanel({
   onClear: () => void;
   onDelete: () => void;
 }) {
+  const { m } = useLocale();
+
   return (
     <div className="pointer-events-auto absolute right-2 top-20 z-20 flex w-44 flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-2xl sm:right-4 sm:top-24 sm:w-48">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">Связь</span>
+      <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">{m.edgePanel.title}</span>
       <input
         value={label}
         onChange={(e) => onLabelChange(e.target.value)}
-        placeholder="Подпись..."
+        placeholder={m.edgePanel.placeholder}
         className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white outline-none ring-indigo-400/40 focus:ring-2"
       />
-      <p className="text-[9px] leading-snug text-white/30">
-        Потяните кружок на конце — перенаправить. Delete — удалить.
-      </p>
+      <p className="text-[9px] leading-snug text-white/30">{m.edgePanel.hint}</p>
       {label.trim() ? (
         <button
           type="button"
           onClick={onClear}
           className="rounded-lg px-2 py-1.5 text-[10px] text-white/45 transition hover:bg-white/10 hover:text-white/70"
         >
-          Убрать подпись
+          {m.edgePanel.clearLabel}
         </button>
       ) : null}
       <button
@@ -280,7 +315,7 @@ export function EdgeSelectionPanel({
         onClick={onDelete}
         className="rounded-lg border border-red-400/20 bg-red-400/10 px-2 py-1.5 text-[10px] font-medium text-red-200/90 transition hover:bg-red-400/20"
       >
-        Удалить связь
+        {m.edgePanel.delete}
       </button>
     </div>
   );
@@ -299,23 +334,24 @@ export function SelectionPanel({
   onColorChange: (color: string) => void;
   onLabelChange: (label: string) => void;
 }) {
+  const { m } = useLocale();
   const isGroup = nodeType === 'group';
 
   return (
     <div className="pointer-events-auto absolute right-2 top-20 z-20 flex w-52 flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-2xl sm:right-4 sm:top-24 sm:w-56">
       <div className="flex flex-col gap-1.5">
         <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">
-          {isGroup ? 'Группа' : 'Карточка'}
+          {isGroup ? m.selectionPanel.group : m.selectionPanel.card}
         </span>
         <input
           value={label ?? ''}
           onChange={(e) => onLabelChange(e.target.value)}
-          placeholder={isGroup ? 'Название группы...' : 'Название карточки...'}
+          placeholder={isGroup ? m.selectionPanel.groupNamePlaceholder : m.selectionPanel.cardNamePlaceholder}
           className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white outline-none ring-indigo-400/40 focus:ring-2"
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">Цвет</span>
+        <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">{m.selectionPanel.color}</span>
         <div className="grid grid-cols-6 gap-1.5">
           {COLOR_IDS.map((c) => (
             <button
@@ -326,7 +362,7 @@ export function SelectionPanel({
                 color === c ? 'border-white scale-110' : 'border-transparent'
               }`}
               style={{ background: swatchFill(c) }}
-              title={swatchTitle(c)}
+              title={swatchTitle(c, m.colors, m.colorsCustom)}
             />
           ))}
         </div>
