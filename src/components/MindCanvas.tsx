@@ -18,7 +18,7 @@ import '@xyflow/react/dist/style.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CanvasActionsContext } from '../context/canvasActions';
 import { BoardToast, SaveBoardModal } from './FileModals';
-import { DemoSplash } from './DemoSplash';
+import { DemoSplash, DEMO_WELCOME_SEEN_KEY } from './DemoSplash';
 import { canvasToFlow, createId, DEMO_CANVAS, flowToCanvas } from '../lib/jsonCanvas';
 import { DEMO_BOARD_NAME, demoFlowPresentation, demoStats } from '../lib/demoCanvas';
 import {
@@ -112,6 +112,25 @@ function MindCanvasInner() {
     return () => {
       window.clearTimeout(toastTimer.current);
     };
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY)) return;
+      if (localStorage.getItem(DEMO_WELCOME_SEEN_KEY)) return;
+    } catch {
+      return;
+    }
+    setDemoSplash(true);
+  }, []);
+
+  const closeDemoSplash = useCallback(() => {
+    setDemoSplash(false);
+    try {
+      localStorage.setItem(DEMO_WELCOME_SEEN_KEY, '1');
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   const updateNode = useCallback(
@@ -295,7 +314,10 @@ function MindCanvasInner() {
 
   return (
     <CanvasActionsContext.Provider value={actions}>
-      <div className="relative h-screen w-screen overflow-hidden bg-[#0b0d14]">
+      <div
+        className="relative h-dvh w-screen overflow-hidden bg-[#0b0d14]"
+        data-demo-welcome={demoSplash || undefined}
+      >
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(99,102,241,0.18),transparent_50%),radial-gradient(ellipse_at_80%_100%,rgba(168,85,247,0.12),transparent_50%)]" />
 
         <Toolbar
@@ -309,17 +331,17 @@ function MindCanvasInner() {
           activeBoardName={activeBoardName}
         />
 
-        {toastMessage && (
-          <BoardToast message={toastMessage} onClose={() => setToastMessage(null)} />
-        )}
-
         <DemoSplash
           visible={demoSplash}
-          onClose={() => setDemoSplash(false)}
+          onClose={closeDemoSplash}
           nodeCount={demoStatsMemo.nodes}
           edgeCount={demoStatsMemo.edges}
           groupCount={demoStatsMemo.groups}
         />
+
+        {toastMessage && (
+          <BoardToast message={toastMessage} onClose={() => setToastMessage(null)} />
+        )}
 
         {loadError && (
           <div className="pointer-events-auto absolute left-1/2 top-20 z-30 max-w-sm -translate-x-1/2 rounded-xl border border-red-400/30 bg-red-950/80 px-4 py-2 text-xs text-red-100 shadow-lg">

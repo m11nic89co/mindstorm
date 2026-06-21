@@ -9,6 +9,7 @@ html,
 body,
 #root {
   height: 100%;
+  height: 100dvh;
   margin: 0;
 }
 
@@ -85,35 +86,35 @@ body {
   }
 }
 
-@keyframes demo-splash-in {
+@keyframes demo-welcome-in {
   from {
     opacity: 0;
-    transform: scale(0.94) translateY(8px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 
-@keyframes demo-splash-out {
+@keyframes demo-welcome-out {
   from {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0);
   }
   to {
     opacity: 0;
-    transform: scale(1.02);
+    transform: translateY(-8px);
   }
 }
 
-@keyframes demo-splash-glow {
+@keyframes demo-welcome-icon-pulse {
   0%,
   100% {
-    box-shadow: 0 0 24px rgba(34, 211, 238, 0.15);
+    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.12);
   }
   50% {
-    box-shadow: 0 0 40px rgba(34, 211, 238, 0.35);
+    box-shadow: 0 0 20px 2px rgba(34, 211, 238, 0.22);
   }
 }
 
@@ -127,18 +128,46 @@ body {
   animation-delay: var(--reveal-delay, 0ms);
 }
 
-.demo-splash {
-  animation: demo-splash-in 0.45s ease-out;
+/* Welcome-панель: под toolbar, safe-area, без перекрытия холста */
+.demo-welcome-host {
+  top: calc(env(safe-area-inset-top, 0px) + 3.75rem);
 }
 
-.demo-splash-card {
-  animation: demo-splash-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+@media (min-width: 640px) {
+  .demo-welcome-host {
+    top: calc(env(safe-area-inset-top, 0px) + 4.75rem);
+  }
 }
 
-.demo-splash-glow {
-  animation: demo-splash-glow 2s ease-in-out infinite;
+.demo-welcome {
+  animation: demo-welcome-in 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.demo-splash[data-exiting] .demo-splash-card {
-  animation: demo-splash-out 0.32s ease-in forwards;
+.demo-welcome-icon {
+  animation: demo-welcome-icon-pulse 2.4s ease-in-out infinite;
+}
+
+.demo-welcome-host[data-exiting] .demo-welcome {
+  animation: demo-welcome-out 0.28s ease-in forwards;
+}
+
+/* Toast: под toolbar; с welcome — ниже панели */
+.board-toast {
+  top: calc(env(safe-area-inset-top, 0px) + 3.75rem);
+}
+
+@media (min-width: 640px) {
+  .board-toast {
+    top: calc(env(safe-area-inset-top, 0px) + 4.75rem);
+  }
+}
+
+[data-demo-welcome] .board-toast {
+  top: calc(env(safe-area-inset-top, 0px) + 9.25rem);
+}
+
+@media (min-width: 640px) {
+  [data-demo-welcome] .board-toast {
+    top: calc(env(safe-area-inset-top, 0px) + 10.25rem);
+  }
 }
