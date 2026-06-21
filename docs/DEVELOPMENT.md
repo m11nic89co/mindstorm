@@ -28,7 +28,24 @@ Production build: `base: '/mindstorm/'` (см. `vite.config.ts`).
 
 ## Деплой на GitHub Pages
 
-### Локально (PowerShell)
+### Основной способ (рекомендуется)
+
+Push в `main` из папки проекта → **CI** (`.github/workflows/deploy.yml`) → сайт обновляется автоматически.
+
+```powershell
+$env:Path = "C:\Program Files\nodejs;" + $env:Path
+cd "G:\Мой диск\Projects\MindStorm"
+
+git add .
+git commit -m "Описание изменений"
+git push origin main
+```
+
+Через ~40 с сайт: https://m11nic89co.github.io/mindstorm/
+
+### Запасной способ — скрипт `deploy:pages`
+
+Если CI недоступен, вручную через ветку `gh-pages`:
 
 ```powershell
 $env:Path = "C:\Program Files\nodejs;" + $env:Path
@@ -37,37 +54,35 @@ $env:GIT_COMMITTER_NAME = "m11nic89co"
 $env:GIT_AUTHOR_EMAIL = "58000724+m11nic89co@users.noreply.github.com"
 $env:GIT_COMMITTER_EMAIL = "58000724+m11nic89co@users.noreply.github.com"
 
-cd C:\Projects\MindStorm
+cd "G:\Мой диск\Projects\MindStorm"
 npm run deploy:pages
 ```
 
-Скрипт `scripts/deploy-pages.ps1`:
+Скрипт `scripts/deploy-pages.ps1`: build → `_pages/` → push `gh-pages`.
 
-1. `npm run build`
-2. Копирует `dist/` в `_pages/`
-3. Force-push в ветку `gh-pages`
+## Google Drive и Git
 
-### CI
+**Git-репозиторий живёт на Google Drive** — одна папка для Cursor и для `git push`. Копировать проект в `C:\Projects\...` перед каждым деплоем **не нужно**.
 
-Push в `main` → `.github/workflows/deploy.yml` → GitHub Pages artifact.
-
-## Google Drive vs локальный диск
-
-npm на папке Google Drive (`G:\Мой диск\...`) часто падает. Рекомендация:
+| Задача | Где |
+|--------|-----|
+| Код, Cursor, git commit/push | `G:\Мой диск\Projects\MindStorm` |
+| `npm install` / `npm run build` (если Drive ломает npm) | копия на `C:\Projects\MindStorm` без `.git` |
 
 ```powershell
-robocopy "G:\...\MindStorm" "C:\Projects\MindStorm" /MIR /XD node_modules dist _pages .git
+# Только если npm на Drive падает:
+robocopy "G:\Мой диск\Projects\MindStorm" "C:\Projects\MindStorm" /MIR /XD node_modules dist _pages .git
 cd C:\Projects\MindStorm
+npm install
 npm run build
 ```
 
-После работы — синхронизировать обратно при необходимости.
-
 ## Git
 
-- **main** — исходники
-- **gh-pages** — только статика сайта
-- Не использовать `git config` для смены user — только env vars в deploy-скрипте
+- **main** — исходники (отслеживает `origin/main`)
+- **gh-pages** — только статика сайта (legacy deploy-скрипт)
+- Remote: `https://github.com/m11nic89co/mindstorm.git`
+- Не использовать `git config` для смены user — env vars в deploy-скрипте
 - Коммиты — по запросу пользователя
 
 ## Переименование репозитория GitHub

@@ -22,15 +22,18 @@
 ### Рекомендуемая локальная папка
 
 ```
-MindStorm/
+G:\Мой диск\Projects\MindStorm
 ```
 
-Старые пути (устарели, только для справки):
+Папка **привязана к GitHub** (`origin` → `https://github.com/m11nic89co/mindstorm.git`, ветка `main`).
 
-- `G:\Мой диск\Projects\MindShtorm` — Google Drive (npm часто ломается из‑за синхронизации)
-- `C:\Projects\MindShtorm` — рабочая копия для сборки и деплоя
+**Рабочий процесс на Windows:**
 
-**Рабочий процесс на Windows:** разрабатывать в новой папке `MindStorm`, для `npm run build` / `deploy:pages` при проблемах с Drive — копия на локальный диск `C:\Projects\MindStorm`.
+1. Редактируете код в `G:\Мой диск\Projects\MindStorm` (Cursor).
+2. `git add` / `git commit` / `git push origin main` — из **той же папки**.
+3. GitHub Actions автоматически деплоит сайт после push в `main`.
+
+Если `npm install` на Drive падает — сборку делайте в копии на `C:\Projects\MindStorm` (без `.git`, только `npm run build`). **Git и push — всегда с G:\.**
 
 ---
 

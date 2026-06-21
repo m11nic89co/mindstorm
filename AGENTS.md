@@ -30,7 +30,7 @@
 
 ```powershell
 $env:Path = "C:\Program Files\nodejs;" + $env:Path
-cd C:\Projects\MindStorm   # или актуальный путь
+cd "G:\Мой диск\Projects\MindStorm"   # git + Cursor; push → CI деплой
 npm run deploy:pages
 ```
 
