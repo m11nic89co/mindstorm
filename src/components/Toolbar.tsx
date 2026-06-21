@@ -4,29 +4,23 @@ import { LogoMark, boardStats } from './LogoMark';
 type ToolbarProps = {
   onAddText: () => void;
   onAddGroup: () => void;
-  onSaveToGitHub: () => void;
-  onLoadFromGitHub: () => void;
-  onOpenAccount: () => void;
+  onSave: () => void;
+  onLoad: () => void;
   onReset: () => void;
   nodeCount: number;
   edgeCount: number;
   activeBoardName?: string | null;
-  githubUser?: { login: string; avatar_url: string } | null;
-  githubLoading?: boolean;
 };
 
 export function Toolbar({
   onAddText,
   onAddGroup,
-  onSaveToGitHub,
-  onLoadFromGitHub,
-  onOpenAccount,
+  onSave,
+  onLoad,
   onReset,
   nodeCount,
   edgeCount,
   activeBoardName,
-  githubUser,
-  githubLoading,
 }: ToolbarProps) {
   return (
     <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center p-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:p-4">
@@ -37,49 +31,26 @@ export function Toolbar({
         </div>
 
         <div className="flex max-w-[calc(100vw-6rem)] items-center gap-1 overflow-x-auto sm:gap-2">
-        <ToolbarButton onClick={onAddText} title="Добавить карточку">
-          <span className="sm:hidden">+</span>
-          <span className="hidden sm:inline">+ Карточка</span>
-        </ToolbarButton>
-        <ToolbarButton onClick={onAddGroup} title="Добавить группу">
-          <span className="sm:hidden">◻</span>
-          <span className="hidden sm:inline">◻ Группа</span>
-        </ToolbarButton>
-        <ToolbarButton onClick={onSaveToGitHub} title="Сохранить схему в GitHub">
-          <span className="sm:hidden">↑</span>
-          <span className="hidden sm:inline">↑ В GitHub</span>
-        </ToolbarButton>
-        <ToolbarButton onClick={onLoadFromGitHub} title="Открыть список схем из GitHub">
-          <span className="sm:hidden">↓</span>
-          <span className="hidden sm:inline">↓ Из GitHub</span>
-        </ToolbarButton>
-        <button
-          type="button"
-          title={githubUser ? `@${githubUser.login}` : 'Войти через GitHub'}
-          onClick={onOpenAccount}
-          className="flex shrink-0 items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs font-medium text-white/80 transition hover:bg-white/10 hover:text-white sm:px-2.5"
-        >
-          {githubLoading ? (
-            <span className="inline-block h-6 w-6 animate-pulse rounded-full bg-white/15" />
-          ) : githubUser ? (
-            <img
-              src={githubUser.avatar_url}
-              alt=""
-              className="h-6 w-6 rounded-full border border-white/15"
-            />
-          ) : (
-            <span className="flex h-6 w-6 items-center justify-center rounded-full border border-dashed border-white/25 text-[10px] text-white/50">
-              GH
-            </span>
-          )}
-          <span className="hidden max-w-[5rem] truncate sm:inline">
-            {githubUser ? githubUser.login : 'Войти'}
-          </span>
-        </button>
-        <ToolbarButton onClick={onReset} title="Сбросить к демо">
-          <span className="sm:hidden">↺</span>
-          <span className="hidden sm:inline">↺ Демо</span>
-        </ToolbarButton>
+          <ToolbarButton onClick={onAddText} title="Добавить карточку">
+            <span className="sm:hidden">+</span>
+            <span className="hidden sm:inline">+ Карточка</span>
+          </ToolbarButton>
+          <ToolbarButton onClick={onAddGroup} title="Добавить группу">
+            <span className="sm:hidden">◻</span>
+            <span className="hidden sm:inline">◻ Группа</span>
+          </ToolbarButton>
+          <ToolbarButton onClick={onSave} title="Сохранить схему в файл на компьютер">
+            <span className="sm:hidden">💾</span>
+            <span className="hidden sm:inline">Сохранить</span>
+          </ToolbarButton>
+          <ToolbarButton onClick={onLoad} title="Загрузить схему с компьютера">
+            <span className="sm:hidden">📂</span>
+            <span className="hidden sm:inline">Загрузить</span>
+          </ToolbarButton>
+          <ToolbarButton onClick={onReset} title="Сбросить к демо">
+            <span className="sm:hidden">↺</span>
+            <span className="hidden sm:inline">↺ Демо</span>
+          </ToolbarButton>
         </div>
 
         <div
@@ -122,9 +93,9 @@ export function HintBar() {
     <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:p-4">
       <div className="rounded-full border border-white/8 bg-black/25 px-3 py-1.5 text-[10px] text-white/45 backdrop-blur-xl sm:px-4 sm:py-2 sm:text-[11px]">
         <span className="hidden sm:inline">
-          Двойной клик — карточка · Уголки — размер · Перетащите от точки — связь · Delete — удалить · Колёсико — масштаб
+          Двойной клик — карточка · Сохранить / Загрузить — файл .mindshtorm · Delete — удалить · Колёсико — масштаб
         </span>
-        <span className="sm:hidden">Тап×2 — карточка · Уголки — размер · Щипок — масштаб</span>
+        <span className="sm:hidden">Тап×2 — карточка · 💾/📂 — файл · Щипок — масштаб</span>
       </div>
     </footer>
   );
@@ -182,44 +153,6 @@ export function SelectionPanel({
             />
           ))}
         </div>
-      </div>
-    </div>
-  );
-}
-
-export function ColorPicker({
-  value,
-  onChange,
-}: {
-  value?: string;
-  onChange: (color: string) => void;
-}) {
-  const colors = ['1', '2', '3', '4', '5', '6'] as const;
-  const swatches: Record<string, string> = {
-    '1': '#f87171',
-    '2': '#fb923c',
-    '3': '#facc15',
-    '4': '#4ade80',
-    '5': '#22d3ee',
-    '6': '#c084fc',
-  };
-
-  return (
-    <div className="pointer-events-auto absolute right-4 top-24 z-20 flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-2xl">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">Цвет</span>
-      <div className="flex flex-col gap-1.5">
-        {colors.map((c) => (
-          <button
-            key={c}
-            type="button"
-            onClick={() => onChange(c)}
-            className={`h-6 w-6 rounded-full border-2 transition hover:scale-110 ${
-              value === c ? 'border-white scale-110' : 'border-transparent'
-            }`}
-            style={{ background: swatches[c] }}
-            title={`Цвет ${c}`}
-          />
-        ))}
       </div>
     </div>
   );
