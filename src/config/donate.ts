@@ -26,6 +26,8 @@ export type DonateLinkMethod = {
   url: string;
   hintRu: string;
   hintEn: string;
+  hintEs?: string;
+  hintZh?: string;
 };
 
 export type DonateCryptoMethod = {
@@ -35,6 +37,8 @@ export type DonateCryptoMethod = {
   label: string;
   hintRu: string;
   hintEn: string;
+  hintEs?: string;
+  hintZh?: string;
   wallets: DonateWallet[];
 };
 
@@ -70,6 +74,8 @@ const ACTIVE_METHODS: DonateMethod[] = [
     url: envPaypal || `https://paypal.me/${HANDLE}`,
     hintRu: 'PayPal или карта — 1–2 клика',
     hintEn: 'PayPal or card — 1–2 taps',
+    hintEs: 'PayPal o tarjeta — 1–2 clics',
+    hintZh: 'PayPal 或银行卡 — 1–2 步',
   },
   {
     id: 'usdt',
@@ -78,6 +84,8 @@ const ACTIVE_METHODS: DonateMethod[] = [
     label: 'USDT',
     hintRu: 'Tron (TRC20) или TON — скопировать адрес',
     hintEn: 'Tron (TRC20) or TON — copy address',
+    hintEs: 'Tron (TRC20) o TON — copiar dirección',
+    hintZh: 'Tron (TRC20) 或 TON — 复制地址',
     wallets: USDT_WALLETS,
   },
 ];

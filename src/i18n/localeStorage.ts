@@ -1,11 +1,12 @@
-import type { Locale } from './messages';
+import type { Locale } from './locales';
+import { isLocale } from './locales';
 
 const LOCALE_KEY = 'mindstorm.locale.v1';
 
 export function readLocale(): Locale {
   try {
     const stored = localStorage.getItem(LOCALE_KEY);
-    if (stored === 'en' || stored === 'ru') return stored;
+    if (stored && isLocale(stored)) return stored;
   } catch {
     /* ignore */
   }

@@ -1,5 +1,6 @@
 import type { Edge } from '@xyflow/react';
-import type { Locale } from '../i18n/messages';
+import type { Locale } from '../i18n/locales';
+import { pickFromLocaleMap } from '../i18n/locales';
 import type {
   CardNodeData,
   EdgeI18n,
@@ -10,11 +11,10 @@ import type {
 import { setEdgeLabel } from './flowEdges';
 
 function pickLocaleCopy<T extends { label?: string; text?: string }>(
-  i18n: { ru?: T; en?: T } | undefined,
+  i18n: Partial<Record<Locale, T>> | undefined,
   locale: Locale,
 ): T | undefined {
-  if (!i18n) return undefined;
-  return i18n[locale] ?? i18n[locale === 'ru' ? 'en' : 'ru'];
+  return pickFromLocaleMap(i18n, locale);
 }
 
 function bootstrapNodeI18n(data: CardNodeData): NodeI18n | undefined {

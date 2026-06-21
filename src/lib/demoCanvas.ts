@@ -1,7 +1,9 @@
 import type { Edge, Node } from '@xyflow/react';
-import type { Locale } from '../i18n/messages';
+import type { Locale } from '../i18n/locales';
+import { LOCALES } from '../i18n/locales';
 import { messagesFor } from '../i18n/messages';
 import { applyJsonEdgeLocale, applyJsonNodeLocale } from './nodeLocale';
+import { enrichDemoCanvasI18n } from './demoLocaleCopies';
 import { canvasToFlow } from './jsonCanvas';
 import type { CardNodeData, EdgeI18n, JsonCanvas, JsonCanvasEdge, JsonCanvasNode, NodeI18n } from '../types/jsonCanvas';
 
@@ -520,10 +522,10 @@ function mergeDemoEdges(ruEdges: JsonCanvasEdge[], enEdges: JsonCanvasEdge[]): J
   });
 }
 
-const DEMO_CANVAS_I18N: JsonCanvas = {
+const DEMO_CANVAS_I18N: JsonCanvas = enrichDemoCanvasI18n({
   nodes: mergeDemoNodes(DEMO_CANVAS_RU.nodes ?? [], DEMO_CANVAS_EN.nodes ?? []),
   edges: mergeDemoEdges(DEMO_CANVAS_RU.edges ?? [], DEMO_CANVAS_EN.edges ?? []),
-};
+});
 
 function applyCanvasLocale(canvas: JsonCanvas, locale: Locale): JsonCanvas {
   return {
@@ -537,7 +539,7 @@ export function getDemoCanvas(locale: Locale): JsonCanvas {
 }
 
 export function isDemoBoardName(name: string): boolean {
-  return name === getDemoBoardName('ru') || name === getDemoBoardName('en');
+  return LOCALES.some((locale) => name === getDemoBoardName(locale));
 }
 
 /** @deprecated use getDemoCanvas(locale) */

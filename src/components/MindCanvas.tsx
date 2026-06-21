@@ -26,6 +26,7 @@ import { applyConnection, connectionFromDragStart, FLOW_EDGE_STYLE, strokeForNod
 import { useLocale } from '../i18n/LocaleProvider';
 import { readLocale } from '../i18n/localeStorage';
 import { messagesFor } from '../i18n/messages';
+import { LOCALES } from '../i18n/locales';
 import {
   applyGroupResizeToNodes,
   createGroupResizeSnapshot,
@@ -61,7 +62,7 @@ import {
   saveSuccessMessage,
   titleFromFilename,
 } from '../lib/localBoardFile';
-import type { CardNodeData, JsonCanvas } from '../types/jsonCanvas';
+import type { CardNodeData, JsonCanvas, NodeI18n } from '../types/jsonCanvas';
 import { HintBar, EdgeSelectionPanel, SelectionPanel, Toolbar } from './Toolbar';
 import { GroupCardNode, TextCardNode } from './nodes/CardNodes';
 import { useCanvasHistory } from '../hooks/useCanvasHistory';
@@ -301,9 +302,6 @@ function MindCanvasInner() {
         y: window.innerHeight / 2,
       });
 
-      const ru = messagesFor('ru');
-      const en = messagesFor('en');
-
       const node: Node<CardNodeData> = {
         id: createId('text'),
         type: 'textCard',
@@ -312,10 +310,9 @@ function MindCanvasInner() {
         data: {
           canvasType: 'text',
           text: m.card.defaultText,
-          i18n: {
-            ru: { text: ru.card.defaultText },
-            en: { text: en.card.defaultText },
-          },
+          i18n: Object.fromEntries(
+            LOCALES.map((loc) => [loc, { text: messagesFor(loc).card.defaultText }]),
+          ) as NodeI18n,
           color: '5',
         },
         zIndex: 1,
@@ -330,8 +327,6 @@ function MindCanvasInner() {
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     });
-    const ru = messagesFor('ru');
-    const en = messagesFor('en');
     const node: Node<CardNodeData> = {
       id: createId('group'),
       type: 'groupCard',
@@ -340,10 +335,9 @@ function MindCanvasInner() {
       data: {
         canvasType: 'group',
         label: m.group.defaultLabel,
-        i18n: {
-          ru: { label: ru.group.defaultLabel },
-          en: { label: en.group.defaultLabel },
-        },
+        i18n: Object.fromEntries(
+          LOCALES.map((loc) => [loc, { label: messagesFor(loc).group.defaultLabel }]),
+        ) as NodeI18n,
         color: '5',
       },
       zIndex: -1,

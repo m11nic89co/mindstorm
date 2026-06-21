@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocale } from '../i18n/LocaleProvider';
+import type { Locale } from '../i18n/locales';
+import { pickFromLocaleMap } from '../i18n/locales';
 import type { DonateMethod, DonatePlatform } from '../config/donate';
 import { DONATE_METHODS, hasDonateOptions } from '../config/donate';
 
@@ -34,8 +36,16 @@ const PLATFORM_STYLES: Record<DonatePlatform, { button: string; badge: string }>
   },
 };
 
-function methodHint(method: DonateMethod, locale: 'ru' | 'en'): string {
-  return locale === 'ru' ? method.hintRu : method.hintEn;
+function methodHint(method: DonateMethod, locale: Locale): string {
+  return pickFromLocaleMap(
+    {
+      ru: method.hintRu,
+      en: method.hintEn,
+      es: method.hintEs,
+      zh: method.hintZh,
+    },
+    locale,
+  ) ?? method.hintEn;
 }
 
 function CloseIcon() {

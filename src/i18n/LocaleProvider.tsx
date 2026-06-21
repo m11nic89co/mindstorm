@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { messagesFor, type Locale, type Messages } from './messages';
+import { messagesFor, type Messages } from './messages';
+import type { Locale } from './locales';
+import { LOCALE_HTML_LANG } from './locales';
 import { readLocale, writeLocale } from './localeStorage';
 
 type LocaleContextValue = {
@@ -26,7 +28,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const m = useMemo(() => messagesFor(locale), [locale]);
 
   useEffect(() => {
-    document.documentElement.lang = locale;
+    document.documentElement.lang = LOCALE_HTML_LANG[locale];
   }, [locale]);
 
   const value = useMemo(

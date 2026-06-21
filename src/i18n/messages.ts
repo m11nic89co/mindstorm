@@ -1,12 +1,6 @@
-export type Locale = 'ru' | 'en';
+import type { Locale } from './locales';
 
 export type Messages = {
-  lang: {
-    switchToEn: string;
-    switchToRu: string;
-    ariaRu: string;
-    ariaEn: string;
-  };
   toolbar: {
     undo: string;
     undoAria: string;
@@ -141,12 +135,6 @@ function colorRecord(names: Record<(typeof colorIds)[number], string>): Record<s
 }
 
 export const messagesRu: Messages = {
-  lang: {
-    switchToEn: 'English',
-    switchToRu: 'Русский',
-    ariaRu: 'Русский язык',
-    ariaEn: 'English language',
-  },
   toolbar: {
     undo: 'Отменить (Ctrl+Z)',
     undoAria: 'Отменить',
@@ -278,12 +266,6 @@ export const messagesRu: Messages = {
 };
 
 export const messagesEn: Messages = {
-  lang: {
-    switchToEn: 'English',
-    switchToRu: 'Russian',
-    ariaRu: 'Russian language',
-    ariaEn: 'English language',
-  },
   toolbar: {
     undo: 'Undo (Ctrl+Z)',
     undoAria: 'Undo',
@@ -414,6 +396,272 @@ export const messagesEn: Messages = {
   demoBoardName: 'Demo · MindStorm Launch',
 };
 
+export const messagesEs: Messages = {
+  toolbar: {
+    undo: 'Deshacer (Ctrl+Z)',
+    undoAria: 'Deshacer',
+    redo: 'Rehacer (Ctrl+Shift+Z)',
+    redoAria: 'Rehacer',
+    addCard: 'Añadir carta',
+    addCardShort: '+ Carta',
+    addGroup: 'Añadir grupo',
+    addGroupShort: '◻ Grupo',
+    save: 'Guardar',
+    saveTitle: 'Guardar esquema en tu computadora',
+    load: 'Abrir',
+    loadTitle: 'Abrir esquema desde tu computadora',
+    newBoard: '↺ Nuevo',
+    newBoardTitle: 'Tablero vacío',
+    demo: 'Demo',
+    demoTitle: 'Cargar el tablero demo de MindStorm',
+    statsTitle: 'Número de cartas y conexiones en el tablero',
+  },
+  hints: {
+    desktop:
+      'Doble clic — nueva carta · Clic en nodo — nombre y color · Clic en línea — etiqueta · Delete',
+    mobile: 'Doble toque — carta · Nodo — color · Línea — etiqueta',
+  },
+  footer: {
+    donate: '☕ Donar',
+    donateTitle: 'Apoyar MindStorm',
+    donateHint: 'PayPal o USDT — elige tu método.',
+    donateSectionCard: 'Tarjeta y PayPal',
+    donateSectionCrypto: 'USDT cripto',
+    donateOpen: 'Pagar →',
+    donateCryptoShow: 'Redes →',
+    donateCryptoHide: 'Ocultar',
+    donateMin: 'Depósito mín.',
+    donateClose: 'Cerrar',
+    donateCopy: 'Copiar dirección',
+    donateCopied: 'Copiado ✓',
+    donateCopiedHint: 'Dirección en el portapapeles — pega en tu billetera',
+  },
+  edgePanel: {
+    title: 'Conexión',
+    placeholder: 'Etiqueta...',
+    hint: 'Arrastra el punto en un extremo para redirigir. Delete — eliminar.',
+    clearLabel: 'Quitar etiqueta',
+    delete: 'Eliminar conexión',
+  },
+  selectionPanel: {
+    group: 'Grupo',
+    card: 'Carta',
+    groupNamePlaceholder: 'Nombre del grupo...',
+    cardNamePlaceholder: 'Nombre de la carta...',
+    color: 'Color',
+  },
+  saveModal: {
+    title: 'Guardar esquema',
+    description:
+      'Elige un nombre — el archivo se guardará en tu computadora. Ábrelo después con Abrir.',
+    nameLabel: 'Nombre',
+    namePlaceholder: 'brainstorm-2026',
+    filenamePrefix: 'Archivo a guardar:',
+    enterName: 'Introduce un nombre',
+    saveFailed: 'No se pudo guardar el archivo',
+    saving: 'Guardando…',
+    done: 'Listo',
+    saveButton: 'Guardar en computadora',
+    defaultName: 'mi-esquema',
+  },
+  demoSplash: {
+    welcome: 'Bienvenido',
+    title: 'Demo MindStorm',
+    subtitle: 'Explora el tablero de lanzamiento de producto abajo',
+    close: 'Cerrar',
+    cards: (n) => pluralEn(n, 'carta', 'cartas'),
+    groups: (n) => pluralEn(n, 'grupo', 'grupos'),
+    links: (n) => pluralEn(n, 'conexión', 'conexiones'),
+  },
+  boardStats: {
+    cards: (n) => pluralEn(n, 'carta', 'cartas'),
+    links: (n) => pluralEn(n, 'conexión', 'conexiones'),
+  },
+  colors: colorRecord({
+    '1': 'Rojo',
+    '2': 'Naranja',
+    '3': 'Amarillo',
+    '4': 'Verde',
+    '5': 'Verde azulado',
+    '6': 'Morado',
+    '7': 'Rosa',
+    '8': 'Fucsia',
+    '9': 'Lima',
+    '10': 'Verde mar',
+    '11': 'Azul',
+    '12': 'Gris',
+  }),
+  colorsCustom: 'Color personalizado',
+  card: {
+    newIdea: 'Nueva idea',
+    placeholder: 'Texto Markdown...',
+    defaultText: '## Nueva idea\nDescribe tu pensamiento...',
+  },
+  group: {
+    defaultLabel: 'Grupo',
+    namePlaceholder: 'Nombre del grupo',
+    renameTitle: 'Doble clic para renombrar',
+  },
+  confirm: {
+    newBoard:
+      '¿Crear un tablero vacío?\n\nPuedes restaurar el tablero actual con Deshacer (Ctrl+Z).',
+  },
+  toast: {
+    opened: (filename) => `Abierto: ${filename}`,
+    close: 'Cerrar',
+  },
+  errors: {
+    loadFailed: 'No se pudo cargar el archivo',
+    invalidCanvas: 'Formato .canvas inválido',
+    readFailed: 'Error al leer el archivo',
+    parseFailed: 'No se pudo leer el archivo',
+    missingCanvas: 'El archivo .mindstorm no contiene datos del tablero',
+  },
+  file: {
+    defaultTitle: 'mi-esquema',
+    fallbackTitle: 'esquema',
+    savedAs: (filename) => `Guardado: ${filename}`,
+    savedDownloads: (filename) => `${filename} se guardó en Descargas`,
+    typeDescription: 'Esquema MindStorm',
+  },
+  demoBoardName: 'Demo · Lanzamiento MindStorm',
+};
+
+export const messagesZh: Messages = {
+  toolbar: {
+    undo: '撤销 (Ctrl+Z)',
+    undoAria: '撤销',
+    redo: '重做 (Ctrl+Shift+Z)',
+    redoAria: '重做',
+    addCard: '添加卡片',
+    addCardShort: '+ 卡片',
+    addGroup: '添加分组',
+    addGroupShort: '◻ 分组',
+    save: '保存',
+    saveTitle: '将画布保存到电脑',
+    load: '打开',
+    loadTitle: '从电脑打开画布',
+    newBoard: '↺ 新建',
+    newBoardTitle: '空白画布',
+    demo: '演示',
+    demoTitle: '加载 MindStorm 演示画布',
+    statsTitle: '画布上的卡片和连线数量',
+  },
+  hints: {
+    desktop: '双击 — 新卡片 · 点击节点 — 名称和颜色 · 点击连线 — 标签 · Delete',
+    mobile: '双击 — 卡片 · 节点 — 颜色 · 连线 — 标签',
+  },
+  footer: {
+    donate: '☕ 捐赠',
+    donateTitle: '支持 MindStorm',
+    donateHint: 'PayPal 或 USDT — 选择方式。',
+    donateSectionCard: '银行卡和 PayPal',
+    donateSectionCrypto: 'USDT 加密货币',
+    donateOpen: '支付 →',
+    donateCryptoShow: '网络 →',
+    donateCryptoHide: '收起',
+    donateMin: '最低充值',
+    donateClose: '关闭',
+    donateCopy: '复制地址',
+    donateCopied: '已复制 ✓',
+    donateCopiedHint: '地址已在剪贴板 — 粘贴到钱包',
+  },
+  edgePanel: {
+    title: '连线',
+    placeholder: '标签...',
+    hint: '拖动端点圆点可改线路。Delete — 删除。',
+    clearLabel: '清除标签',
+    delete: '删除连线',
+  },
+  selectionPanel: {
+    group: '分组',
+    card: '卡片',
+    groupNamePlaceholder: '分组名称...',
+    cardNamePlaceholder: '卡片名称...',
+    color: '颜色',
+  },
+  saveModal: {
+    title: '保存画布',
+    description: '输入名称 — 文件将保存到电脑。之后可用「打开」重新加载。',
+    nameLabel: '名称',
+    namePlaceholder: 'brainstorm-2026',
+    filenamePrefix: '将保存文件：',
+    enterName: '请输入名称',
+    saveFailed: '无法保存文件',
+    saving: '保存中…',
+    done: '完成',
+    saveButton: '保存到电脑',
+    defaultName: '我的画布',
+  },
+  demoSplash: {
+    welcome: '欢迎',
+    title: 'MindStorm 演示',
+    subtitle: '浏览下方的产品发布画布',
+    close: '关闭',
+    cards: (n) => `${n} 张卡片`,
+    groups: (n) => `${n} 个分组`,
+    links: (n) => `${n} 条连线`,
+  },
+  boardStats: {
+    cards: (n) => `${n} 张卡片`,
+    links: (n) => `${n} 条连线`,
+  },
+  colors: colorRecord({
+    '1': '红色',
+    '2': '橙色',
+    '3': '黄色',
+    '4': '绿色',
+    '5': '青色',
+    '6': '紫色',
+    '7': '粉色',
+    '8': '洋红',
+    '9': '青柠',
+    '10': '海绿',
+    '11': '蓝色',
+    '12': '灰色',
+  }),
+  colorsCustom: '自定义颜色',
+  card: {
+    newIdea: '新想法',
+    placeholder: 'Markdown 文本...',
+    defaultText: '## 新想法\n描述你的想法...',
+  },
+  group: {
+    defaultLabel: '分组',
+    namePlaceholder: '分组名称',
+    renameTitle: '双击重命名',
+  },
+  confirm: {
+    newBoard: '创建空白画布？\n\n可用撤销 (Ctrl+Z) 恢复当前画布。',
+  },
+  toast: {
+    opened: (filename) => `已打开：${filename}`,
+    close: '关闭',
+  },
+  errors: {
+    loadFailed: '无法加载文件',
+    invalidCanvas: '无效的 .canvas 格式',
+    readFailed: '读取文件失败',
+    parseFailed: '无法读取文件',
+    missingCanvas: '.mindstorm 文件中没有画布数据',
+  },
+  file: {
+    defaultTitle: '我的画布',
+    fallbackTitle: '画布',
+    savedAs: (filename) => `已保存：${filename}`,
+    savedDownloads: (filename) => `${filename} 已保存到下载文件夹`,
+    typeDescription: 'MindStorm 画布',
+  },
+  demoBoardName: '演示 · MindStorm 发布',
+};
+
+const MESSAGE_MAP: Record<Locale, Messages> = {
+  ru: messagesRu,
+  en: messagesEn,
+  es: messagesEs,
+  zh: messagesZh,
+};
+
 export function messagesFor(locale: Locale): Messages {
-  return locale === 'en' ? messagesEn : messagesRu;
+  return MESSAGE_MAP[locale];
 }

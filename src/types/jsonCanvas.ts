@@ -10,11 +10,15 @@ export type LocaleCopy = {
 export type NodeI18n = {
   ru?: LocaleCopy;
   en?: LocaleCopy;
+  es?: LocaleCopy;
+  zh?: LocaleCopy;
 };
 
 export type EdgeI18n = {
   ru?: { label?: string };
   en?: { label?: string };
+  es?: { label?: string };
+  zh?: { label?: string };
 };
 
 export interface JsonCanvasNodeBase {
@@ -25,7 +29,7 @@ export interface JsonCanvasNodeBase {
   width: number;
   height: number;
   color?: CanvasColor;
-  /** MindStorm: переводы текста/названия для RU/EN */
+  /** MindStorm: переводы текста/названия (ru, en, es, zh) */
   i18n?: NodeI18n;
 }
 
@@ -73,7 +77,7 @@ export interface JsonCanvasEdge {
   toEnd?: 'none' | 'arrow';
   color?: CanvasColor;
   label?: string;
-  /** MindStorm: переводы подписи для RU/EN */
+  /** MindStorm: переводы подписи (ru, en, es, zh) */
   i18n?: EdgeI18n;
 }
 

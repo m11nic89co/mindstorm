@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useLocale } from '../i18n/LocaleProvider';
-import type { Locale } from '../i18n/messages';
+import { LOCALE_ARIA, LOCALE_LABEL, LOCALES } from '../i18n/locales';
 import { LogoMark, BoardStatsText } from './LogoMark';
 import { DonateChip } from './DonateChip';
 import { AUTHOR_NAME, LIVE_URL, REPO_URL } from '../lib/siteMeta';
@@ -110,7 +110,7 @@ export function Toolbar({
 }
 
 function LanguageToggle() {
-  const { locale, setLocale, m } = useLocale();
+  const { locale, setLocale } = useLocale();
 
   return (
     <div
@@ -118,7 +118,7 @@ function LanguageToggle() {
       role="group"
       aria-label="Language"
     >
-      {(['ru', 'en'] as const satisfies Locale[]).map((code) => (
+      {LOCALES.map((code) => (
         <button
           key={code}
           type="button"
@@ -129,9 +129,9 @@ function LanguageToggle() {
               : 'text-white/40 hover:text-white/70'
           }`}
           aria-pressed={locale === code}
-          title={code === 'ru' ? m.lang.ariaRu : m.lang.ariaEn}
+          title={LOCALE_ARIA[code]}
         >
-          {code}
+          {LOCALE_LABEL[code]}
         </button>
       ))}
     </div>
