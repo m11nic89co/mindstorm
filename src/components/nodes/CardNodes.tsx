@@ -94,8 +94,15 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
   );
 }
 
-export function GroupCardNode({ data, selected }: TextCardProps) {
+export function GroupCardNode({ id, data, selected }: TextCardProps) {
+  const { updateNode } = useCanvasActions();
+  const [editingLabel, setEditingLabel] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const palette = resolveColor(data.color);
+
+  useEffect(() => {
+    if (editingLabel) inputRef.current?.focus();
+  }, [editingLabel]);
 
   return (
     <div
@@ -107,12 +114,32 @@ export function GroupCardNode({ data, selected }: TextCardProps) {
         borderColor: palette.border,
       }}
     >
-      <div
-        className="absolute -top-3 left-4 rounded-full px-3 py-0.5 text-xs font-medium text-white/80 backdrop-blur-md"
-        style={{ background: palette.border }}
-      >
-        {data.label ?? 'Группа'}
-      </div>
+      {editingLabel ? (
+        <input
+          ref={inputRef}
+          value={data.label ?? ''}
+          onChange={(e) => updateNode(id, { label: e.target.value })}
+          onBlur={() => setEditingLabel(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') setEditingLabel(false);
+          }}
+          className="absolute -top-3 left-4 max-w-[calc(100%-2rem)] rounded-full border border-white/20 bg-[#1a1f35] px-3 py-0.5 text-xs font-medium text-white outline-none ring-2 ring-cyan-400/40"
+          placeholder="Название группы"
+          onClick={(e) => e.stopPropagation()}
+        />
+      ) : (
+        <div
+          className="absolute -top-3 left-4 cursor-text rounded-full px-3 py-0.5 text-xs font-medium text-white/80 backdrop-blur-md transition hover:ring-1 hover:ring-white/25"
+          style={{ background: palette.border }}
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+            setEditingLabel(true);
+          }}
+          title="Двойной клик — переименовать"
+        >
+          {data.label ?? 'Группа'}
+        </div>
+      )}
     </div>
   );
 }

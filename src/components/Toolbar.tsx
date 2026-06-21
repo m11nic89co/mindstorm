@@ -20,33 +20,42 @@ export function Toolbar({
   edgeCount,
 }: ToolbarProps) {
   return (
-    <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center p-4">
-      <div className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-2xl">
-        <div className="mr-2 flex items-center gap-2 border-r border-white/10 pr-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-lg">
-            M
-          </div>
-          <div>
+    <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center p-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:p-4">
+      <div className="pointer-events-auto flex max-w-full items-center gap-1 rounded-2xl border border-white/10 bg-white/5 px-2 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-2xl sm:gap-2 sm:px-3">
+        <div className="mr-1 flex shrink-0 items-center gap-2 border-r border-white/10 pr-2 sm:mr-2 sm:pr-3">
+          <img
+            src={`${import.meta.env.BASE_URL}icon-192.png`}
+            alt="MindShtorm"
+            className="h-9 w-9 rounded-xl shadow-lg ring-1 ring-white/15"
+          />
+          <div className="hidden min-w-0 sm:block">
             <div className="text-sm font-semibold text-white">MindShtorm</div>
             <div className="text-[10px] text-white/45">JSON Canvas · Obsidian</div>
           </div>
         </div>
 
+        <div className="flex max-w-[calc(100vw-6rem)] items-center gap-1 overflow-x-auto sm:gap-2">
         <ToolbarButton onClick={onAddText} title="Добавить карточку">
-          + Карточка
+          <span className="sm:hidden">+</span>
+          <span className="hidden sm:inline">+ Карточка</span>
         </ToolbarButton>
         <ToolbarButton onClick={onAddGroup} title="Добавить группу">
-          ◻ Группа
+          <span className="sm:hidden">◻</span>
+          <span className="hidden sm:inline">◻ Группа</span>
         </ToolbarButton>
         <ToolbarButton onClick={onImport} title="Импорт .canvas">
-          ↑ Импорт
+          <span className="sm:hidden">↑</span>
+          <span className="hidden sm:inline">↑ Импорт</span>
         </ToolbarButton>
         <ToolbarButton onClick={onExport} title="Экспорт .canvas">
-          ↓ Экспорт
+          <span className="sm:hidden">↓</span>
+          <span className="hidden sm:inline">↓ Экспорт</span>
         </ToolbarButton>
         <ToolbarButton onClick={onReset} title="Сбросить к демо">
-          ↺ Демо
+          <span className="sm:hidden">↺</span>
+          <span className="hidden sm:inline">↺ Демо</span>
         </ToolbarButton>
+        </div>
 
         <div className="ml-2 hidden border-l border-white/10 pl-3 text-xs text-white/40 sm:block">
           {nodeCount} узлов · {edgeCount} связей
@@ -70,7 +79,7 @@ function ToolbarButton({
       type="button"
       title={title}
       onClick={onClick}
-      className="rounded-xl px-3 py-1.5 text-xs font-medium text-white/80 transition hover:bg-white/10 hover:text-white active:scale-95"
+      className="shrink-0 rounded-xl px-2.5 py-1.5 text-xs font-medium text-white/80 transition hover:bg-white/10 hover:text-white active:scale-95 sm:px-3"
     >
       {children}
     </button>
@@ -79,11 +88,71 @@ function ToolbarButton({
 
 export function HintBar() {
   return (
-    <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center p-4">
-      <div className="rounded-full border border-white/8 bg-black/25 px-4 py-2 text-[11px] text-white/45 backdrop-blur-xl">
-        Двойной клик — карточка · Перетащите от точки — связь · Delete — удалить · Колёсико — масштаб
+    <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:p-4">
+      <div className="rounded-full border border-white/8 bg-black/25 px-3 py-1.5 text-[10px] text-white/45 backdrop-blur-xl sm:px-4 sm:py-2 sm:text-[11px]">
+        <span className="hidden sm:inline">
+          Двойной клик — карточка · Перетащите от точки — связь · Delete — удалить · Колёсико — масштаб
+        </span>
+        <span className="sm:hidden">Тап×2 — карточка · Тяните от точки — связь · Щипок — масштаб</span>
       </div>
     </footer>
+  );
+}
+
+export function SelectionPanel({
+  nodeType,
+  color,
+  label,
+  onColorChange,
+  onLabelChange,
+}: {
+  nodeType: 'text' | 'group' | 'link' | 'file';
+  color?: string;
+  label?: string;
+  onColorChange: (color: string) => void;
+  onLabelChange: (label: string) => void;
+}) {
+  const colors = ['1', '2', '3', '4', '5', '6'] as const;
+  const swatches: Record<string, string> = {
+    '1': '#f87171',
+    '2': '#fb923c',
+    '3': '#facc15',
+    '4': '#4ade80',
+    '5': '#22d3ee',
+    '6': '#c084fc',
+  };
+
+  return (
+    <div className="pointer-events-auto absolute right-2 top-20 z-20 flex w-44 flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-2xl sm:right-4 sm:top-24 sm:w-48">
+      {nodeType === 'group' && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">Группа</span>
+          <input
+            value={label ?? ''}
+            onChange={(e) => onLabelChange(e.target.value)}
+            placeholder="Название..."
+            className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white outline-none ring-indigo-400/40 focus:ring-2"
+          />
+        </div>
+      )}
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">Цвет</span>
+        <div className="flex flex-wrap gap-1.5">
+          {colors.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => onColorChange(c)}
+              className={`h-6 w-6 rounded-full border-2 transition hover:scale-110 ${
+                color === c ? 'border-white scale-110' : 'border-transparent'
+              }`}
+              style={{ background: swatches[c] }}
+              title={`Цвет ${c}`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 

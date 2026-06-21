@@ -26,7 +26,7 @@ import {
   parseCanvasFile,
 } from '../lib/jsonCanvas';
 import type { CardNodeData } from '../types/jsonCanvas';
-import { ColorPicker, HintBar, Toolbar } from './Toolbar';
+import { ColorPicker, HintBar, SelectionPanel, Toolbar } from './Toolbar';
 import { GroupCardNode, TextCardNode } from './nodes/CardNodes';
 
 const STORAGE_KEY = 'mindshtorm.canvas.v1';
@@ -216,9 +216,12 @@ function MindCanvasInner() {
         />
 
         {selectedNode && (
-          <ColorPicker
-            value={selectedNode.data.color}
-            onChange={(color) => updateNode(selectedNode.id, { color })}
+          <SelectionPanel
+            nodeType={selectedNode.data.canvasType}
+            color={selectedNode.data.color}
+            label={selectedNode.data.label}
+            onColorChange={(color) => updateNode(selectedNode.id, { color })}
+            onLabelChange={(label) => updateNode(selectedNode.id, { label })}
           />
         )}
 
@@ -234,6 +237,10 @@ function MindCanvasInner() {
           fitViewOptions={{ padding: 0.2 }}
           minZoom={0.15}
           maxZoom={2}
+          panOnScroll
+          zoomOnPinch
+          zoomOnDoubleClick={false}
+          selectionOnDrag={false}
           defaultEdgeOptions={{
             type: 'smoothstep',
             style: { stroke: 'rgba(165, 180, 252, 0.55)', strokeWidth: 2 },
@@ -244,12 +251,13 @@ function MindCanvasInner() {
           <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="rgba(255,255,255,0.06)" />
           <Controls
             showInteractive={false}
-            className="!rounded-xl !border !border-white/10 !bg-white/5 !shadow-xl !backdrop-blur-xl [&>button]:!border-white/10 [&>button]:!bg-transparent [&>button]:!text-white/70 [&>button:hover]:!bg-white/10"
+            position="bottom-left"
+            className="!mb-[calc(3.5rem+env(safe-area-inset-bottom))] !ml-2 !rounded-xl !border !border-white/10 !bg-white/5 !shadow-xl !backdrop-blur-xl [&>button]:!h-8 [&>button]:!w-8 [&>button]:!border-white/10 [&>button]:!bg-transparent [&>button]:!text-white/70 [&>button:hover]:!bg-white/10 sm:!mb-4 sm:!ml-4"
           />
           <MiniMap
             nodeColor={() => 'rgba(99, 102, 241, 0.55)'}
             maskColor="rgba(0,0,0,0.65)"
-            className="!rounded-xl !border !border-white/10 !bg-black/40 !backdrop-blur-md"
+            className="!mb-[calc(3.5rem+env(safe-area-inset-bottom))] !mr-2 !hidden !rounded-xl !border !border-white/10 !bg-black/40 !backdrop-blur-md sm:!mb-4 sm:!mr-4 sm:!block"
           />
         </ReactFlow>
 
