@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useEffect, useRef, useState, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { Edge, Node } from '@xyflow/react';
 import type { CardNodeData } from '../types/jsonCanvas';
 
@@ -26,6 +26,7 @@ export function useCanvasHistory(
   edges: Edge[],
   setNodes: Dispatch<SetStateAction<Node<CardNodeData>[]>>,
   setEdges: Dispatch<SetStateAction<Edge[]>>,
+  pausedRef?: RefObject<boolean>,
 ) {
   const stackRef = useRef<CanvasSnapshot[]>([cloneSnapshot(nodes, edges)]);
   const pointerRef = useRef(0);
@@ -34,6 +35,31 @@ export function useCanvasHistory(
   const [, setRevision] = useState(0);
 
   const bump = useCallback(() => setRevision((v) => v + 1), []);
+
+  const pushSnapshot = useCallback(
+    (nextNodes: Node<CardNodeData>[], nextEdges: Edge[]) => {
+      const snap = cloneSnapshot(nextNodes, nextEdges);
+      const stack = stackRef.current;
+      const ptr = pointerRef.current;
+      const current = stack[ptr];
+      if (current && snapshotsEqual(current, snap)) return;
+
+      let truncated = stack.slice(0, ptr + 1);
+      truncated.push(snap);
+      if (truncated.length > MAX_HISTORY) {
+        truncated = truncated.slice(truncated.length - MAX_HISTORY);
+      }
+      pointerRef.current = truncated.length - 1;
+      stackRef.current = truncated;
+      bump();
+    },
+    [bump],
+  );
+
+  const commitNow = useCallback(() => {
+    if (applyingRef.current) return;
+    pushSnapshot(nodes, edges);
+  }, [edges, nodes, pushSnapshot]);
 
   const canUndo = pointerRef.current > 0;
   const canRedo = pointerRef.current < stackRef.current.length - 1;
@@ -62,30 +88,16 @@ export function useCanvasHistory(
   );
 
   useEffect(() => {
-    if (applyingRef.current) return;
+    if (applyingRef.current || pausedRef?.current) return;
 
     window.clearTimeout(debounceRef.current);
     debounceRef.current = window.setTimeout(() => {
-      if (applyingRef.current) return;
-
-      const snap = cloneSnapshot(nodes, edges);
-      const stack = stackRef.current;
-      const ptr = pointerRef.current;
-      const current = stack[ptr];
-      if (current && snapshotsEqual(current, snap)) return;
-
-      let truncated = stack.slice(0, ptr + 1);
-      truncated.push(snap);
-      if (truncated.length > MAX_HISTORY) {
-        truncated = truncated.slice(truncated.length - MAX_HISTORY);
-      }
-      pointerRef.current = truncated.length - 1;
-      stackRef.current = truncated;
-      bump();
+      if (applyingRef.current || pausedRef?.current) return;
+      pushSnapshot(nodes, edges);
     }, DEBOUNCE_MS);
 
     return () => window.clearTimeout(debounceRef.current);
-  }, [nodes, edges, bump]);
+  }, [nodes, edges, pausedRef, pushSnapshot]);
 
   const undo = useCallback(() => {
     if (pointerRef.current <= 0) return;
@@ -101,7 +113,7 @@ export function useCanvasHistory(
     bump();
   }, [applySnapshot, bump]);
 
-  return { canUndo, canRedo, undo, redo, resetHistory };
+  return { canUndo, canRedo, undo, redo, resetHistory, commitNow };
 }
 
 export function isTypingTarget(target: EventTarget | null): boolean {

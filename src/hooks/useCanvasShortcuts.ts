@@ -19,6 +19,7 @@ export function useCanvasShortcuts({
       if (event.key !== 'Delete' && event.key !== 'Backspace') return;
       if (isTypingTarget(event.target)) return;
 
+      event.preventDefault();
       onDeleteSelection();
     };
 

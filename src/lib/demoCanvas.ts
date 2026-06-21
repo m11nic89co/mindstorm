@@ -35,6 +35,7 @@ export const DEMO_CANVAS: JsonCanvas = {
       width: 340,
       height: 190,
       color: '5',
+      label: 'Центр',
       text: '# MindStorm\n\nИнтерактивная доска для брейншторма.\nСвязи, группы, локальные файлы — как в Obsidian Canvas.',
     },
     {
@@ -44,7 +45,7 @@ export const DEMO_CANVAS: JsonCanvas = {
       y: 160,
       width: 320,
       height: 440,
-      color: '5',
+      color: '11',
       label: 'Продукт',
     },
     {
@@ -53,9 +54,10 @@ export const DEMO_CANVAS: JsonCanvas = {
       x: 78,
       y: 220,
       width: 260,
-      height: 160,
-      color: '5',
-      text: '## Возможности\n• Карточки с Markdown\n• Группы и связи\n• Pan / zoom холста',
+      height: 180,
+      color: '11',
+      label: 'Возможности',
+      text: '## Возможности\n• 12 цветов карточек и групп\n• 8 точек связи (по 2 на сторону)\n• Подписи на связях · Undo/Redo',
     },
     {
       id: 'product_files',
@@ -64,7 +66,8 @@ export const DEMO_CANVAS: JsonCanvas = {
       y: 420,
       width: 260,
       height: 130,
-      color: '5',
+      color: '11',
+      label: 'Файлы',
       text: '## Файлы\n`.mindstorm` · `.canvas`\nАвтосохранение черновика в браузере',
     },
     {
@@ -95,7 +98,7 @@ export const DEMO_CANVAS: JsonCanvas = {
       width: 280,
       height: 110,
       color: '4',
-      text: '## Каналы\nGitHub Pages · PWA\nДемо — одной кнопкой ↺',
+      text: '## Каналы\nGitHub Pages · PWA\nДемо — кнопка ↺ · Сначала — пустая доска',
     },
     {
       id: 'g_tech',
@@ -104,7 +107,7 @@ export const DEMO_CANVAS: JsonCanvas = {
       y: 420,
       width: 340,
       height: 320,
-      color: '6',
+      color: '8',
       label: 'Технологии',
     },
     {
@@ -114,7 +117,7 @@ export const DEMO_CANVAS: JsonCanvas = {
       y: 480,
       width: 280,
       height: 110,
-      color: '6',
+      color: '8',
       text: '## Стек\nReact 19 · React Flow\nVite · Tailwind CSS v4',
     },
     {
@@ -124,7 +127,7 @@ export const DEMO_CANVAS: JsonCanvas = {
       y: 620,
       width: 280,
       height: 100,
-      color: '6',
+      color: '8',
       text: '## Хранение\nЛокальные файлы на диск\nБез облака и OAuth',
     },
     {
@@ -153,9 +156,9 @@ export const DEMO_CANVAS: JsonCanvas = {
       x: 630,
       y: 580,
       width: 170,
-      height: 150,
+      height: 170,
       color: '3',
-      text: '## Управление\nДвойной клик — карточка\nОт точки — связь\nDelete — удалить',
+      text: '## Управление\nДвойной клик — карточка\nТочка на карточке — связь\nКлик — цвет и название\nПКМ+рамка — выделение',
     },
   ],
   edges: [
@@ -183,7 +186,7 @@ export const DEMO_CANVAS: JsonCanvas = {
       fromSide: 'right',
       toNode: 'tech_stack',
       toSide: 'left',
-      color: '6',
+      color: '8',
       label: 'как',
     },
     {
@@ -192,7 +195,7 @@ export const DEMO_CANVAS: JsonCanvas = {
       fromSide: 'bottom',
       toNode: 'product_files',
       toSide: 'top',
-      color: '5',
+      color: '11',
     },
     {
       id: 'e_mkt_chain',
@@ -208,7 +211,7 @@ export const DEMO_CANVAS: JsonCanvas = {
       fromSide: 'bottom',
       toNode: 'tech_local',
       toSide: 'top',
-      color: '6',
+      color: '8',
     },
     {
       id: 'e_hub_roadmap',

@@ -33,20 +33,48 @@ body {
   stroke-linecap: round;
 }
 
+/* Прерывистая «бегущая» линия — как раньше (7+5), поток source→target. */
 .mind-canvas .react-flow__edge.animated .react-flow__edge-path {
   stroke-dasharray: 7 5;
-  animation: mind-edge-flow 0.5s linear infinite;
+  animation: mind-edge-flow 0.65s linear infinite;
+}
+
+.mind-canvas.mind-canvas--dragging .react-flow__edge.animated .react-flow__edge-path,
+.mind-canvas.mind-canvas--dragging .react-flow__connection-path {
+  animation: none;
 }
 
 .mind-canvas .react-flow__connection-path {
   stroke-dasharray: 7 5;
-  animation: mind-edge-flow 0.5s linear infinite;
+  animation: mind-edge-flow 0.65s linear infinite;
 }
 
+.mind-canvas .react-flow__edge.selected .react-flow__edge-path {
+  stroke-width: 3;
+  filter: drop-shadow(0 0 4px rgba(165, 180, 252, 0.55));
+}
+
+.mind-canvas .react-flow__edge .react-flow__edge-interaction {
+  stroke-width: 24;
+}
+
+/* dasharray 7+5=12: offset 12→0 — штрихи текут вдоль пути к markerEnd (стрелке). */
 @keyframes mind-edge-flow {
-  to {
-    stroke-dashoffset: -12;
+  from {
+    stroke-dashoffset: 12;
   }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.mind-canvas .react-flow__edge-text {
+  font-size: 9px;
+}
+
+.mind-canvas .react-flow__edge-textbg {
+  rx: 6;
+  ry: 6;
 }
 
 /*

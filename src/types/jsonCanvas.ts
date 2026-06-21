@@ -14,6 +14,8 @@ export interface JsonCanvasNodeBase {
 export interface JsonCanvasTextNode extends JsonCanvasNodeBase {
   type: 'text';
   text: string;
+  /** Расширение MindStorm — название карточки в UI */
+  label?: string;
 }
 
 export interface JsonCanvasLinkNode extends JsonCanvasNodeBase {

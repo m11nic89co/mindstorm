@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { LogoMark, boardStats } from './LogoMark';
 import { AUTHOR_NAME, REPO_URL } from '../lib/siteMeta';
-import { COLOR_IDS, swatchFill } from '../lib/colors';
+import { COLOR_IDS, swatchFill, swatchTitle } from '../lib/colors';
 
 type ToolbarProps = {
   onAddText: () => void;
@@ -9,6 +9,7 @@ type ToolbarProps = {
   onSave: () => void;
   onLoad: () => void;
   onReset: () => void;
+  onNewBoard: () => void;
   onUndo: () => void;
   onRedo: () => void;
   canUndo: boolean;
@@ -24,6 +25,7 @@ export function Toolbar({
   onSave,
   onLoad,
   onReset,
+  onNewBoard,
   onUndo,
   onRedo,
   canUndo,
@@ -40,23 +42,23 @@ export function Toolbar({
           <div className="text-sm font-semibold tracking-tight text-white">MindStorm</div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-0.5 border-r border-white/10 pr-1 sm:gap-1 sm:pr-2">
-          <ToolbarButton
+        <div className="flex shrink-0 items-center gap-1 border-r border-white/10 pr-1.5 sm:pr-2">
+          <HistoryButton
             onClick={onUndo}
             disabled={!canUndo}
             title="Отменить (Ctrl+Z)"
             ariaLabel="Отменить"
           >
-            ←
-          </ToolbarButton>
-          <ToolbarButton
+            <UndoIcon />
+          </HistoryButton>
+          <HistoryButton
             onClick={onRedo}
             disabled={!canRedo}
             title="Вернуть (Ctrl+Shift+Z)"
             ariaLabel="Вернуть"
           >
-            →
-          </ToolbarButton>
+            <RedoIcon />
+          </HistoryButton>
         </div>
 
         <div className="flex max-w-[calc(100vw-6rem)] items-center gap-1 overflow-x-auto sm:gap-2">
@@ -76,7 +78,11 @@ export function Toolbar({
             <span className="sm:hidden">📂</span>
             <span className="hidden sm:inline">Загрузить</span>
           </ToolbarButton>
-          <ToolbarButton onClick={onReset} title="Загрузить демо-схему запуска MindStorm" accent>
+          <ToolbarButton onClick={onNewBoard} title="Новая пустая схема">
+            <span className="sm:hidden">○</span>
+            <span className="hidden sm:inline">Сначала</span>
+          </ToolbarButton>
+          <ToolbarButton onClick={onReset} title="Загрузить демо-схему MindStorm" accent>
             <span className="sm:hidden">↺</span>
             <span className="hidden sm:inline">↺ Демо</span>
           </ToolbarButton>
@@ -93,6 +99,79 @@ export function Toolbar({
         </div>
       </div>
     </header>
+  );
+}
+
+function HistoryButton({
+  children,
+  onClick,
+  title,
+  disabled = false,
+  ariaLabel,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+  title: string;
+  disabled?: boolean;
+  ariaLabel?: string;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={ariaLabel ?? title}
+      disabled={disabled}
+      onClick={onClick}
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition active:scale-95 sm:h-10 sm:w-10 ${
+        disabled
+          ? 'cursor-not-allowed border-white/5 bg-white/[0.02] text-white/20'
+          : 'border-white/12 bg-white/[0.06] text-white/85 hover:border-indigo-400/35 hover:bg-indigo-500/15 hover:text-white'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function UndoIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M9 14 4 9l5-5"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function RedoIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="m15 14 5-5-5-5"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
@@ -133,34 +212,77 @@ function ToolbarButton({
 
 export function HintBar() {
   return (
-    <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-1.5 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:gap-2 sm:p-4">
-      <div className="rounded-full border border-white/8 bg-black/25 px-3 py-1.5 text-[10px] text-white/45 backdrop-blur-xl sm:px-4 sm:py-2 sm:text-[11px]">
+    <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-1 p-1.5 pb-[max(0.35rem,env(safe-area-inset-bottom))] sm:gap-1 sm:p-2">
+      <div className="rounded-full border border-white/5 bg-black/15 px-2.5 py-0.5 text-[8px] text-white/28 backdrop-blur-md sm:px-3 sm:text-[9px]">
         <span className="hidden sm:inline">
-          Двойной клик — карточка · Ctrl+Z / Ctrl+Shift+Z — отмена / вернуть · Delete — удалить · Колёсико — масштаб
+          Двойной клик — карточка · Клик по узлу — цвет и название · Линия — подпись · Delete
         </span>
-        <span className="sm:hidden">Тап×2 — карточка · ⌘Z — отмена · Щипок — масштаб</span>
+        <span className="sm:hidden">Тап×2 — карточка · Узел — цвет · Линия — подпись</span>
       </div>
-      <div className="pointer-events-auto rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] text-white/40 backdrop-blur-xl sm:px-4 sm:text-[11px]">
-        <span className="text-white/30">by </span>
+      <div className="pointer-events-auto rounded-full border border-white/6 bg-white/[0.02] px-2 py-0.5 text-[8px] text-white/25 backdrop-blur-md sm:text-[9px]">
+        <span className="text-white/20">by </span>
         <a
           href={REPO_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-cyan-300/80 transition hover:text-cyan-200"
+          className="text-cyan-300/45 transition hover:text-cyan-200/70"
         >
           {AUTHOR_NAME}
         </a>
-        <span className="mx-1.5 text-white/15">·</span>
+        <span className="mx-1 text-white/10">·</span>
         <a
           href={REPO_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-white/45 transition hover:text-white/70"
+          className="text-white/30 transition hover:text-white/50"
         >
           github.com/{AUTHOR_NAME}/mindstorm
         </a>
       </div>
     </footer>
+  );
+}
+
+export function EdgeSelectionPanel({
+  label,
+  onLabelChange,
+  onClear,
+  onDelete,
+}: {
+  label: string;
+  onLabelChange: (label: string) => void;
+  onClear: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <div className="pointer-events-auto absolute right-2 top-20 z-20 flex w-44 flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-2xl sm:right-4 sm:top-24 sm:w-48">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">Связь</span>
+      <input
+        value={label}
+        onChange={(e) => onLabelChange(e.target.value)}
+        placeholder="Подпись..."
+        className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white outline-none ring-indigo-400/40 focus:ring-2"
+      />
+      <p className="text-[9px] leading-snug text-white/30">
+        Потяните кружок на конце — перенаправить. Delete — удалить.
+      </p>
+      {label.trim() ? (
+        <button
+          type="button"
+          onClick={onClear}
+          className="rounded-lg px-2 py-1.5 text-[10px] text-white/45 transition hover:bg-white/10 hover:text-white/70"
+        >
+          Убрать подпись
+        </button>
+      ) : null}
+      <button
+        type="button"
+        onClick={onDelete}
+        className="rounded-lg border border-red-400/20 bg-red-400/10 px-2 py-1.5 text-[10px] font-medium text-red-200/90 transition hover:bg-red-400/20"
+      >
+        Удалить связь
+      </button>
+    </div>
   );
 }
 
@@ -177,22 +299,24 @@ export function SelectionPanel({
   onColorChange: (color: string) => void;
   onLabelChange: (label: string) => void;
 }) {
+  const isGroup = nodeType === 'group';
+
   return (
-    <div className="pointer-events-auto absolute right-2 top-20 z-20 flex w-44 flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-2xl sm:right-4 sm:top-24 sm:w-48">
-      {nodeType === 'group' && (
-        <div className="flex flex-col gap-1.5">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">Группа</span>
-          <input
-            value={label ?? ''}
-            onChange={(e) => onLabelChange(e.target.value)}
-            placeholder="Название..."
-            className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white outline-none ring-indigo-400/40 focus:ring-2"
-          />
-        </div>
-      )}
+    <div className="pointer-events-auto absolute right-2 top-20 z-20 flex w-52 flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-2xl sm:right-4 sm:top-24 sm:w-56">
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">
+          {isGroup ? 'Группа' : 'Карточка'}
+        </span>
+        <input
+          value={label ?? ''}
+          onChange={(e) => onLabelChange(e.target.value)}
+          placeholder={isGroup ? 'Название группы...' : 'Название карточки...'}
+          className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white outline-none ring-indigo-400/40 focus:ring-2"
+        />
+      </div>
       <div className="flex flex-col gap-1.5">
         <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">Цвет</span>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="grid grid-cols-6 gap-1.5">
           {COLOR_IDS.map((c) => (
             <button
               key={c}
@@ -202,7 +326,7 @@ export function SelectionPanel({
                 color === c ? 'border-white scale-110' : 'border-transparent'
               }`}
               style={{ background: swatchFill(c) }}
-              title={`Цвет ${c}`}
+              title={swatchTitle(c)}
             />
           ))}
         </div>

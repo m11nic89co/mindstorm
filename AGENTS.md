@@ -14,10 +14,15 @@
 | Задача | Файл |
 |--------|------|
 | Холст, UX | `src/components/MindCanvas.tsx` |
+| Toolbar, панели | `src/components/Toolbar.tsx` |
+| Точки связи | `src/components/nodes/edgeHandles.tsx` |
 | Слои групп/рёбер | `src/index.css` |
 | Save/load / storage | `src/lib/localBoardFile.ts`, `src/lib/boardStorage.ts` |
 | Формат JSON Canvas | `src/lib/jsonCanvas.ts`, `src/lib/flowEdges.ts` |
+| Демо-схема | `src/lib/demoCanvas.ts` |
+| Цвета (12) | `src/lib/colors.ts` |
 | Undo/redo | `src/hooks/useCanvasHistory.ts` |
+| ПКМ-рамка | `src/hooks/useRightClickMarquee.ts` |
 | Деплoy | `scripts/deploy-pages.ps1` |
 
 ## Не ломать

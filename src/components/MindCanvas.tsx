@@ -1,10 +1,12 @@
 import {
   Background,
   BackgroundVariant,
+  ConnectionMode,
   Controls,
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
+  reconnectEdge,
   useEdgesState,
   useNodesState,
   useReactFlow,
@@ -19,14 +21,15 @@ import { CanvasActionsContext } from '../context/canvasActions';
 import { SaveBoardModal } from './FileModals';
 import { DemoSplash, DEMO_WELCOME_SEEN_KEY } from './DemoSplash';
 import { Toast } from './Toast';
-import { canvasToFlow, flowToCanvas } from '../lib/jsonCanvas';
-import { applyConnection, FLOW_EDGE_STYLE } from '../lib/flowEdges';
+import { canvasToFlow, flowToCanvas, EMPTY_CANVAS } from '../lib/jsonCanvas';
+import { applyConnection, connectionFromDragStart, FLOW_EDGE_STYLE, setEdgeLabel, strokeForNodeColor, syncEdgesWithSourceColors } from '../lib/flowEdges';
 import { DEMO_BOARD_NAME, demoFlowPresentation, demoStats } from '../lib/demoCanvas';
 import { createId } from '../lib/id';
 import {
   CANVAS_STORAGE_KEY,
   LEGACY_CANVAS_STORAGE_KEY,
   loadStoredCanvas,
+  persistCanvas,
   readBoardName,
   writeBoardName,
 } from '../lib/boardStorage';
@@ -40,11 +43,12 @@ import {
   titleFromFilename,
 } from '../lib/localBoardFile';
 import type { CardNodeData, JsonCanvas } from '../types/jsonCanvas';
-import { HintBar, SelectionPanel, Toolbar } from './Toolbar';
+import { HintBar, EdgeSelectionPanel, SelectionPanel, Toolbar } from './Toolbar';
 import { GroupCardNode, TextCardNode } from './nodes/CardNodes';
 import { useCanvasHistory } from '../hooks/useCanvasHistory';
 import { useCanvasShortcuts } from '../hooks/useCanvasShortcuts';
 import { useDebouncedPersist } from '../hooks/useDebouncedPersist';
+import { useRightClickMarquee } from '../hooks/useRightClickMarquee';
 
 const nodeTypes: NodeTypes = {
   textCard: TextCardNode,
@@ -55,22 +59,51 @@ function MindCanvasInner() {
   const initialFlow = useMemo(() => canvasToFlow(loadStoredCanvas()), []);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<CardNodeData>>(initialFlow.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialFlow.edges);
-  const { canUndo, canRedo, undo, redo, resetHistory } = useCanvasHistory(nodes, edges, setNodes, setEdges);
+  const dragPausedRef = useRef(false);
+  const { canUndo, canRedo, undo, redo, resetHistory, commitNow } = useCanvasHistory(
+    nodes,
+    edges,
+    setNodes,
+    setEdges,
+    dragPausedRef,
+  );
   const { screenToFlowPosition, fitView } = useReactFlow();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const nodesRef = useRef(nodes);
+  const edgesRef = useRef(edges);
+  const connectStartNodeRef = useRef<string | null>(null);
+  nodesRef.current = nodes;
+  edgesRef.current = edges;
   const toastTimer = useRef<number | undefined>(undefined);
 
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [connectLineStyle, setConnectLineStyle] = useState(FLOW_EDGE_STYLE);
+  const [canvasDragging, setCanvasDragging] = useState(false);
   const [demoRevealing, setDemoRevealing] = useState(false);
   const [demoSplash, setDemoSplash] = useState(false);
   const demoStatsMemo = useMemo(() => demoStats(), []);
   const [activeBoardName, setActiveBoardName] = useState<string | null>(() => readBoardName());
 
-  useDebouncedPersist(nodes, edges);
+  useDebouncedPersist(nodes, edges, dragPausedRef);
+
+  useRightClickMarquee({ setNodes, setEdges, screenToFlowPosition });
 
   const selectedNode = nodes.find((n) => n.selected);
+  const selectedEdge = edges.find((e) => e.selected);
+
+  const onNodeDragStart = useCallback(() => {
+    dragPausedRef.current = true;
+    setCanvasDragging(true);
+  }, []);
+
+  const onNodeDragStop = useCallback(() => {
+    dragPausedRef.current = false;
+    setCanvasDragging(false);
+    commitNow();
+    persistCanvas(nodesRef.current, edgesRef.current);
+  }, [commitNow]);
 
   const showToast = useCallback((message: string) => {
     window.clearTimeout(toastTimer.current);
@@ -107,18 +140,74 @@ function MindCanvasInner() {
 
   const updateNode = useCallback(
     (id: string, patch: Partial<CardNodeData>) => {
-      setNodes((nds) =>
-        nds.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...patch } } : n)),
-      );
+      setNodes((nds) => {
+        const nextNodes = nds.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...patch } } : n));
+        if ('color' in patch) {
+          setEdges((eds) => syncEdgesWithSourceColors(nextNodes, eds));
+        }
+        return nextNodes;
+      });
     },
-    [setNodes],
+    [setNodes, setEdges],
   );
 
   const onConnect = useCallback(
     (connection: Connection) => {
-      setEdges((eds) => applyConnection(eds, connection));
+      const oriented = connectionFromDragStart(connection, connectStartNodeRef.current);
+      connectStartNodeRef.current = null;
+      setEdges((eds) => applyConnection(eds, oriented, nodesRef.current));
     },
     [setEdges],
+  );
+
+  const onConnectStart = useCallback(
+    (_: MouseEvent | TouchEvent, { nodeId }: { nodeId: string | null }) => {
+      connectStartNodeRef.current = nodeId;
+      if (!nodeId) {
+        setConnectLineStyle(FLOW_EDGE_STYLE);
+        return;
+      }
+      const source = nodesRef.current.find((node) => node.id === nodeId);
+      setConnectLineStyle(strokeForNodeColor(source?.data.color));
+    },
+    [],
+  );
+
+  const onConnectEnd = useCallback(() => {
+    connectStartNodeRef.current = null;
+    setConnectLineStyle(FLOW_EDGE_STYLE);
+  }, []);
+
+  const onReconnect = useCallback(
+    (oldEdge: Edge, newConnection: Connection) => {
+      setEdges((eds) => {
+        const next = reconnectEdge(oldEdge, newConnection, eds);
+        return syncEdgesWithSourceColors(nodesRef.current, next);
+      });
+    },
+    [setEdges],
+  );
+
+  const updateEdgeLabel = useCallback(
+    (edgeId: string, label: string) => {
+      setEdges((eds) => eds.map((edge) => (edge.id === edgeId ? setEdgeLabel(edge, label) : edge)));
+    },
+    [setEdges],
+  );
+
+  const deleteEdge = useCallback(
+    (edgeId: string) => {
+      setEdges((eds) => eds.filter((edge) => edge.id !== edgeId));
+    },
+    [setEdges],
+  );
+
+  const onEdgeClick = useCallback(
+    (_: React.MouseEvent, edge: Edge) => {
+      setNodes((nds) => nds.map((node) => ({ ...node, selected: false })));
+      setEdges((eds) => eds.map((e) => ({ ...e, selected: e.id === edge.id })));
+    },
+    [setEdges, setNodes],
   );
 
   const addTextCard = useCallback(
@@ -166,6 +255,8 @@ function MindCanvasInner() {
   const paneClickRef = useRef<{ time: number; x: number; y: number } | null>(null);
   const onPaneClick = useCallback(
     (event: React.MouseEvent) => {
+      setEdges((eds) => eds.map((edge) => ({ ...edge, selected: false })));
+
       const now = Date.now();
       const prev = paneClickRef.current;
 
@@ -187,9 +278,10 @@ function MindCanvasInner() {
 
   const applyFlow = useCallback(
     (flow: { nodes: Node<CardNodeData>[]; edges: Edge[] }) => {
+      const syncedEdges = syncEdgesWithSourceColors(flow.nodes, flow.edges);
       setNodes(flow.nodes);
-      setEdges(flow.edges);
-      resetHistory(flow.nodes, flow.edges);
+      setEdges(syncedEdges);
+      resetHistory(flow.nodes, syncedEdges);
     },
     [resetHistory, setEdges, setNodes],
   );
@@ -202,6 +294,25 @@ function MindCanvasInner() {
     },
     [applyFlow],
   );
+
+  const onNewBoard = useCallback(() => {
+    const ok = window.confirm(
+      'Создать пустую схему?\n\nТекущую доску можно вернуть кнопкой «Отменить» (Ctrl+Z).',
+    );
+    if (!ok) return;
+
+    commitNow();
+
+    const empty = canvasToFlow(EMPTY_CANVAS);
+    const syncedEdges = syncEdgesWithSourceColors(empty.nodes, empty.edges);
+    setNodes(empty.nodes);
+    setEdges(syncedEdges);
+
+    setActiveBoardName(null);
+    setLoadError(null);
+    setDemoRevealing(false);
+    setDemoSplash(false);
+  }, [commitNow, setEdges, setNodes]);
 
   const onReset = useCallback(() => {
     const flow = demoFlowPresentation();
@@ -259,6 +370,10 @@ function MindCanvasInner() {
   );
 
   const deleteSelection = useCallback(() => {
+    const hasNode = nodesRef.current.some((node) => node.selected);
+    const hasEdge = edgesRef.current.some((edge) => edge.selected);
+    if (!hasNode && !hasEdge) return;
+
     setNodes((nds) => nds.filter((n) => !n.selected));
     setEdges((eds) => eds.filter((e) => !e.selected));
   }, [setEdges, setNodes]);
@@ -266,7 +381,6 @@ function MindCanvasInner() {
   useCanvasShortcuts({ undo, redo, onDeleteSelection: deleteSelection });
 
   const actions = useMemo(() => ({ updateNode }), [updateNode]);
-  const currentCanvas = useMemo(() => flowToCanvas(nodes, edges), [nodes, edges]);
 
   return (
     <CanvasActionsContext.Provider value={actions}>
@@ -282,6 +396,7 @@ function MindCanvasInner() {
           onSave={() => void onSave()}
           onLoad={onPickFile}
           onReset={onReset}
+          onNewBoard={onNewBoard}
           onUndo={undo}
           onRedo={redo}
           canUndo={canUndo}
@@ -305,7 +420,16 @@ function MindCanvasInner() {
           <Toast message={loadError} variant="error" onClose={() => setLoadError(null)} />
         )}
 
-        {selectedNode && (
+        {selectedEdge && (
+          <EdgeSelectionPanel
+            label={typeof selectedEdge.label === 'string' ? selectedEdge.label : ''}
+            onLabelChange={(label) => updateEdgeLabel(selectedEdge.id, label)}
+            onClear={() => updateEdgeLabel(selectedEdge.id, '')}
+            onDelete={() => deleteEdge(selectedEdge.id)}
+          />
+        )}
+
+        {selectedNode && !selectedEdge && (
           <SelectionPanel
             nodeType={selectedNode.data.canvasType}
             color={selectedNode.data.color}
@@ -329,8 +453,15 @@ function MindCanvasInner() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onConnectStart={onConnectStart}
+          onConnectEnd={onConnectEnd}
+          onReconnect={onReconnect}
+          onNodeDragStart={onNodeDragStart}
+          onNodeDragStop={onNodeDragStop}
+          onEdgeClick={onEdgeClick}
           onPaneClick={onPaneClick}
           nodeTypes={nodeTypes}
+          connectionMode={ConnectionMode.Loose}
           fitView
           fitViewOptions={{ padding: 0.2 }}
           minZoom={0.15}
@@ -340,17 +471,30 @@ function MindCanvasInner() {
           zoomActivationKeyCode={null}
           zoomOnPinch
           zoomOnDoubleClick={false}
+          panOnDrag={[0, 1]}
           selectionOnDrag={false}
+          multiSelectionKeyCode="Shift"
+          elementsSelectable
+          edgesFocusable
+          edgesReconnectable
+          reconnectRadius={16}
+          onlyRenderVisibleElements
+          deleteKeyCode={['Backspace', 'Delete']}
           zIndexMode="manual"
           elevateNodesOnSelect={false}
           defaultEdgeOptions={{
             type: 'smoothstep',
             animated: true,
+            selectable: true,
+            focusable: true,
+            deletable: true,
+            reconnectable: true,
+            interactionWidth: 24,
             style: FLOW_EDGE_STYLE,
           }}
-          connectionLineStyle={FLOW_EDGE_STYLE}
+          connectionLineStyle={connectLineStyle}
           proOptions={{ hideAttribution: true }}
-          className={`mind-canvas${demoRevealing ? ' mind-canvas--demo-reveal' : ''}`}
+          className={`mind-canvas${demoRevealing ? ' mind-canvas--demo-reveal' : ''}${canvasDragging ? ' mind-canvas--dragging' : ''}`}
         >
           <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="rgba(255,255,255,0.06)" />
           <Controls
@@ -369,7 +513,7 @@ function MindCanvasInner() {
 
         {saveModalOpen && (
           <SaveBoardModal
-            canvas={currentCanvas}
+            canvas={flowToCanvas(nodes, edges)}
             defaultName={activeBoardName ?? undefined}
             onClose={() => setSaveModalOpen(false)}
             onSaved={(name, message) => {

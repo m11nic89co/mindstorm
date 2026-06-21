@@ -6,19 +6,17 @@ import type {
   JsonCanvasEdge,
   JsonCanvasNode,
 } from '../types/jsonCanvas';
-import { FLOW_EDGE_LABELS, normalizeFlowEdge, strokeForEdge } from './flowEdges';
+import { edgeLabelProps, normalizeFlowEdge, syncEdgesWithSourceColors } from './flowEdges';
 
 function sideToHandle(side: CanvasSide | undefined, role: 'source' | 'target'): string {
   const resolved = side ?? (role === 'source' ? 'right' : 'left');
-  return `${role}-${resolved}`;
+  return `source-${resolved}-a`;
 }
 
 function handleToSide(handleId: string | null | undefined, fallback: CanvasSide): CanvasSide {
   if (!handleId) return fallback;
-  const side = handleId.split('-').pop();
-  if (side === 'top' || side === 'right' || side === 'bottom' || side === 'left') {
-    return side;
-  }
+  const match = handleId.match(/(?:^source-|^target-)(top|right|bottom|left)/);
+  if (match) return match[1] as CanvasSide;
   return fallback;
 }
 
@@ -29,7 +27,10 @@ export function canvasToFlow(canvas: JsonCanvas): { nodes: Node<CardNodeData>[];
       color: node.color,
     };
 
-    if (node.type === 'text') data.text = node.text;
+    if (node.type === 'text') {
+      data.text = node.text;
+      if (node.label) data.label = node.label;
+    }
     if (node.type === 'link') data.url = node.url;
     if (node.type === 'group') data.label = node.label;
     if (node.type === 'file') data.file = node.file;
@@ -44,18 +45,18 @@ export function canvasToFlow(canvas: JsonCanvas): { nodes: Node<CardNodeData>[];
     };
   });
 
-  const edges: Edge[] = (canvas.edges ?? []).map((edge) =>
-    normalizeFlowEdge({
-      id: edge.id,
-      source: edge.fromNode,
-      target: edge.toNode,
-      sourceHandle: sideToHandle(edge.fromSide, 'source'),
-      targetHandle: sideToHandle(edge.toSide, 'target'),
-      label: edge.label,
-      style: strokeForEdge(edge.color),
-      ...FLOW_EDGE_LABELS,
-      data: { color: edge.color },
-    }),
+  const edges: Edge[] = syncEdgesWithSourceColors(
+    nodes,
+    (canvas.edges ?? []).map((edge) =>
+      normalizeFlowEdge({
+        id: edge.id,
+        source: edge.fromNode,
+        target: edge.toNode,
+        sourceHandle: sideToHandle(edge.fromSide, 'source'),
+        targetHandle: sideToHandle(edge.toSide, 'target'),
+        ...edgeLabelProps(edge.label),
+      }),
+    ),
   );
 
   return { nodes, edges };
@@ -89,7 +90,7 @@ function flowNodeToCanvas(node: Node<CardNodeData>): JsonCanvasNode {
     return { ...base, type: 'file', file: node.data.file ?? 'attachment.png' };
   }
 
-  return { ...base, type: 'text', text: node.data.text ?? '' };
+  return { ...base, type: 'text', text: node.data.text ?? '', label: node.data.label };
 }
 
 export function flowToCanvas(nodes: Node<CardNodeData>[], edges: Edge[]): JsonCanvas {
@@ -107,7 +108,7 @@ export function flowToCanvas(nodes: Node<CardNodeData>[], edges: Edge[]): JsonCa
     fromEnd: 'none',
     toEnd: 'arrow',
     label: typeof edge.label === 'string' ? edge.label : undefined,
-    color: edge.data?.color as JsonCanvasEdge['color'],
+    color: nodes.find((node) => node.id === edge.source)?.data.color,
   }));
 
   return { nodes: canvasNodes, edges: canvasEdges };

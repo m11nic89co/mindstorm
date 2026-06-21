@@ -72,17 +72,23 @@ MindStorm/
 │   ├── App.tsx
 │   ├── components/
 │   │   ├── MindCanvas.tsx  ← главный экран
-│   │   ├── Toolbar.tsx
+│   │   ├── Toolbar.tsx     ← toolbar, панели выделения
 │   │   ├── FileModals.tsx  ← сохранение (модалка fallback)
 │   │   ├── LogoMark.tsx
 │   │   └── nodes/
-│   │       └── CardNodes.tsx
+│   │       ├── CardNodes.tsx
+│   │       └── edgeHandles.tsx  ← 8 точек связи (2 на сторону)
 │   ├── context/
 │   │   └── canvasActions.ts
+│   ├── hooks/
+│   │   ├── useCanvasHistory.ts
+│   │   └── useRightClickMarquee.ts
 │   ├── lib/
 │   │   ├── jsonCanvas.ts   ← JSON Canvas ↔ React Flow
-│   │   ├── localBoardFile.ts ← .mindstorm save/load
-│   │   └── colors.ts
+│   │   ├── demoCanvas.ts   ← DEMO_CANVAS
+│   │   ├── flowEdges.ts    ← связи, цвет от source, подписи
+│   │   ├── localBoardFile.ts
+│   │   └── colors.ts       ← 12 пресетных цветов
 │   └── types/
 │       └── jsonCanvas.ts
 ├── index.html
@@ -97,16 +103,29 @@ MindStorm/
 ### `MindCanvas.tsx`
 
 - Точка входа UI: React Flow, toolbar, localStorage, save/load.
-- **Двойной клик по пустому холсту** — новая карточка (`onPaneClick` + debounce, не `onDoubleClick` на ReactFlow — иначе карточки создаются поверх узлов).
+- **Двойной клик по пустому холсту** — новая карточка (`onPaneClick` + debounce).
 - **Delete / Backspace** — удалить выделенное (не в input/textarea).
 - **Колёсико** — только zoom (`panOnScroll={false}`, `zoomOnScroll`).
+- **Undo/Redo** — `useCanvasHistory` (Ctrl+Z / Ctrl+Shift+Z).
+- **ПКМ + рамка** — выделение нескольких узлов (`useRightClickMarquee`); группа выбирается только при касании **границы**.
+- **Сначала** — пустая схема (`EMPTY_CANVAS`); **↺ Демо** — `DEMO_CANVAS`.
+
+### `Toolbar.tsx`
+
+- Крупные кнопки **Undo/Redo** (SVG-иконки).
+- **SelectionPanel** (справа сверху): при выборе карточки или группы — **название** и **12 цветов** (сетка 6×2).
+- **EdgeSelectionPanel** — подпись связи, удаление, перенаправление с концов.
 
 ### `jsonCanvas.ts`
 
 - `canvasToFlow` / `flowToCanvas` — конвертация JSON Canvas ↔ React Flow.
+- Handles: `source-{side}-a|b` (2 точки на каждую сторону); в файле сохраняется `fromSide`/`toSide`.
 - Группы: `type: 'group'` → node `groupCard`, `zIndex: -1`.
-- Карточки: `zIndex: 1`.
-- `DEMO_CANVAS` — начальная демо-схема.
+- Карточки: `zIndex: 1`; опциональное поле `label` у text-узлов (расширение MindStorm).
+
+### `demoCanvas.ts`
+
+- `DEMO_CANVAS` — демо-схема «запуск продукта»; тексты отражают актуальные возможности UI.
 
 ### `localBoardFile.ts`
 
@@ -114,10 +133,21 @@ MindStorm/
 - Загрузка: `readBoardFromFile()` — `.mindstorm`, legacy `.mindshtorm`, `.canvas`.
 - Legacy format id: `mindshtorm-board` — только при чтении.
 
-### `CardNodes.tsx`
+### `CardNodes.tsx` + `edgeHandles.tsx`
 
-- `TextCardNode` — текст, handles, NodeResizer.
-- `GroupCardNode` — фон группы; метка и рамка выделения через **ViewportPortal** (группа всегда `z-index: -1`).
+- `TextCardNode` — текст, badge с `label`, NodeResizer, 8 handles.
+- `GroupCardNode` — сплошная рамка (`border-2`), метка на верхней кромке, handles на группах.
+- `EdgeHandles` — по **2 точки связи** на каждой стороне (25% и 75%), все тип `source`, `ConnectionMode.Loose`.
+
+### `flowEdges.ts`
+
+- Цвет ребра = цвет **исходной** карточки.
+- Стрелка на **target**; анимация dash к стрелке.
+- `connectionFromDragStart()` — начало связи = узел, откуда потянули.
+
+### `colors.ts`
+
+- **12 пресетов** (`1`–`12`): красный … серый; `COLOR_IDS`, `swatchFill`, `swatchTitle`.
 
 ### `index.css` — порядок слоёв (критично!)
 
@@ -140,13 +170,16 @@ Legacy (миграция при чтении): `mindshtorm.canvas.v1`, `mindshto
 
 ---
 
-## UX: сохранение и загрузка
+## UX: toolbar и файлы
 
 | Действие | Поведение |
 |----------|-----------|
-| **Сохранить** | Chrome/Edge: системный «Сохранить как»; иначе модалка с именем → файл в «Загрузки». Toast об успехе. |
+| **Сохранить** | Chrome/Edge: системный «Сохранить как»; иначе модалка → «Загрузки». Toast об успехе. |
 | **Загрузить** | Системный выбор файла. Toast «Открыто: …». |
-| **↺ Демо** | Сброс к `DEMO_CANVAS`. |
+| **Сначала** | Пустая доска, сброс имени. |
+| **↺ Демо** | Загрузка `DEMO_CANVAS` с анимацией появления. |
+| **Клик по карточке/группе** | Панель: название + палитра цветов. |
+| **Клик по связи** | Панель: подпись, удаление. |
 
 ---
 
@@ -157,7 +190,7 @@ Legacy (миграция при чтении): `mindshtorm.canvas.v1`, `mindshto
 $env:Path = "C:\Program Files\nodejs;" + $env:Path
 
 npm install
-npm run dev          # http://localhost:5173
+npm run dev          # http://localhost:5173 (или 5174)
 npm run build
 npm run deploy:pages # push в gh-pages
 ```
@@ -190,8 +223,9 @@ CI: `.github/workflows/deploy.yml` — build + GitHub Pages при push в `main
 |------|---------|
 | 2026-06 | JSON Canvas, React Flow, localStorage |
 | 2026-06 | GitHub save/load → **отменено**, только локальные файлы |
-| 2026-06 | z-index: группы под рёбрами, labels групп в ViewportPortal |
+| 2026-06 | z-index: группы под рёбрами |
 | 2026-06 | Переименование MindShtorm → **MindStorm**, `.mindstorm` |
+| 2026-06 | 12 цветов, 8 handles, панель выделения, Undo/Redo, «Сначала», обновлённое демо |
 
 ---
 
