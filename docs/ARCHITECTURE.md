@@ -25,7 +25,7 @@
 ## Поток данных
 
 1. **Старт:** `mindstorm.canvas.v1` → `canvasToFlow` → state; если пусто — `getDemoCanvas(readLocale())`.
-2. **Редактирование:** debounce 400 ms → localStorage; history commit на drag stop.
+2. **Редактирование:** debounce 400 ms → localStorage; history commit на drag stop и на **конец resize группы**.
 3. **Сохранить:** `flowToCanvas` → `MindStormBoardFile` → диск.
 4. **Загрузить:** File → `parseBoardFile` → state.
 5. **Сначала:** confirm → `commitNow()` → пустые nodes/edges **без** `resetHistory` → Undo.
@@ -43,11 +43,25 @@
 
 Демо-контент на доске — `getDemoCanvas(locale)` с полем `i18n`; при смене RU/EN тексты карточек и групп обновляются через `nodeLocale.ts`.
 
-## Группировка содержимого (запланировано)
+## Группы на холсте
+
+Группа — визуальная рамка (без `parentId` в React Flow). «Внутри группы» = карточка **геометрически** в bbox группы.
+
+### Пропорциональный resize (реализовано)
+
+```
+onResizeStart → createGroupResizeSnapshot (центр карточки внутри bbox)
+onResize      → applyGroupResizeToNodes (position + width/height ∝ группе)
+onResizeEnd   → commitNow + persistCanvas
+```
+
+Модуль: `src/lib/groupResize.ts`. Callbacks пробрасываются через `CanvasActionsContext` из `MindCanvas.tsx` в `GroupCardNode`.
+
+### Группировка содержимого (запланировано)
 
 > Спецификация: [GROUPING.md](./GROUPING.md)
 
-Сейчас группа — только визуальная рамка (без `parentId`). Планируется:
+Планируется отдельно от resize:
 
 - Кнопки **Группировать** / **Разгруппировать** в панели выделения группы.
 - Runtime: React Flow `parentId` + относительные координаты.
@@ -77,7 +91,7 @@
 
 ## Контекст React
 
-- `CanvasActionsContext` — `updateNode(id, patch)`.
+- `CanvasActionsContext` — `updateNode`, `onGroupResizeStart/Resize/End`.
 - `useCanvasHistory` — undo/redo; пауза при drag.
 - `useRightClickMarquee` — ПКМ-рамка; группы по границе.
 - `boardStorage.ts` — черновик и имя доски.

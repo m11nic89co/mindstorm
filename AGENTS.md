@@ -22,6 +22,7 @@
 | Save/load / storage | `src/lib/localBoardFile.ts`, `src/lib/boardStorage.ts` |
 | JSON Canvas | `src/lib/jsonCanvas.ts`, `src/lib/flowEdges.ts` |
 | i18n доски | `src/lib/nodeLocale.ts` |
+| Resize группы | `src/lib/groupResize.ts` |
 | Демо-схема (RU/EN) | `src/lib/demoCanvas.ts` |
 | Цвета (12) | `src/lib/colors.ts` |
 | Undo/redo | `src/hooks/useCanvasHistory.ts` |

@@ -99,6 +99,7 @@ MindStorm/
 │   │   ├── demoCanvas.ts   ← двуязычная демо-схема (i18n)
 │   │   ├── nodeLocale.ts   ← i18n содержимого карточек/групп/рёбер
 │   │   ├── flowEdges.ts
+│   │   ├── groupResize.ts  ← пропорциональный resize карточек внутри группы
 │   │   ├── localBoardFile.ts
 │   │   ├── boardStorage.ts
 │   │   └── colors.ts
@@ -121,6 +122,7 @@ MindStorm/
 - **Колёсико** — только zoom (`panOnScroll={false}`, `zoomOnScroll`).
 - **Undo/Redo** — `useCanvasHistory` (Ctrl+Z / Ctrl+Shift+Z).
 - **ПКМ + рамка** — выделение (`useRightClickMarquee`); группа — только при касании **границы**.
+- **Resize группы** — текстовые карточки с центром внутри рамки масштабируются пропорционально (`groupResize.ts`, `NodeResizer` в `GroupCardNode`).
 - **Сначала** — подтверждение → пустая схема; **история не сбрасывается** → можно **Undo**.
 - **↺ Демо** — `getDemoCanvas(locale)` с анимацией появления.
 
@@ -164,7 +166,13 @@ MindStorm/
 ### `CardNodes.tsx` + `edgeHandles.tsx`
 
 - **8 точек связи** (2 на сторону, 25% и 75%), `ConnectionMode.Loose`.
-- Группы: сплошная рамка, метка на верхней кромке.
+- Группы: сплошная рамка, метка на верхней кромке; `NodeResizer` вызывает `onGroupResizeStart/Resize/End` из контекста.
+
+### `groupResize.ts`
+
+- На старте resize группы — снимок карточек, чей **центр** внутри bbox группы.
+- Во время resize — пропорциональное изменение `position`, `width`, `height` (мин. 160×72).
+- На `onResizeEnd` — `commitNow()` + `persistCanvas` (история и черновик).
 
 ### `flowEdges.ts`
 
@@ -259,6 +267,7 @@ CI: `.github/workflows/deploy.yml` — build + GitHub Pages при push в `main
 | 2026-06 | 12 цветов, 8 handles, панель выделения, Undo/Redo, «Сначала» + confirm |
 | 2026-06 | Локализация **RU/EN**, две демо-схемы; «Сначала» — accent-кнопка |
 | 2026-06 | i18n **содержимого доски** (`nodeLocale.ts`, `i18n` в JSON); разведение параллельных связей |
+| 2026-06 | **Resize группы** — пропорциональное масштабирование карточек внутри (`groupResize.ts`) |
 | 2026-06 | **План:** кнопки «Группировать» / «Разгруппировать» для содержимого группы → [docs/GROUPING.md](./docs/GROUPING.md) |
 
 ---
