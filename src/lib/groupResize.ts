@@ -22,6 +22,8 @@ export type GroupResizeSnapshot = {
 
 const MIN_TEXT_WIDTH = 160;
 const MIN_TEXT_HEIGHT = 72;
+const MIN_GROUP_WIDTH = 220;
+const MIN_GROUP_HEIGHT = 120;
 
 export function nodeSize(node: Node<CardNodeData>): { w: number; h: number } {
   return {
@@ -38,12 +40,16 @@ export function isTextCardNode(node: Node<CardNodeData>): boolean {
   return node.data.canvasType === 'text' || node.type === 'textCard';
 }
 
+export function isResizableGroupContent(node: Node<CardNodeData>): boolean {
+  return isTextCardNode(node) || isGroupNode(node);
+}
+
 export function nodeCenter(node: Node<CardNodeData>): { x: number; y: number } {
   const { w, h } = nodeSize(node);
   return { x: node.position.x + w / 2, y: node.position.y + h / 2 };
 }
 
-/** Центр карточки внутри прямоугольника группы. */
+/** Центр узла внутри прямоугольника группы. */
 export function centerInsideGroup(card: Node<CardNodeData>, group: FlowRect): boolean {
   const { x: cx, y: cy } = nodeCenter(card);
   return cx >= group.x && cx <= group.x + group.w && cy >= group.y && cy <= group.y + group.h;
@@ -54,14 +60,41 @@ export function groupFlowRect(group: Node<CardNodeData>): FlowRect {
   return { x: group.position.x, y: group.position.y, w, h };
 }
 
-export function textCardsInsideGroup(
-  group: Node<CardNodeData>,
+/**
+ * Все карточки и вложенные группы внутри контейнера (рекурсивно).
+ * Координаты снимка всегда относительно rootGroup — единое масштабирование при её resize.
+ */
+export function nodesInsideGroupTree(
+  rootGroup: Node<CardNodeData>,
   nodes: Node<CardNodeData>[],
 ): Node<CardNodeData>[] {
-  const rect = groupFlowRect(group);
-  return nodes.filter(
-    (node) => node.id !== group.id && isTextCardNode(node) && centerInsideGroup(node, rect),
-  );
+  const result = new Map<string, Node<CardNodeData>>();
+  const containers: Node<CardNodeData>[] = [rootGroup];
+
+  for (const container of containers) {
+    const rect = groupFlowRect(container);
+
+    for (const node of nodes) {
+      if (node.id === rootGroup.id) continue;
+      if (result.has(node.id)) continue;
+      if (!isResizableGroupContent(node)) continue;
+      if (!centerInsideGroup(node, rect)) continue;
+
+      result.set(node.id, node);
+      if (isGroupNode(node)) {
+        containers.push(node);
+      }
+    }
+  }
+
+  return Array.from(result.values());
+}
+
+export function minSizeForNode(node: Node<CardNodeData>): { w: number; h: number } {
+  if (isGroupNode(node)) {
+    return { w: MIN_GROUP_WIDTH, h: MIN_GROUP_HEIGHT };
+  }
+  return { w: MIN_TEXT_WIDTH, h: MIN_TEXT_HEIGHT };
 }
 
 export function createGroupResizeSnapshot(
@@ -74,7 +107,7 @@ export function createGroupResizeSnapshot(
   const safeW = groupW > 0 ? groupW : 1;
   const safeH = groupH > 0 ? groupH : 1;
 
-  const children = textCardsInsideGroup(group, nodes).map((child) => {
+  const children = nodesInsideGroupTree(group, nodes).map((child) => {
     const { w, h } = nodeSize(child);
     return {
       id: child.id,
@@ -108,8 +141,9 @@ export function applyGroupResizeToNodes(
     const child = childById.get(node.id);
     if (!child) return node;
 
-    const newW = Math.max(MIN_TEXT_WIDTH, child.relW * gw2);
-    const newH = Math.max(MIN_TEXT_HEIGHT, child.relH * gh2);
+    const { w: minW, h: minH } = minSizeForNode(node);
+    const newW = Math.max(minW, child.relW * gw2);
+    const newH = Math.max(minH, child.relH * gh2);
     const newX = next.x + child.relX * gw2;
     const newY = next.y + child.relY * gh2;
 
