@@ -97,7 +97,7 @@ const DEMO_CANVAS_RU: JsonCanvas = {
       width: 280,
       height: 110,
       color: '4',
-      text: '## Каналы\nGitHub Pages · PWA\nДемо — ↺ · Сначала — пустая доска',
+      text: '## Каналы\nGitHub Pages · PWA\n↺ Сначала — пустая доска · Демо — пример',
     },
     {
       id: 'g_tech',
@@ -334,7 +334,7 @@ const DEMO_CANVAS_EN: JsonCanvas = {
       width: 280,
       height: 110,
       color: '4',
-      text: '## Channels\nGitHub Pages · PWA\nDemo — ↺ · New — blank board',
+      text: '## Channels\nGitHub Pages · PWA\n↺ New — blank board · Demo — sample',
     },
     {
       id: 'g_tech',
