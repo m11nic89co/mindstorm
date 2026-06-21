@@ -63,7 +63,7 @@ export function canvasToFlow(canvas: JsonCanvas): { nodes: Node<CardNodeData>[];
     targetHandle: sideToHandle(edge.toSide, 'target'),
     label: edge.label,
     type: 'smoothstep',
-    animated: false,
+    animated: true,
     style: edgeStyle(edge.color),
     labelStyle: { fill: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: 500 },
     labelBgStyle: { fill: 'rgba(11, 13, 20, 0.88)', fillOpacity: 1 },

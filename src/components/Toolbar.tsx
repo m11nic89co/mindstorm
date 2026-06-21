@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { LogoMark, boardStats } from './LogoMark';
+import { AUTHOR_NAME, REPO_URL } from '../lib/siteMeta';
 
 type ToolbarProps = {
   onAddText: () => void;
@@ -7,6 +8,10 @@ type ToolbarProps = {
   onSave: () => void;
   onLoad: () => void;
   onReset: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
   nodeCount: number;
   edgeCount: number;
   activeBoardName?: string | null;
@@ -18,6 +23,10 @@ export function Toolbar({
   onSave,
   onLoad,
   onReset,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
   nodeCount,
   edgeCount,
   activeBoardName,
@@ -28,6 +37,25 @@ export function Toolbar({
         <div className="mr-1 flex shrink-0 items-center gap-2 border-r border-white/10 pr-2 sm:mr-2 sm:pr-3">
           <LogoMark />
           <div className="text-sm font-semibold tracking-tight text-white">MindStorm</div>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-0.5 border-r border-white/10 pr-1 sm:gap-1 sm:pr-2">
+          <ToolbarButton
+            onClick={onUndo}
+            disabled={!canUndo}
+            title="Отменить (Ctrl+Z)"
+            ariaLabel="Отменить"
+          >
+            ←
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={onRedo}
+            disabled={!canRedo}
+            title="Вернуть (Ctrl+Shift+Z)"
+            ariaLabel="Вернуть"
+          >
+            →
+          </ToolbarButton>
         </div>
 
         <div className="flex max-w-[calc(100vw-6rem)] items-center gap-1 overflow-x-auto sm:gap-2">
@@ -72,21 +100,29 @@ function ToolbarButton({
   onClick,
   title,
   accent = false,
+  disabled = false,
+  ariaLabel,
 }: {
   children: ReactNode;
   onClick: () => void;
   title: string;
   accent?: boolean;
+  disabled?: boolean;
+  ariaLabel?: string;
 }) {
   return (
     <button
       type="button"
       title={title}
+      aria-label={ariaLabel ?? title}
+      disabled={disabled}
       onClick={onClick}
       className={`shrink-0 rounded-xl px-2.5 py-1.5 text-xs font-medium transition active:scale-95 sm:px-3 ${
-        accent
-          ? 'border border-cyan-400/25 bg-cyan-400/10 text-cyan-100 hover:border-cyan-400/40 hover:bg-cyan-400/20 hover:text-white'
-          : 'text-white/80 hover:bg-white/10 hover:text-white'
+        disabled
+          ? 'cursor-not-allowed text-white/25'
+          : accent
+            ? 'border border-cyan-400/25 bg-cyan-400/10 text-cyan-100 hover:border-cyan-400/40 hover:bg-cyan-400/20 hover:text-white'
+            : 'text-white/80 hover:bg-white/10 hover:text-white'
       }`}
     >
       {children}
@@ -96,12 +132,32 @@ function ToolbarButton({
 
 export function HintBar() {
   return (
-    <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:p-4">
+    <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-1.5 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:gap-2 sm:p-4">
       <div className="rounded-full border border-white/8 bg-black/25 px-3 py-1.5 text-[10px] text-white/45 backdrop-blur-xl sm:px-4 sm:py-2 sm:text-[11px]">
         <span className="hidden sm:inline">
-          Двойной клик — карточка · Сохранить / Загрузить — файл .mindstorm · Delete — удалить · Колёсико — масштаб
+          Двойной клик — карточка · Ctrl+Z / Ctrl+Shift+Z — отмена / вернуть · Delete — удалить · Колёсико — масштаб
         </span>
-        <span className="sm:hidden">Тап×2 — карточка · 💾/📂 — файл · Щипок — масштаб</span>
+        <span className="sm:hidden">Тап×2 — карточка · ⌘Z — отмена · Щипок — масштаб</span>
+      </div>
+      <div className="pointer-events-auto rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] text-white/40 backdrop-blur-xl sm:px-4 sm:text-[11px]">
+        <span className="text-white/30">by </span>
+        <a
+          href={REPO_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-cyan-300/80 transition hover:text-cyan-200"
+        >
+          {AUTHOR_NAME}
+        </a>
+        <span className="mx-1.5 text-white/15">·</span>
+        <a
+          href={REPO_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-white/45 transition hover:text-white/70"
+        >
+          github.com/{AUTHOR_NAME}/mindstorm
+        </a>
       </div>
     </footer>
   );

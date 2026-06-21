@@ -33,6 +33,22 @@ body {
   stroke-linecap: round;
 }
 
+.mind-canvas .react-flow__edge.animated .react-flow__edge-path {
+  stroke-dasharray: 7 5;
+  animation: mind-edge-flow 0.5s linear infinite;
+}
+
+.mind-canvas .react-flow__connection-path {
+  stroke-dasharray: 7 5;
+  animation: mind-edge-flow 0.5s linear infinite;
+}
+
+@keyframes mind-edge-flow {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+
 /*
  * Слои внутри viewport: группы (-1) → рёбра (0) → карточки (1+).
  * React Flow рисует все узлы поверх рёбер; отрицательный z-index у групп

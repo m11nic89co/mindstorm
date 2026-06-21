@@ -5,7 +5,6 @@ import {
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
-  addEdge,
   useEdgesState,
   useNodesState,
   useReactFlow,
@@ -20,6 +19,7 @@ import { CanvasActionsContext } from '../context/canvasActions';
 import { BoardToast, SaveBoardModal } from './FileModals';
 import { DemoSplash, DEMO_WELCOME_SEEN_KEY } from './DemoSplash';
 import { canvasToFlow, createId, DEMO_CANVAS, flowToCanvas } from '../lib/jsonCanvas';
+import { applyConnection, FLOW_EDGE_STYLE, withAnimatedEdges } from '../lib/flowEdges';
 import { DEMO_BOARD_NAME, demoFlowPresentation, demoStats } from '../lib/demoCanvas';
 import {
   BOARD_FILE_ACCEPT,
@@ -33,6 +33,7 @@ import {
 import type { CardNodeData, JsonCanvas } from '../types/jsonCanvas';
 import { HintBar, SelectionPanel, Toolbar } from './Toolbar';
 import { GroupCardNode, TextCardNode } from './nodes/CardNodes';
+import { runHistoryShortcut, useCanvasHistory } from '../hooks/useCanvasHistory';
 
 const STORAGE_KEY = 'mindstorm.canvas.v1';
 const LEGACY_STORAGE_KEY = 'mindshtorm.canvas.v1';
@@ -51,17 +52,23 @@ function loadInitialState(): { nodes: Node<CardNodeData>[]; edges: Edge[] } {
       raw = localStorage.getItem(LEGACY_STORAGE_KEY);
       if (raw) localStorage.setItem(STORAGE_KEY, raw);
     }
-    if (raw) return canvasToFlow(JSON.parse(raw));
+    if (raw) return toAnimatedFlow(JSON.parse(raw));
   } catch {
     /* use demo */
   }
-  return canvasToFlow(DEMO_CANVAS);
+  return toAnimatedFlow(DEMO_CANVAS);
+}
+
+function toAnimatedFlow(canvas: Parameters<typeof canvasToFlow>[0]) {
+  const flow = canvasToFlow(canvas);
+  return { nodes: flow.nodes, edges: withAnimatedEdges(flow.edges) };
 }
 
 function MindCanvasInner() {
   const initial = useMemo(() => loadInitialState(), []);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<CardNodeData>>(initial.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initial.edges);
+  const { canUndo, canRedo, undo, redo, resetHistory } = useCanvasHistory(nodes, edges, setNodes, setEdges);
   const { screenToFlowPosition, fitView } = useReactFlow();
   const saveTimer = useRef<number | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -144,17 +151,7 @@ function MindCanvasInner() {
 
   const onConnect = useCallback(
     (connection: Connection) => {
-      setEdges((eds) =>
-        addEdge(
-          {
-            ...connection,
-            id: createId('edge'),
-            type: 'smoothstep',
-            style: { stroke: 'rgba(165, 180, 252, 0.65)', strokeWidth: 2 },
-          },
-          eds,
-        ),
-      );
+      setEdges((eds) => applyConnection(eds, connection));
     },
     [setEdges],
   );
@@ -225,19 +222,21 @@ function MindCanvasInner() {
 
   const loadCanvas = useCallback(
     (canvas: JsonCanvas, name?: string) => {
-      const flow = canvasToFlow(canvas);
+      const flow = toAnimatedFlow(canvas);
       setNodes(flow.nodes);
       setEdges(flow.edges);
+      resetHistory(flow.nodes, flow.edges);
       setActiveBoardName(name ?? null);
       setLoadError(null);
     },
-    [setEdges, setNodes],
+    [resetHistory, setEdges, setNodes],
   );
 
   const onReset = useCallback(() => {
     const flow = demoFlowPresentation();
     setNodes(flow.nodes);
     setEdges(flow.edges);
+    resetHistory(flow.nodes, flow.edges);
     setActiveBoardName(DEMO_BOARD_NAME);
     setLoadError(null);
     setDemoRevealing(true);
@@ -250,7 +249,7 @@ function MindCanvasInner() {
     window.setTimeout(() => {
       setDemoRevealing(false);
     }, 2800);
-  }, [fitView, setEdges, setNodes]);
+  }, [fitView, resetHistory, setEdges, setNodes]);
 
   const onSave = useCallback(async () => {
     const title = activeBoardName?.trim() || 'моя-схема';
@@ -294,6 +293,8 @@ function MindCanvasInner() {
 
   const onKeyDown = useCallback(
     (event: KeyboardEvent) => {
+      if (runHistoryShortcut(event, undo, redo)) return;
+
       if (event.key === 'Delete' || event.key === 'Backspace') {
         const active = document.activeElement?.tagName;
         if (active === 'TEXTAREA' || active === 'INPUT') return;
@@ -301,7 +302,7 @@ function MindCanvasInner() {
         setEdges((eds) => eds.filter((e) => !e.selected));
       }
     },
-    [setEdges, setNodes],
+    [redo, setEdges, setNodes, undo],
   );
 
   useEffect(() => {
@@ -326,6 +327,10 @@ function MindCanvasInner() {
           onSave={() => void onSave()}
           onLoad={onPickFile}
           onReset={onReset}
+          onUndo={undo}
+          onRedo={redo}
+          canUndo={canUndo}
+          canRedo={canRedo}
           nodeCount={nodes.length}
           edgeCount={edges.length}
           activeBoardName={activeBoardName}
@@ -396,8 +401,10 @@ function MindCanvasInner() {
           elevateNodesOnSelect={false}
           defaultEdgeOptions={{
             type: 'smoothstep',
-            style: { stroke: 'rgba(165, 180, 252, 0.55)', strokeWidth: 2 },
+            animated: true,
+            style: FLOW_EDGE_STYLE,
           }}
+          connectionLineStyle={FLOW_EDGE_STYLE}
           proOptions={{ hideAttribution: true }}
           className={`mind-canvas${demoRevealing ? ' mind-canvas--demo-reveal' : ''}`}
         >
