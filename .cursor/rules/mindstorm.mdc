@@ -1,0 +1,16 @@
+---
+description: Контекст проекта MindStorm — имя, архитектура, критичные правила
+alwaysApply: true
+---
+
+# MindStorm
+
+Прочитай **CONTEXT.md** в корне при первом обращении к проекту.
+
+- Название: **MindStorm** (большая S). Не MindShtorm.
+- UI на русском. Коммиты только по запросу пользователя.
+- Группы всегда под линиями связей (`src/index.css`, z-index -1).
+- Сохранение локальное (`.mindstorm`), GitHub auth удалён.
+- Live: https://m11nic89co.github.io/mindstorm/
+
+Ключевые файлы: `MindCanvas.tsx`, `localBoardFile.ts`, `jsonCanvas.ts`, `CardNodes.tsx`.

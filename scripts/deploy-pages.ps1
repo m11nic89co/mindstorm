@@ -19,7 +19,7 @@ Copy-Item -Path (Join-Path $Root "dist\*") -Destination $PagesDir -Recurse -Forc
 Set-Location $PagesDir
 if (-not (Test-Path .git)) {
   git init -b gh-pages
-  git remote add origin https://github.com/m11nic89co/mindshtorm.git
+  git remote add origin https://github.com/m11nic89co/mindstorm.git
 }
 
 git add -A
@@ -29,4 +29,4 @@ if ($LASTEXITCODE -ne 0) {
 }
 git push -f origin gh-pages
 
-Write-Host "Deployed MindStorm: https://m11nic89co.github.io/mindshtorm/"
+Write-Host "Deployed MindStorm: https://m11nic89co.github.io/mindstorm/"
