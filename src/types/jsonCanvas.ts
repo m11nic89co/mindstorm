@@ -2,6 +2,21 @@ export type CanvasSide = 'top' | 'right' | 'bottom' | 'left';
 export type HandleSlot = 'a' | 'b';
 export type CanvasColor = '1' | '2' | '3' | '4' | '5' | '6' | string;
 
+export type LocaleCopy = {
+  text?: string;
+  label?: string;
+};
+
+export type NodeI18n = {
+  ru?: LocaleCopy;
+  en?: LocaleCopy;
+};
+
+export type EdgeI18n = {
+  ru?: { label?: string };
+  en?: { label?: string };
+};
+
 export interface JsonCanvasNodeBase {
   id: string;
   type: 'text' | 'file' | 'link' | 'group';
@@ -10,6 +25,8 @@ export interface JsonCanvasNodeBase {
   width: number;
   height: number;
   color?: CanvasColor;
+  /** MindStorm: переводы текста/названия для RU/EN */
+  i18n?: NodeI18n;
 }
 
 export interface JsonCanvasTextNode extends JsonCanvasNodeBase {
@@ -56,6 +73,8 @@ export interface JsonCanvasEdge {
   toEnd?: 'none' | 'arrow';
   color?: CanvasColor;
   label?: string;
+  /** MindStorm: переводы подписи для RU/EN */
+  i18n?: EdgeI18n;
 }
 
 export interface JsonCanvas {
@@ -70,4 +89,5 @@ export type CardNodeData = {
   label?: string;
   file?: string;
   color?: CanvasColor;
+  i18n?: NodeI18n;
 };

@@ -22,9 +22,17 @@ import { SaveBoardModal } from './FileModals';
 import { DemoSplash, DEMO_WELCOME_SEEN_KEY } from './DemoSplash';
 import { Toast } from './Toast';
 import { canvasToFlow, flowToCanvas, EMPTY_CANVAS } from '../lib/jsonCanvas';
-import { applyConnection, connectionFromDragStart, FLOW_EDGE_STYLE, setEdgeLabel, strokeForNodeColor, syncEdgesWithSourceColors } from '../lib/flowEdges';
+import { applyConnection, connectionFromDragStart, FLOW_EDGE_STYLE, strokeForNodeColor, syncEdgesWithSourceColors } from '../lib/flowEdges';
 import { useLocale } from '../i18n/LocaleProvider';
-import { getDemoBoardName, demoFlowPresentation, demoStats } from '../lib/demoCanvas';
+import { readLocale } from '../i18n/localeStorage';
+import { messagesFor } from '../i18n/messages';
+import { getDemoBoardName, demoFlowPresentation, demoStats, isDemoBoardName } from '../lib/demoCanvas';
+import {
+  materializeEdgeLocale,
+  materializeNodeLocale,
+  syncEdgeI18nOnEdit,
+  syncNodeI18nOnEdit,
+} from '../lib/nodeLocale';
 import { createId } from '../lib/id';
 import {
   CANVAS_STORAGE_KEY,
@@ -58,7 +66,19 @@ const nodeTypes: NodeTypes = {
 
 function MindCanvasInner() {
   const { locale, m } = useLocale();
-  const initialFlow = useMemo(() => canvasToFlow(loadStoredCanvas()), []);
+  const initialFlow = useMemo(() => {
+    const loc = readLocale();
+    const flow = canvasToFlow(loadStoredCanvas());
+    const nodes = flow.nodes.map((node) => ({
+      ...node,
+      data: materializeNodeLocale(node.data, loc),
+    }));
+    const edges = syncEdgesWithSourceColors(
+      nodes,
+      flow.edges.map((edge) => materializeEdgeLocale(edge, loc)),
+    );
+    return { nodes, edges };
+  }, []);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<CardNodeData>>(initialFlow.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialFlow.edges);
   const dragPausedRef = useRef(false);
@@ -115,6 +135,19 @@ function MindCanvasInner() {
 
   useEffect(() => writeBoardName(activeBoardName), [activeBoardName]);
 
+  const localeRef = useRef(locale);
+  useEffect(() => {
+    if (localeRef.current === locale) return;
+    localeRef.current = locale;
+
+    setNodes((nds) => nds.map((node) => ({ ...node, data: materializeNodeLocale(node.data, locale) })));
+    setEdges((eds) => {
+      const materialized = eds.map((edge) => materializeEdgeLocale(edge, locale));
+      return syncEdgesWithSourceColors(nodesRef.current, materialized);
+    });
+    setActiveBoardName((name) => (name && isDemoBoardName(name) ? getDemoBoardName(locale) : name));
+  }, [locale, setEdges, setNodes]);
+
   useEffect(() => {
     return () => window.clearTimeout(toastTimer.current);
   }, []);
@@ -143,14 +176,16 @@ function MindCanvasInner() {
   const updateNode = useCallback(
     (id: string, patch: Partial<CardNodeData>) => {
       setNodes((nds) => {
-        const nextNodes = nds.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...patch } } : n));
+        const nextNodes = nds.map((n) =>
+          n.id === id ? { ...n, data: syncNodeI18nOnEdit(n.data, locale, patch) } : n,
+        );
         if ('color' in patch) {
           setEdges((eds) => syncEdgesWithSourceColors(nextNodes, eds));
         }
         return nextNodes;
       });
     },
-    [setNodes, setEdges],
+    [locale, setNodes, setEdges],
   );
 
   const onConnect = useCallback(
@@ -192,9 +227,11 @@ function MindCanvasInner() {
 
   const updateEdgeLabel = useCallback(
     (edgeId: string, label: string) => {
-      setEdges((eds) => eds.map((edge) => (edge.id === edgeId ? setEdgeLabel(edge, label) : edge)));
+      setEdges((eds) =>
+        eds.map((edge) => (edge.id === edgeId ? syncEdgeI18nOnEdit(edge, locale, label) : edge)),
+      );
     },
-    [setEdges],
+    [locale, setEdges],
   );
 
   const deleteEdge = useCallback(
@@ -219,6 +256,9 @@ function MindCanvasInner() {
         y: window.innerHeight / 2,
       });
 
+      const ru = messagesFor('ru');
+      const en = messagesFor('en');
+
       const node: Node<CardNodeData> = {
         id: createId('text'),
         type: 'textCard',
@@ -227,6 +267,10 @@ function MindCanvasInner() {
         data: {
           canvasType: 'text',
           text: m.card.defaultText,
+          i18n: {
+            ru: { text: ru.card.defaultText },
+            en: { text: en.card.defaultText },
+          },
           color: '5',
         },
         zIndex: 1,
@@ -241,12 +285,22 @@ function MindCanvasInner() {
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     });
+    const ru = messagesFor('ru');
+    const en = messagesFor('en');
     const node: Node<CardNodeData> = {
       id: createId('group'),
       type: 'groupCard',
       position: { x: center.x - 200, y: center.y - 120 },
       style: { width: 420, height: 260 },
-      data: { canvasType: 'group', label: m.group.defaultLabel, color: '5' },
+      data: {
+        canvasType: 'group',
+        label: m.group.defaultLabel,
+        i18n: {
+          ru: { label: ru.group.defaultLabel },
+          en: { label: en.group.defaultLabel },
+        },
+        color: '5',
+      },
       zIndex: -1,
       selectable: true,
       draggable: true,
@@ -280,12 +334,19 @@ function MindCanvasInner() {
 
   const applyFlow = useCallback(
     (flow: { nodes: Node<CardNodeData>[]; edges: Edge[] }) => {
-      const syncedEdges = syncEdgesWithSourceColors(flow.nodes, flow.edges);
-      setNodes(flow.nodes);
-      setEdges(syncedEdges);
-      resetHistory(flow.nodes, syncedEdges);
+      const nodes = flow.nodes.map((node) => ({
+        ...node,
+        data: materializeNodeLocale(node.data, locale),
+      }));
+      const edges = syncEdgesWithSourceColors(
+        nodes,
+        flow.edges.map((edge) => materializeEdgeLocale(edge, locale)),
+      );
+      setNodes(nodes);
+      setEdges(edges);
+      resetHistory(nodes, edges);
     },
-    [resetHistory, setEdges, setNodes],
+    [locale, resetHistory, setEdges, setNodes],
   );
 
   const loadCanvas = useCallback(

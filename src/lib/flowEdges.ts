@@ -61,6 +61,72 @@ const FLOW_EDGE_BASE = {
   animated: true,
 };
 
+const BASE_PATH_OFFSET = 20;
+const LANE_OFFSET_STEP = 11;
+const LANE_STEP_SHIFT = 0.09;
+
+function undirectedPairKey(source: string, target: string): string {
+  return source < target ? `${source}|${target}` : `${target}|${source}`;
+}
+
+function laneForIndex(index: number, total: number): number {
+  if (total <= 1) return 0;
+  return index - (total - 1) / 2;
+}
+
+/** Разводит параллельные связи между одной парой карточек — offset и stepPosition по «полосам». */
+export function assignEdgeLaneOffsets(edges: Edge[]): Edge[] {
+  const groups = new Map<string, Edge[]>();
+
+  for (const edge of edges) {
+    const key = undirectedPairKey(edge.source, edge.target);
+    const list = groups.get(key) ?? [];
+    list.push(edge);
+    groups.set(key, list);
+  }
+
+  const laneById = new Map<string, number>();
+
+  for (const group of groups.values()) {
+    if (group.length <= 1) continue;
+
+    const sorted = [...group].sort((a, b) => {
+      const sigA = `${a.source}:${a.sourceHandle ?? ''}:${a.target}:${a.targetHandle ?? ''}`;
+      const sigB = `${b.source}:${b.sourceHandle ?? ''}:${b.target}:${b.targetHandle ?? ''}`;
+      return sigA.localeCompare(sigB) || a.id.localeCompare(b.id);
+    });
+
+    sorted.forEach((edge, index) => {
+      laneById.set(edge.id, laneForIndex(index, sorted.length));
+    });
+  }
+
+  return edges.map((edge) => {
+    const lane = laneById.get(edge.id);
+    if (lane === undefined) return edge;
+
+    if (lane === 0) {
+      return {
+        ...edge,
+        pathOptions: {
+          borderRadius: 8,
+          offset: BASE_PATH_OFFSET,
+          stepPosition: 0.5,
+        },
+      };
+    }
+
+    return {
+      ...edge,
+      pathOptions: {
+        borderRadius: 8,
+        offset: Math.max(10, BASE_PATH_OFFSET + lane * LANE_OFFSET_STEP),
+        stepPosition: Math.min(0.82, Math.max(0.18, 0.5 + lane * LANE_STEP_SHIFT)),
+      },
+    };
+  });
+}
+
 export function normalizeFlowEdge(edge: Edge, sourceColor?: CanvasColor): Edge {
   const color = sourceColor ?? (edge.data?.sourceColor as CanvasColor | undefined);
   const style = strokeForNodeColor(color);
@@ -83,7 +149,8 @@ export function normalizeFlowEdge(edge: Edge, sourceColor?: CanvasColor): Edge {
 
 export function syncEdgesWithSourceColors(nodes: Node<CardNodeData>[], edges: Edge[]): Edge[] {
   const byId = new Map(nodes.map((node) => [node.id, node]));
-  return edges.map((edge) => normalizeFlowEdge(edge, byId.get(edge.source)?.data.color));
+  const normalized = edges.map((edge) => normalizeFlowEdge(edge, byId.get(edge.source)?.data.color));
+  return assignEdgeLaneOffsets(normalized);
 }
 
 /** Точка, откуда потянули, всегда source — стрелка (markerEnd) на target. */
@@ -146,9 +213,8 @@ export function applyConnection(
     sourceColor,
   );
 
-  if (idx >= 0) {
-    return edges.map((edge, i) => (i === idx ? { ...edges[idx], ...nextEdge } : edge));
-  }
+  const nextEdges =
+    idx >= 0 ? edges.map((edge, i) => (i === idx ? { ...edges[idx], ...nextEdge } : edge)) : [...edges, nextEdge];
 
-  return [...edges, nextEdge];
+  return syncEdgesWithSourceColors(nodes, nextEdges);
 }

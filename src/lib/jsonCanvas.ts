@@ -2,6 +2,7 @@ import type { Edge, Node } from '@xyflow/react';
 import type {
   CanvasSide,
   CardNodeData,
+  EdgeI18n,
   HandleSlot,
   JsonCanvas,
   JsonCanvasEdge,
@@ -44,6 +45,7 @@ export function canvasToFlow(canvas: JsonCanvas): { nodes: Node<CardNodeData>[];
     if (node.type === 'link') data.url = node.url;
     if (node.type === 'group') data.label = node.label;
     if (node.type === 'file') data.file = node.file;
+    if (node.i18n) data.i18n = node.i18n;
 
     return {
       id: node.id,
@@ -65,6 +67,7 @@ export function canvasToFlow(canvas: JsonCanvas): { nodes: Node<CardNodeData>[];
         sourceHandle: sideToHandle(edge.fromSide, edge.fromSlot, 'source'),
         targetHandle: sideToHandle(edge.toSide, edge.toSlot, 'target'),
         ...edgeLabelProps(edge.label),
+        data: edge.i18n ? { i18n: edge.i18n } : undefined,
       }),
     ),
   );
@@ -93,14 +96,25 @@ function flowNodeToCanvas(node: Node<CardNodeData>): JsonCanvasNode {
   }
 
   if (node.data.canvasType === 'group') {
-    return { ...base, type: 'group', label: node.data.label ?? 'Группа' };
+    return {
+      ...base,
+      type: 'group',
+      label: node.data.label ?? 'Группа',
+      i18n: node.data.i18n,
+    };
   }
 
   if (node.data.canvasType === 'file') {
     return { ...base, type: 'file', file: node.data.file ?? 'attachment.png' };
   }
 
-  return { ...base, type: 'text', text: node.data.text ?? '', label: node.data.label };
+  return {
+    ...base,
+    type: 'text',
+    text: node.data.text ?? '',
+    label: node.data.label,
+    i18n: node.data.i18n,
+  };
 }
 
 export function flowToCanvas(nodes: Node<CardNodeData>[], edges: Edge[]): JsonCanvas {
@@ -112,6 +126,7 @@ export function flowToCanvas(nodes: Node<CardNodeData>[], edges: Edge[]): JsonCa
   const canvasEdges: JsonCanvasEdge[] = edges.map((edge) => {
     const from = handleToSideAndSlot(edge.sourceHandle, 'right');
     const to = handleToSideAndSlot(edge.targetHandle, 'left');
+    const i18n = edge.data?.i18n as EdgeI18n | undefined;
     return {
       id: edge.id,
       fromNode: edge.source,
@@ -124,6 +139,7 @@ export function flowToCanvas(nodes: Node<CardNodeData>[], edges: Edge[]): JsonCa
       toEnd: 'arrow',
       label: typeof edge.label === 'string' ? edge.label : undefined,
       color: nodes.find((node) => node.id === edge.source)?.data.color,
+      ...(i18n ? { i18n } : {}),
     };
   });
 

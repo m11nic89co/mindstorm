@@ -1,8 +1,9 @@
 import type { Edge, Node } from '@xyflow/react';
 import type { Locale } from '../i18n/messages';
 import { messagesFor } from '../i18n/messages';
+import { applyJsonEdgeLocale, applyJsonNodeLocale } from './nodeLocale';
 import { canvasToFlow } from './jsonCanvas';
-import type { CardNodeData, JsonCanvas } from '../types/jsonCanvas';
+import type { CardNodeData, EdgeI18n, JsonCanvas, JsonCanvasEdge, JsonCanvasNode, NodeI18n } from '../types/jsonCanvas';
 
 const DEMO_CANVAS_RU: JsonCanvas = {
   nodes: [
@@ -478,8 +479,65 @@ const DEMO_CANVAS_EN: JsonCanvas = {
   ],
 };
 
+function mergeDemoNodes(ruNodes: JsonCanvasNode[], enNodes: JsonCanvasNode[]): JsonCanvasNode[] {
+  const enById = new Map(enNodes.map((node) => [node.id, node]));
+
+  return ruNodes.map((ruNode) => {
+    const enNode = enById.get(ruNode.id);
+    if (!enNode || ruNode.type !== enNode.type) return ruNode;
+
+    const i18n: NodeI18n = {};
+
+    if (ruNode.type === 'text' && enNode.type === 'text') {
+      i18n.ru = { text: ruNode.text, label: ruNode.label };
+      i18n.en = { text: enNode.text, label: enNode.label };
+      return { ...ruNode, i18n };
+    }
+
+    if (ruNode.type === 'group' && enNode.type === 'group') {
+      i18n.ru = { label: ruNode.label };
+      i18n.en = { label: enNode.label };
+      return { ...ruNode, i18n };
+    }
+
+    return ruNode;
+  });
+}
+
+function mergeDemoEdges(ruEdges: JsonCanvasEdge[], enEdges: JsonCanvasEdge[]): JsonCanvasEdge[] {
+  const enById = new Map(enEdges.map((edge) => [edge.id, edge]));
+
+  return ruEdges.map((ruEdge) => {
+    const enEdge = enById.get(ruEdge.id);
+    if (!enEdge) return ruEdge;
+
+    const i18n: EdgeI18n = {};
+    if (ruEdge.label) i18n.ru = { label: ruEdge.label };
+    if (enEdge.label) i18n.en = { label: enEdge.label };
+    if (!i18n.ru && !i18n.en) return ruEdge;
+
+    return { ...ruEdge, i18n };
+  });
+}
+
+const DEMO_CANVAS_I18N: JsonCanvas = {
+  nodes: mergeDemoNodes(DEMO_CANVAS_RU.nodes ?? [], DEMO_CANVAS_EN.nodes ?? []),
+  edges: mergeDemoEdges(DEMO_CANVAS_RU.edges ?? [], DEMO_CANVAS_EN.edges ?? []),
+};
+
+function applyCanvasLocale(canvas: JsonCanvas, locale: Locale): JsonCanvas {
+  return {
+    nodes: canvas.nodes?.map((node) => applyJsonNodeLocale(node, locale)),
+    edges: canvas.edges?.map((edge) => applyJsonEdgeLocale(edge, locale)),
+  };
+}
+
 export function getDemoCanvas(locale: Locale): JsonCanvas {
-  return locale === 'en' ? DEMO_CANVAS_EN : DEMO_CANVAS_RU;
+  return applyCanvasLocale(DEMO_CANVAS_I18N, locale);
+}
+
+export function isDemoBoardName(name: string): boolean {
+  return name === getDemoBoardName('ru') || name === getDemoBoardName('en');
 }
 
 /** @deprecated use getDemoCanvas(locale) */
