@@ -17,9 +17,17 @@ import {
 import '@xyflow/react/dist/style.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CanvasActionsContext } from '../context/canvasActions';
-import { SaveBoardModal } from './FileModals';
+import { BoardToast, SaveBoardModal } from './FileModals';
 import { canvasToFlow, createId, DEMO_CANVAS, flowToCanvas } from '../lib/jsonCanvas';
-import { BOARD_FILE_ACCEPT, readBoardFromFile } from '../lib/localBoardFile';
+import {
+  BOARD_FILE_ACCEPT,
+  SaveCancelledError,
+  canUseSaveFilePicker,
+  readBoardFromFile,
+  saveBoardToDisk,
+  saveSuccessMessage,
+  titleFromFilename,
+} from '../lib/localBoardFile';
 import type { CardNodeData, JsonCanvas } from '../types/jsonCanvas';
 import { HintBar, SelectionPanel, Toolbar } from './Toolbar';
 import { GroupCardNode, TextCardNode } from './nodes/CardNodes';
@@ -49,14 +57,22 @@ function MindCanvasInner() {
   const { screenToFlowPosition } = useReactFlow();
   const saveTimer = useRef<number | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const toastTimer = useRef<number | undefined>(undefined);
 
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [activeBoardName, setActiveBoardName] = useState<string | null>(
     () => localStorage.getItem(BOARD_NAME_KEY),
   );
 
   const selectedNode = nodes.find((n) => n.selected);
+
+  const showToast = useCallback((message: string) => {
+    window.clearTimeout(toastTimer.current);
+    setToastMessage(message);
+    toastTimer.current = window.setTimeout(() => setToastMessage(null), 4500);
+  }, []);
 
   const persist = useCallback((nextNodes: Node<CardNodeData>[], nextEdges: Edge[]) => {
     window.clearTimeout(saveTimer.current);
@@ -76,6 +92,12 @@ function MindCanvasInner() {
       localStorage.removeItem(BOARD_NAME_KEY);
     }
   }, [activeBoardName]);
+
+  useEffect(() => {
+    return () => {
+      window.clearTimeout(toastTimer.current);
+    };
+  }, []);
 
   const updateNode = useCallback(
     (id: string, patch: Partial<CardNodeData>) => {
@@ -183,6 +205,24 @@ function MindCanvasInner() {
     setActiveBoardName(null);
   }, [loadCanvas]);
 
+  const onSave = useCallback(async () => {
+    const title = activeBoardName?.trim() || 'моя-схема';
+
+    if (canUseSaveFilePicker()) {
+      try {
+        const result = await saveBoardToDisk(title, flowToCanvas(nodes, edges));
+        const savedTitle = titleFromFilename(result.filename);
+        setActiveBoardName(savedTitle);
+        showToast(saveSuccessMessage(result));
+        return;
+      } catch (err) {
+        if (err instanceof SaveCancelledError) return;
+      }
+    }
+
+    setSaveModalOpen(true);
+  }, [activeBoardName, nodes, edges, showToast]);
+
   const onPickFile = useCallback(() => {
     setLoadError(null);
     fileInputRef.current?.click();
@@ -197,11 +237,12 @@ function MindCanvasInner() {
       try {
         const { title, canvas } = await readBoardFromFile(file);
         loadCanvas(canvas, title);
+        showToast(`Открыто: ${file.name}`);
       } catch (err) {
         setLoadError(err instanceof Error ? err.message : 'Не удалось загрузить файл');
       }
     },
-    [loadCanvas],
+    [loadCanvas, showToast],
   );
 
   const onKeyDown = useCallback(
@@ -232,13 +273,17 @@ function MindCanvasInner() {
         <Toolbar
           onAddText={() => addTextCard()}
           onAddGroup={addGroup}
-          onSave={() => setSaveModalOpen(true)}
+          onSave={() => void onSave()}
           onLoad={onPickFile}
           onReset={onReset}
           nodeCount={nodes.length}
           edgeCount={edges.length}
           activeBoardName={activeBoardName}
         />
+
+        {toastMessage && (
+          <BoardToast message={toastMessage} onClose={() => setToastMessage(null)} />
+        )}
 
         {loadError && (
           <div className="pointer-events-auto absolute left-1/2 top-20 z-30 max-w-sm -translate-x-1/2 rounded-xl border border-red-400/30 bg-red-950/80 px-4 py-2 text-xs text-red-100 shadow-lg">
@@ -318,7 +363,10 @@ function MindCanvasInner() {
             canvas={currentCanvas}
             defaultName={activeBoardName ?? undefined}
             onClose={() => setSaveModalOpen(false)}
-            onSaved={setActiveBoardName}
+            onSaved={(name, message) => {
+              setActiveBoardName(name);
+              showToast(message);
+            }}
           />
         )}
       </div>
