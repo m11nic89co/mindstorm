@@ -6,11 +6,13 @@ type ToolbarProps = {
   onAddGroup: () => void;
   onSaveToGitHub: () => void;
   onLoadFromGitHub: () => void;
-  onOpenSettings: () => void;
+  onOpenAccount: () => void;
   onReset: () => void;
   nodeCount: number;
   edgeCount: number;
   activeBoardName?: string | null;
+  githubUser?: { login: string; avatar_url: string } | null;
+  githubLoading?: boolean;
 };
 
 export function Toolbar({
@@ -18,11 +20,13 @@ export function Toolbar({
   onAddGroup,
   onSaveToGitHub,
   onLoadFromGitHub,
-  onOpenSettings,
+  onOpenAccount,
   onReset,
   nodeCount,
   edgeCount,
   activeBoardName,
+  githubUser,
+  githubLoading,
 }: ToolbarProps) {
   return (
     <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center p-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:p-4">
@@ -49,9 +53,29 @@ export function Toolbar({
           <span className="sm:hidden">↓</span>
           <span className="hidden sm:inline">↓ Из GitHub</span>
         </ToolbarButton>
-        <ToolbarButton onClick={onOpenSettings} title="Настройки GitHub-токена">
-          <span>⚙</span>
-        </ToolbarButton>
+        <button
+          type="button"
+          title={githubUser ? `@${githubUser.login}` : 'Войти через GitHub'}
+          onClick={onOpenAccount}
+          className="flex shrink-0 items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs font-medium text-white/80 transition hover:bg-white/10 hover:text-white sm:px-2.5"
+        >
+          {githubLoading ? (
+            <span className="inline-block h-6 w-6 animate-pulse rounded-full bg-white/15" />
+          ) : githubUser ? (
+            <img
+              src={githubUser.avatar_url}
+              alt=""
+              className="h-6 w-6 rounded-full border border-white/15"
+            />
+          ) : (
+            <span className="flex h-6 w-6 items-center justify-center rounded-full border border-dashed border-white/25 text-[10px] text-white/50">
+              GH
+            </span>
+          )}
+          <span className="hidden max-w-[5rem] truncate sm:inline">
+            {githubUser ? githubUser.login : 'Войти'}
+          </span>
+        </button>
         <ToolbarButton onClick={onReset} title="Сбросить к демо">
           <span className="sm:hidden">↺</span>
           <span className="hidden sm:inline">↺ Демо</span>

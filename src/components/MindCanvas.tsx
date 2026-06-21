@@ -34,11 +34,15 @@ import '@xyflow/react/dist/style.css';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { GitHubAuthProvider } from '../context/GitHubAuthContext';
+
 import { CanvasActionsContext } from '../context/canvasActions';
 
 import {
 
-  GitHubSettingsModal,
+  GitHubAccountModal,
+
+  GitHubLoginModal,
 
   LoadFromGitHubModal,
 
@@ -59,6 +63,8 @@ import {
 } from '../lib/jsonCanvas';
 
 import { getActiveBoard } from '../lib/githubStorage';
+
+import { useGitHubAuth } from '../context/GitHubAuthContext';
 
 import type { CardNodeData, JsonCanvas } from '../types/jsonCanvas';
 
@@ -116,7 +122,13 @@ function MindCanvasInner() {
 
 
 
-  const [modal, setModal] = useState<'save' | 'load' | 'settings' | null>(null);
+  const [modal, setModal] = useState<'save' | 'load' | 'login' | 'account' | null>(null);
+
+  const [loginReason, setLoginReason] = useState<string | undefined>();
+
+  const [afterLogin, setAfterLogin] = useState<'save' | null>(null);
+
+  const { session, isAuthenticated, isLoading: githubLoading } = useGitHubAuth();
 
   const [activeBoardName, setActiveBoardName] = useState<string | null>(
 
@@ -404,11 +416,33 @@ function MindCanvasInner() {
 
           onAddGroup={addGroup}
 
-          onSaveToGitHub={() => setModal('save')}
+          onSaveToGitHub={() => {
+
+            if (!isAuthenticated) {
+
+              setLoginReason('Для сохранения схемы нужен вход через GitHub.');
+
+              setAfterLogin('save');
+
+              setModal('login');
+
+              return;
+
+            }
+
+            setModal('save');
+
+          }}
 
           onLoadFromGitHub={() => setModal('load')}
 
-          onOpenSettings={() => setModal('settings')}
+          onOpenAccount={() => {
+
+            if (isAuthenticated) setModal('account');
+
+            else setModal('login');
+
+          }}
 
           onReset={onReset}
 
@@ -417,6 +451,10 @@ function MindCanvasInner() {
           edgeCount={edges.length}
 
           activeBoardName={activeBoardName}
+
+          githubUser={session?.user ?? null}
+
+          githubLoading={githubLoading}
 
         />
 
@@ -536,6 +574,16 @@ function MindCanvasInner() {
 
             onSaved={setActiveBoardName}
 
+            onNeedLogin={() => {
+
+              setLoginReason('Для сохранения схемы нужен вход через GitHub.');
+
+              setAfterLogin('save');
+
+              setModal('login');
+
+            }}
+
           />
 
         )}
@@ -552,7 +600,37 @@ function MindCanvasInner() {
 
         )}
 
-        {modal === 'settings' && <GitHubSettingsModal onClose={() => setModal(null)} />}
+        {modal === 'login' && (
+
+          <GitHubLoginModal
+
+            reason={loginReason}
+
+            onClose={() => {
+
+              setModal(null);
+
+              setLoginReason(undefined);
+
+              setAfterLogin(null);
+
+            }}
+
+            onLoggedIn={() => {
+
+              setLoginReason(undefined);
+
+              setModal(afterLogin === 'save' ? 'save' : null);
+
+              setAfterLogin(null);
+
+            }}
+
+          />
+
+        )}
+
+        {modal === 'account' && <GitHubAccountModal onClose={() => setModal(null)} />}
 
       </div>
 
@@ -568,11 +646,15 @@ export function MindCanvas() {
 
   return (
 
-    <ReactFlowProvider>
+    <GitHubAuthProvider>
 
-      <MindCanvasInner />
+      <ReactFlowProvider>
 
-    </ReactFlowProvider>
+        <MindCanvasInner />
+
+      </ReactFlowProvider>
+
+    </GitHubAuthProvider>
 
   );
 
