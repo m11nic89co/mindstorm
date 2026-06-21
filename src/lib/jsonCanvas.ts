@@ -43,7 +43,7 @@ export function canvasToFlow(canvas: JsonCanvas): { nodes: Node<CardNodeData>[];
       position: { x: node.x, y: node.y },
       style: { width: node.width, height: node.height },
       data,
-      zIndex: node.type === 'group' ? 0 : 1,
+      zIndex: node.type === 'group' ? -1 : 1,
     };
   });
 

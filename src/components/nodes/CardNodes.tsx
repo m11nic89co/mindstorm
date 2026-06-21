@@ -1,4 +1,11 @@
-import { Handle, NodeResizer, Position, type Node, type NodeProps } from '@xyflow/react';
+import {
+  Handle,
+  NodeResizer,
+  Position,
+  ViewportPortal,
+  type Node,
+  type NodeProps,
+} from '@xyflow/react';
 import { useEffect, useRef, useState } from 'react';
 import { useCanvasActions } from '../../context/canvasActions';
 import { resolveColor } from '../../lib/colors';
@@ -114,7 +121,13 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
   );
 }
 
-export function GroupCardNode({ id, data, selected }: TextCardProps) {
+export function GroupCardNode({
+  id,
+  data,
+  selected,
+  positionAbsoluteX,
+  positionAbsoluteY,
+}: TextCardProps) {
   const { updateNode } = useCanvasActions();
   const [editingLabel, setEditingLabel] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -123,6 +136,10 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
   useEffect(() => {
     if (editingLabel) inputRef.current?.focus();
   }, [editingLabel]);
+
+  const labelStyle = {
+    transform: `translate(${positionAbsoluteX + 16}px, ${positionAbsoluteY - 12}px)`,
+  };
 
   return (
     <>
@@ -145,7 +162,8 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
           borderColor: palette.border,
         }}
         onDoubleClick={(e) => e.stopPropagation()}
-      >
+      />
+      <ViewportPortal>
         {editingLabel ? (
           <input
             ref={inputRef}
@@ -155,14 +173,15 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
             onKeyDown={(e) => {
               if (e.key === 'Enter') setEditingLabel(false);
             }}
-            className="absolute -top-3 left-4 z-10 max-w-[calc(100%-2rem)] rounded-full border border-white/20 bg-[#1a1f35] px-3 py-0.5 text-xs font-medium text-white outline-none ring-2 ring-cyan-400/40"
+            style={labelStyle}
+            className="pointer-events-auto absolute left-0 top-0 z-[1] max-w-48 rounded-full border border-white/20 bg-[#1a1f35] px-3 py-0.5 text-xs font-medium text-white outline-none ring-2 ring-cyan-400/40"
             placeholder="Название группы"
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
           <div
-            className="absolute -top-3 left-4 z-10 cursor-text rounded-full px-3 py-0.5 text-xs font-medium text-white/80 backdrop-blur-md transition hover:ring-1 hover:ring-white/25"
-            style={{ background: palette.border }}
+            style={{ ...labelStyle, background: palette.border }}
+            className="pointer-events-auto absolute left-0 top-0 z-[1] cursor-text rounded-full px-3 py-0.5 text-xs font-medium text-white/80 backdrop-blur-md transition hover:ring-1 hover:ring-white/25"
             onDoubleClick={(e) => {
               e.stopPropagation();
               setEditingLabel(true);
@@ -172,7 +191,7 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
             {data.label ?? 'Группа'}
           </div>
         )}
-      </div>
+      </ViewportPortal>
     </>
   );
 }

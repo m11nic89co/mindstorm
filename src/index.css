@@ -32,7 +32,20 @@ body {
   stroke-linecap: round;
 }
 
+/*
+ * Слои внутри viewport: группы (-1) → рёбра (0) → карточки (1+).
+ * React Flow рисует все узлы поверх рёбер; отрицательный z-index у групп
+ * выводит их из слоя узлов «под» SVG рёбер.
+ */
+.mind-canvas .react-flow__edges {
+  z-index: 0 !important;
+}
+
 .mind-canvas .react-flow__node-groupCard {
+  z-index: -1 !important;
+}
+
+.mind-canvas .react-flow__node-groupCard.selected {
   z-index: 0 !important;
 }
 
@@ -40,7 +53,7 @@ body {
   z-index: 1 !important;
 }
 
-.mind-canvas .react-flow__node.selected {
+.mind-canvas .react-flow__node-textCard.selected {
   z-index: 2 !important;
 }
 

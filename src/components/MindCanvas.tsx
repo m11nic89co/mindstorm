@@ -280,7 +280,7 @@ function MindCanvasInner() {
 
       data: { canvasType: 'group', label: 'Группа', color: '5' },
 
-      zIndex: 0,
+      zIndex: -1,
 
       selectable: true,
 
@@ -475,6 +475,10 @@ function MindCanvasInner() {
           zoomOnDoubleClick={false}
 
           selectionOnDrag={false}
+
+          zIndexMode="manual"
+
+          elevateNodesOnSelect={false}
 
           defaultEdgeOptions={{
 
