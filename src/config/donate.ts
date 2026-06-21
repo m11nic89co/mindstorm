@@ -23,15 +23,11 @@ const envLink = import.meta.env.VITE_DONATE_LINK?.trim() ?? '';
 export const DONATE_WALLETS: DonateWallet[] = [
   ...(envWallet
     ? [{ label: envLabel, wallet: envWallet }]
-    : [
-        // ← Вставьте свой адрес (можно несколько строк):
-        // { label: 'USDT TRC-20', wallet: 'TYour...' },
-        // { label: 'TON', wallet: 'UQ...' },
-      ]),
+    : [{ label: 'USDT · Tron (TRC20)', wallet: 'TJDeM6zHao6jKUVhf2fLcACL3DmwqwP8aX' }]),
 ];
 
 /** Опциональная ссылка (Boosty, Ko-fi, DonationAlerts) — откроется в новой вкладке. */
-export const DONATE_LINK = envLink || 'https://github.com/m11nic89co/mindstorm';
+export const DONATE_LINK = envLink || '';
 
 export function hasDonateOptions(): boolean {
   return DONATE_WALLETS.some((item) => item.wallet.trim().length > 0) || DONATE_LINK.length > 0;

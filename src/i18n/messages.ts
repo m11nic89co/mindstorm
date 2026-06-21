@@ -167,10 +167,11 @@ export const messagesRu: Messages = {
   footer: {
     donate: '☕ Донат',
     donateTitle: 'Поддержать автора',
-    donateHint: 'Скопируйте адрес и отправьте любую сумму — приложение бесплатное и останется таким.',
+    donateHint:
+      'Скопируйте адрес и отправьте USDT (Tron TRC20), мин. 0,01 USDT. Приложение бесплатное.',
     donateCopy: 'Скопировать адрес',
     donateCopied: 'Скопировано ✓',
-    donateLink: 'GitHub — звезда проекту ★',
+    donateLink: 'Открыть страницу доната',
   },
   edgePanel: {
     title: 'Связь',
