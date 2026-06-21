@@ -45,8 +45,9 @@ body {
   z-index: -1 !important;
 }
 
+/* Группа всегда фон — даже при выборе не поднимаем над рёбрами */
 .mind-canvas .react-flow__node-groupCard.selected {
-  z-index: 0 !important;
+  z-index: -1 !important;
 }
 
 .mind-canvas .react-flow__node-textCard {

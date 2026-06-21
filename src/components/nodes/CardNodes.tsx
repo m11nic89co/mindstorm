@@ -125,6 +125,8 @@ export function GroupCardNode({
   id,
   data,
   selected,
+  width,
+  height,
   positionAbsoluteX,
   positionAbsoluteY,
 }: TextCardProps) {
@@ -154,9 +156,7 @@ export function GroupCardNode({
         lineClassName="!border-cyan-400/45"
       />
       <div
-        className={`h-full w-full rounded-3xl border-2 border-dashed backdrop-blur-sm transition-shadow ${
-          selected ? 'ring-2 ring-cyan-400/50' : ''
-        }`}
+        className="h-full w-full rounded-3xl border-2 border-dashed backdrop-blur-sm transition-shadow"
         style={{
           background: `${palette.bg}`,
           borderColor: palette.border,
@@ -164,6 +164,16 @@ export function GroupCardNode({
         onDoubleClick={(e) => e.stopPropagation()}
       />
       <ViewportPortal>
+        {selected && (
+          <div
+            className="pointer-events-none absolute left-0 top-0 rounded-3xl ring-2 ring-cyan-400/50"
+            style={{
+              transform: `translate(${positionAbsoluteX}px, ${positionAbsoluteY}px)`,
+              width: width ?? 420,
+              height: height ?? 260,
+            }}
+          />
+        )}
         {editingLabel ? (
           <input
             ref={inputRef}
