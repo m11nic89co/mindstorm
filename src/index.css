@@ -139,6 +139,6 @@ body {
   animation: demo-splash-glow 2s ease-in-out infinite;
 }
 
-.demo-splash[data-exiting='true'] .demo-splash-card {
-  animation: demo-splash-out 0.35s ease-in forwards;
+.demo-splash[data-exiting] .demo-splash-card {
+  animation: demo-splash-out 0.32s ease-in forwards;
 }

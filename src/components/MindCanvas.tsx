@@ -231,9 +231,7 @@ function MindCanvasInner() {
     window.setTimeout(() => {
       setDemoRevealing(false);
     }, 2800);
-
-    showToast('Демо загружено — исследуйте схему запуска MindStorm');
-  }, [fitView, setEdges, setNodes, showToast]);
+  }, [fitView, setEdges, setNodes]);
 
   const onSave = useCallback(async () => {
     const title = activeBoardName?.trim() || 'моя-схема';
@@ -317,7 +315,7 @@ function MindCanvasInner() {
 
         <DemoSplash
           visible={demoSplash}
-          onDone={() => setDemoSplash(false)}
+          onClose={() => setDemoSplash(false)}
           nodeCount={demoStatsMemo.nodes}
           edgeCount={demoStatsMemo.edges}
           groupCount={demoStatsMemo.groups}
