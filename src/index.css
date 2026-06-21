@@ -103,6 +103,13 @@ body {
   z-index: 2 !important;
 }
 
+/* Карточки — полупрозрачные: связи под ними слегка просвечивают */
+.mind-canvas .react-flow__node-textCard .card-face,
+.mind-canvas .react-flow__node-groupCard .card-face {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .mind-canvas .react-flow__resize-control.handle {
   z-index: 3;
 }

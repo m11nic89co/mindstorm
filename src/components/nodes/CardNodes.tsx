@@ -41,7 +41,7 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
         lineClassName={resizerLines}
       />
       <div
-        className={`group relative h-full w-full rounded-2xl border backdrop-blur-xl transition-shadow duration-200 ${
+        className={`card-face group relative h-full w-full rounded-2xl border transition-shadow duration-200 ${
           selected ? 'ring-2 ring-indigo-400/70 shadow-[0_0_40px_-8px_rgba(99,102,241,0.55)]' : ''
         }`}
         style={{
@@ -131,7 +131,7 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
       />
       <div className="group relative h-full w-full">
         <div
-          className={`h-full w-full rounded-3xl border-2 ${
+          className={`card-face h-full w-full rounded-3xl border-2 ${
             selected ? 'ring-2 ring-cyan-400/50' : ''
           }`}
           style={{
