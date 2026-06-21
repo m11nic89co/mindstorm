@@ -1,27 +1,35 @@
 /**
- * Донаты — бесплатно, без посредников.
+ * Способы доната MindStorm.
  *
- * 1. Вставьте адрес кошелька в `wallet` (или ссылку Boosty/Ko-fi в `linkUrl`).
- * 2. git push → кнопка «Донат» появится внизу сайта.
+ * Крипто — адрес копируется в буфер.
+ * Boosty / Ko-fi — открываются в новой вкладке (карта, PayPal, СБП).
  *
- * Можно задать через .env (не коммитить секреты не нужно — это публичный адрес):
- *   VITE_DONATE_WALLET=...
- *   VITE_DONATE_LABEL=USDT TRC-20
- *   VITE_DONATE_LINK=https://boosty.to/...
+ * После регистрации на платформах проверьте URL ниже и сделайте git push.
+ * Пустой `url` — способ скрыт в UI.
  */
 
 export type DonateWallet = {
   label: string;
   wallet: string;
-  /** Минимальная сумма, например «0,01 USDT» */
   min?: string;
+};
+
+export type DonatePlatform = 'boosty' | 'kofi' | 'donationalerts' | 'generic';
+
+export type DonateLink = {
+  platform: DonatePlatform;
+  label: string;
+  url: string;
+  hintRu?: string;
+  hintEn?: string;
 };
 
 const envWallet = import.meta.env.VITE_DONATE_WALLET?.trim() ?? '';
 const envLabel = import.meta.env.VITE_DONATE_LABEL?.trim() ?? 'USDT TRC-20';
-const envLink = import.meta.env.VITE_DONATE_LINK?.trim() ?? '';
+const envBoosty = import.meta.env.VITE_DONATE_BOOSTY?.trim() ?? '';
+const envKofi = import.meta.env.VITE_DONATE_KOFI?.trim() ?? '';
 
-/** Крипто-кошельки — адрес копируется по кнопке «Скопировать». */
+/** USDT — копирование адреса. */
 export const DONATE_WALLETS: DonateWallet[] = [
   ...(envWallet
     ? [{ label: envLabel, wallet: envWallet }]
@@ -39,9 +47,34 @@ export const DONATE_WALLETS: DonateWallet[] = [
       ]),
 ];
 
-/** Опциональная ссылка (Boosty, Ko-fi, DonationAlerts) — откроется в новой вкладке. */
-export const DONATE_LINK = envLink || '';
+/**
+ * Карта / PayPal — внешние страницы.
+ * Замените `m11nic89co` на свой ник после регистрации, если другой.
+ */
+export const DONATE_LINKS: DonateLink[] = [
+  {
+    platform: 'boosty',
+    label: 'Boosty',
+    url: envBoosty || 'https://boosty.to/m11nic89co/donate',
+    hintRu: 'Банковская карта, СБП, подписка',
+    hintEn: 'Bank card, RU payments, subscription',
+  },
+  {
+    platform: 'kofi',
+    label: 'Ko-fi',
+    url: envKofi || 'https://ko-fi.com/m11nic89co',
+    hintRu: 'Карта, PayPal, разовый донат',
+    hintEn: 'Card, PayPal, one-time tip',
+  },
+].filter((item) => item.url.trim().length > 0);
+
+export function activeDonateLinks(): DonateLink[] {
+  return DONATE_LINKS;
+}
 
 export function hasDonateOptions(): boolean {
-  return DONATE_WALLETS.some((item) => item.wallet.trim().length > 0) || DONATE_LINK.length > 0;
+  return (
+    DONATE_WALLETS.some((item) => item.wallet.trim().length > 0) ||
+    activeDonateLinks().length > 0
+  );
 }

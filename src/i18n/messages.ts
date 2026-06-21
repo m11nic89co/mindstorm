@@ -34,10 +34,12 @@ export type Messages = {
     donate: string;
     donateTitle: string;
     donateHint: string;
+    donateSectionCard: string;
+    donateSectionCrypto: string;
+    donateOpen: string;
     donateMin: string;
     donateCopy: string;
     donateCopied: string;
-    donateLink: string;
   };
   edgePanel: {
     title: string;
@@ -167,12 +169,14 @@ export const messagesRu: Messages = {
   },
   footer: {
     donate: '☕ Донат',
-    donateTitle: 'Поддержать автора',
-    donateHint: 'Выберите сеть, скопируйте адрес и отправьте USDT. Приложение бесплатное.',
+    donateTitle: 'Поддержать MindStorm',
+    donateHint: 'Приложение бесплатное. Выберите удобный способ — карта или криптовалюта.',
+    donateSectionCard: 'Картой и PayPal',
+    donateSectionCrypto: 'Криптовалюта USDT',
+    donateOpen: 'Открыть →',
     donateMin: 'Мин. ввод',
     donateCopy: 'Скопировать адрес',
     donateCopied: 'Скопировано ✓',
-    donateLink: 'Открыть страницу доната',
   },
   edgePanel: {
     title: 'Связь',
@@ -298,12 +302,14 @@ export const messagesEn: Messages = {
   },
   footer: {
     donate: '☕ Donate',
-    donateTitle: 'Support the author',
-    donateHint:
-      'Copy the address and send USDT (Tron TRC20), min. 0.01 USDT. The app is free.',
+    donateTitle: 'Support MindStorm',
+    donateHint: 'The app is free. Pick what works for you — card or crypto.',
+    donateSectionCard: 'Card & PayPal',
+    donateSectionCrypto: 'USDT crypto',
+    donateOpen: 'Open →',
+    donateMin: 'Min. deposit',
     donateCopy: 'Copy address',
     donateCopied: 'Copied ✓',
-    donateLink: 'Open donation page',
   },
   edgePanel: {
     title: 'Connection',

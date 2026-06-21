@@ -82,6 +82,7 @@ Push в `main` → GitHub Actions → https://m11nic89co.github.io/mindstorm/
 | [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md) | Сборка, деплой, Windows |
 | [docs/FILE_FORMAT.md](./docs/FILE_FORMAT.md) | Формат `.mindstorm` |
 | [docs/PUBLISHING.md](./docs/PUBLISHING.md) | Бесплатная публикация, PWA, донат |
+| [docs/DONATE_SETUP.md](./docs/DONATE_SETUP.md) | Boosty, Ko-fi, USDT — настройка донатов |
 | [docs/GROUPING.md](./docs/GROUPING.md) | План: Группировать / Разгруппировать (отложено) |
 | [canvases/README.md](./canvases/README.md) | Референсные `.canvas` |
 
