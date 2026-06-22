@@ -103,6 +103,10 @@ export type Messages = {
     defaultLabel: string;
     namePlaceholder: string;
     renameTitle: string;
+    lockTitle: string;
+    unlockTitle: string;
+    lockAria: string;
+    unlockAria: string;
   };
   confirm: {
     newBoard: string;
@@ -265,6 +269,10 @@ export const messagesRu: Messages = {
     defaultLabel: 'Группа',
     namePlaceholder: 'Название группы',
     renameTitle: 'Двойной клик — переименовать',
+    lockTitle: 'Закрепить — группа станет фоном',
+    unlockTitle: 'Открепить — снова можно двигать и менять',
+    lockAria: 'Закрепить группу',
+    unlockAria: 'Открепить группу',
   },
   confirm: {
     newBoard:
@@ -409,6 +417,10 @@ export const messagesEn: Messages = {
     defaultLabel: 'Group',
     namePlaceholder: 'Group name',
     renameTitle: 'Double-click to rename',
+    lockTitle: 'Lock — group becomes background only',
+    unlockTitle: 'Unlock — move and edit again',
+    lockAria: 'Lock group',
+    unlockAria: 'Unlock group',
   },
   confirm: {
     newBoard:
@@ -553,6 +565,10 @@ export const messagesEs: Messages = {
     defaultLabel: 'Grupo',
     namePlaceholder: 'Nombre del grupo',
     renameTitle: 'Doble clic para renombrar',
+    lockTitle: 'Fijar — el grupo queda como fondo',
+    unlockTitle: 'Desfijar — mover y editar de nuevo',
+    lockAria: 'Fijar grupo',
+    unlockAria: 'Desfijar grupo',
   },
   confirm: {
     newBoard:
@@ -695,6 +711,10 @@ export const messagesZh: Messages = {
     defaultLabel: '分组',
     namePlaceholder: '分组名称',
     renameTitle: '双击重命名',
+    lockTitle: '锁定 — 分组变为背景',
+    unlockTitle: '解锁 — 可再次移动和编辑',
+    lockAria: '锁定分组',
+    unlockAria: '解锁分组',
   },
   confirm: {
     newBoard: '创建空白画布？\n\n可用撤销 (Ctrl+Z) 恢复当前画布。',

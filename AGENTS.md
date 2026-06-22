@@ -23,6 +23,10 @@
 | JSON Canvas | `src/lib/jsonCanvas.ts`, `src/lib/flowEdges.ts` |
 | i18n доски | `src/lib/nodeLocale.ts` |
 | Resize группы | `src/lib/groupResize.ts` |
+| Замок группы | `src/lib/groupLock.ts` |
+| Копирование узлов | `src/lib/nodeClipboard.ts` |
+| Типографика карточек | `src/lib/cardTypography.ts`, `src/lib/groupLabel.ts` |
+| Горячие клавиши | `src/hooks/useCanvasShortcuts.ts`, `useCanvasHistory.ts` |
 | Демо-схема (RU/EN/ES/ZH) | `src/lib/demoCanvas.ts`, `src/lib/demoLocaleCopies.ts` |
 | Цвета (12) | `src/lib/colors.ts` |
 | Undo/redo | `src/hooks/useCanvasHistory.ts` |
@@ -37,6 +41,10 @@
 - «Сначала» — **не** вызывает `resetHistory` (нужен Undo).
 - Новые UI-строки — **во все 4 языка** в `messages.ts` (`ru`, `en`, `es`, `zh`).
 - Resize группы: меняется рамка; масштабируются только **выделенные** карточки и вложенные группы (рекурсивно для выделенной вложенной группы) через `groupResize.ts` / `nodesToResizeWithGroup`.
+- **Замок группы** (`locked` в data, `groupLock.ts`): закреплённая группа — только фон; кликабелен замок на метке; `draggable`/`selectable: false`.
+- **Ctrl+C / Ctrl+V** — копия узлов (`nodeClipboard.ts`); горячие клавиши по **`event.code`** (RU/EN раскладка).
+- Text-карточка: `labelFontSize`, `textFontSize` — панель справа; новая карточка по dblclick — цвет **12** (серый).
+- Метка группы: `labelFontSize` до **200 px**; замок на badge в `GroupCardNode`.
 - Text-карточка: `label` (заголовок) и `text` (тело) — **раздельные** зоны в `CardNodes.tsx`; не смешивать при редактировании.
 - Группировка содержимого группы — см. [docs/GROUPING.md](./docs/GROUPING.md) (пока не реализовано).
 

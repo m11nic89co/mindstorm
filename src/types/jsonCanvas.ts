@@ -54,6 +54,8 @@ export interface JsonCanvasGroupNode extends JsonCanvasNodeBase {
   label?: string;
   /** MindStorm: размер шрифта метки группы (px) */
   labelFontSize?: number;
+  /** MindStorm: группа закреплена — только фон */
+  locked?: boolean;
   background?: string;
   backgroundStyle?: 'cover' | 'ratio' | 'repeat';
 }
@@ -101,6 +103,8 @@ export type CardNodeData = {
   labelFontSize?: number;
   /** MindStorm: размер шрифта тела text-карточки (px) */
   textFontSize?: number;
+  /** MindStorm: группа закреплена — только фон, активен замок на метке */
+  locked?: boolean;
   file?: string;
   color?: CanvasColor;
   i18n?: NodeI18n;

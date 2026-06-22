@@ -48,6 +48,7 @@ function intersectsGroupBorder(marquee: FlowRect, node: Node<CardNodeData>, bord
 }
 
 function nodeHitByMarquee(marquee: FlowRect, node: Node<CardNodeData>) {
+  if (isGroupNode(node) && node.data.locked) return false;
   const { w, h } = nodeSize(node);
   if (isGroupNode(node)) return intersectsGroupBorder(marquee, node);
   return intersects(marquee, { x: node.position.x, y: node.position.y, w, h });

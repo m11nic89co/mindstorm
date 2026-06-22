@@ -130,6 +130,30 @@ body {
   z-index: 1000 !important;
 }
 
+/* Закреплённая группа — фон; кликабелен только замок на метке */
+.mind-canvas .react-flow__node-groupCard.group-node-locked .card-face,
+.mind-canvas .react-flow__node-groupCard.group-node-locked .react-flow__handle {
+  pointer-events: none !important;
+}
+
+.mind-canvas .react-flow__node-groupCard.group-node-locked .card-face {
+  opacity: 0.72;
+}
+
+.mind-canvas .react-flow__node-groupCard.group-node-locked .group-label-badge {
+  pointer-events: auto !important;
+  z-index: 20;
+}
+
+.mind-canvas .react-flow__node-groupCard.group-node-locked .group-lock-btn {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+.mind-canvas .react-flow__node-groupCard.group-node-locked .group-label-text {
+  pointer-events: none;
+}
+
 /* --- Демо: появление карточек и связей --- */
 @keyframes demo-node-in {
   from {

@@ -16,6 +16,7 @@
 
 - ✅ **Resize race** закрыт: `commitNow`/`persistCanvas` используют финальный snapshot после group resize.
 - ✅ **Unit-тесты resize** добавлены: `src/lib/groupResize.test.ts` (selection, nested, minimums, outside bbox).
+- ✅ **Unit-тесты** `nodeClipboard.test.ts`, `groupLock.test.ts`, `groupLabel.test.ts`.
 - ✅ **CI quality gate** усилен: в workflow добавлен шаг `npm run test` перед `npm run build`.
 - ✅ **Node policy** обновлён: CI на Node 22 LTS; документация синхронизирована.
 - ✅ **i18n/a11y хвосты** закрыты: `toggleLocale` удалён из provider API, `languageAria` локализован.

@@ -12,6 +12,7 @@
 |------|-----------|--------|------------|
 | 1. Race на resize группы | High | ✅ закрыт | 6 / 6 |
 | 2. Unit-тесты `groupResize` | High | ✅ закрыт | 10 / 10 |
+| 2b. Unit-тесты clipboard/lock | Medium | ✅ закрыт | 5 / 5 |
 | 3. CI quality gate | Medium | ✅ закрыт | 5 / 5 |
 | 4. Node policy | Medium | ✅ закрыт | 4 / 4 |
 | 5. i18n / a11y хвосты | Low | ✅ закрыт | 4 / 4 |

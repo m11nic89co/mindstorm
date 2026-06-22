@@ -8,6 +8,7 @@ import type {
   JsonCanvasEdge,
   JsonCanvasNode,
 } from '../types/jsonCanvas';
+import { applyGroupInteractionToNodes } from './groupLock';
 import { edgeLabelProps, normalizeFlowEdge, syncEdgesWithSourceColors } from './flowEdges';
 
 function sideToHandle(
@@ -32,7 +33,7 @@ function handleToSideAndSlot(
 }
 
 export function canvasToFlow(canvas: JsonCanvas): { nodes: Node<CardNodeData>[]; edges: Edge[] } {
-  const nodes: Node<CardNodeData>[] = (canvas.nodes ?? []).map((node) => {
+  const flowNodes = (canvas.nodes ?? []).map((node) => {
     const data: CardNodeData = {
       canvasType: node.type,
       color: node.color,
@@ -48,6 +49,7 @@ export function canvasToFlow(canvas: JsonCanvas): { nodes: Node<CardNodeData>[];
     if (node.type === 'group') {
       data.label = node.label;
       if (node.labelFontSize != null) data.labelFontSize = node.labelFontSize;
+      if (node.locked === true) data.locked = true;
     }
     if (node.type === 'file') data.file = node.file;
     if (node.i18n) data.i18n = node.i18n;
@@ -61,6 +63,8 @@ export function canvasToFlow(canvas: JsonCanvas): { nodes: Node<CardNodeData>[];
       zIndex: node.type === 'group' ? -1 : 1,
     };
   });
+
+  const nodes = applyGroupInteractionToNodes(flowNodes);
 
   const edges: Edge[] = syncEdgesWithSourceColors(
     nodes,
@@ -106,6 +110,7 @@ function flowNodeToCanvas(node: Node<CardNodeData>): JsonCanvasNode {
       type: 'group',
       label: node.data.label ?? 'Группа',
       ...(node.data.labelFontSize != null ? { labelFontSize: node.data.labelFontSize } : {}),
+      ...(node.data.locked === true ? { locked: true } : {}),
       i18n: node.data.i18n,
     };
   }

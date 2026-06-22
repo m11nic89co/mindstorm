@@ -3,7 +3,7 @@ import {
   type Node,
   type NodeProps,
 } from '@xyflow/react';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react';
 import { useCanvasActions } from '../../context/canvasActions';
 import { useLocale } from '../../i18n/LocaleProvider';
 import { resolveColor } from '../../lib/colors';
@@ -26,6 +26,24 @@ const cardTitlePlaceholderClass = 'font-medium text-white/35';
 
 const cardBodyTypography =
   'min-h-[2.5rem] w-full flex-1 leading-relaxed text-white/88 whitespace-pre-wrap';
+
+function LockOpenIcon() {
+  return (
+    <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+      <path strokeLinecap="round" d="M5.5 9V6.25a4.25 4.25 0 118.5 0V9" />
+      <rect x="4.25" y="9" width="11.5" height="7.75" rx="2" />
+    </svg>
+  );
+}
+
+function LockClosedIcon() {
+  return (
+    <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+      <rect x="4.25" y="9" width="11.5" height="7.75" rx="2" />
+      <path strokeLinecap="round" d="M7 9V6.5a3 3 0 116 0V9" />
+    </svg>
+  );
+}
 
 function CardBodyText({
   text,
@@ -261,6 +279,7 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
 
   const storedLabel = data.label ?? '';
   const visibleLabel = optimisticLabel ?? storedLabel;
+  const locked = data.locked === true;
 
   useEffect(() => {
     if (optimisticLabel !== null && storedLabel === optimisticLabel) {
@@ -269,9 +288,19 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
   }, [storedLabel, optimisticLabel]);
 
   const beginLabelEdit = () => {
+    if (locked) return;
     setLabelEditSession((session) => session + 1);
     setEditingLabel(true);
   };
+
+  const toggleLock = (event: MouseEvent) => {
+    event.stopPropagation();
+    if (editingLabel) setEditingLabel(false);
+    updateNode(id, { locked: !locked });
+  };
+
+  const badgeShellClass =
+    'group-label-badge pointer-events-auto absolute left-4 z-[1] flex max-w-[200px] items-center gap-1 rounded-full font-medium text-white/80';
 
   const commitLabelEdit = () => {
     const next = inputRef.current?.value ?? '';
@@ -299,7 +328,7 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
   return (
     <>
       <NodeResizer
-        isVisible={selected}
+        isVisible={selected && !locked}
         minWidth={220}
         minHeight={120}
         color="#22d3ee"
@@ -312,51 +341,79 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
       <div className="group relative h-full w-full">
         <div
           className={`card-face h-full w-full rounded-3xl border-2 ${
-            selected ? 'ring-2 ring-cyan-400/50' : ''
-          }`}
+            selected && !locked ? 'ring-2 ring-cyan-400/50' : ''
+          }${locked ? ' opacity-90' : ''}`}
           style={{
             background: palette.bg,
             borderColor: palette.border,
           }}
           onDoubleClick={(e) => e.stopPropagation()}
         />
-        <EdgeHandles accentClass="!h-2.5 !w-2.5 !rounded-full !border-2 !border-white/35 !bg-cyan-400 opacity-0 transition-opacity group-hover:opacity-100" />
-        {editingLabel ? (
-          <input
-            key={labelEditSession}
-            ref={inputRef}
-            defaultValue={storedLabel}
-            onBlur={commitLabelEdit}
-            onMouseDown={(e) => e.stopPropagation()}
-            onPointerDown={(e) => e.stopPropagation()}
-            onKeyDown={(e) => {
-              e.stopPropagation();
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                inputRef.current?.blur();
-              }
-              if (e.key === 'Escape') {
-                e.preventDefault();
-                if (inputRef.current) inputRef.current.value = storedLabel;
-                cancelLabelEdit();
-              }
-            }}
-            className="nodrag nopan pointer-events-auto absolute left-4 z-[1] truncate rounded-full border border-white/20 bg-[#1a1f35] font-medium text-white outline-none ring-2 ring-cyan-400/40"
+        {!locked && (
+          <EdgeHandles accentClass="!h-2.5 !w-2.5 !rounded-full !border-2 !border-white/35 !bg-cyan-400 opacity-0 transition-opacity group-hover:opacity-100" />
+        )}
+        {editingLabel && !locked ? (
+          <div
+            className={`${badgeShellClass} border border-white/20 bg-[#1a1f35] outline-none ring-2 ring-cyan-400/40`}
             style={badgePositionStyle}
-            placeholder={m.group.namePlaceholder}
-            onClick={(e) => e.stopPropagation()}
-          />
+          >
+            <input
+              key={labelEditSession}
+              ref={inputRef}
+              defaultValue={storedLabel}
+              onBlur={commitLabelEdit}
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  inputRef.current?.blur();
+                }
+                if (e.key === 'Escape') {
+                  e.preventDefault();
+                  if (inputRef.current) inputRef.current.value = storedLabel;
+                  cancelLabelEdit();
+                }
+              }}
+              className="nodrag nopan min-w-0 flex-1 truncate bg-transparent text-inherit outline-none placeholder:text-white/35"
+              placeholder={m.group.namePlaceholder}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              type="button"
+              className="group-lock-btn nodrag nopan shrink-0 rounded-full p-0.5 text-white/75 transition hover:bg-white/10 hover:text-white"
+              onClick={toggleLock}
+              title={m.group.lockTitle}
+              aria-label={m.group.lockAria}
+            >
+              <LockOpenIcon />
+            </button>
+          </div>
         ) : (
           <div
             style={{ background: palette.border, ...badgePositionStyle }}
-            className="pointer-events-auto absolute left-4 z-[1] cursor-text truncate rounded-full font-medium text-white/80 transition hover:ring-1 hover:ring-white/25"
-            onDoubleClick={(e) => {
-              e.stopPropagation();
-              beginLabelEdit();
-            }}
-            title={m.group.renameTitle}
+            className={`${badgeShellClass} transition hover:ring-1 hover:ring-white/25`}
           >
-            {visibleLabel || m.group.defaultLabel}
+            <span
+              className={`group-label-text min-w-0 flex-1 truncate ${locked ? '' : 'cursor-text'}`}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                beginLabelEdit();
+              }}
+              title={locked ? undefined : m.group.renameTitle}
+            >
+              {visibleLabel || m.group.defaultLabel}
+            </span>
+            <button
+              type="button"
+              className="group-lock-btn nodrag nopan shrink-0 rounded-full p-0.5 text-white/75 transition hover:bg-white/10 hover:text-white"
+              onClick={toggleLock}
+              title={locked ? m.group.unlockTitle : m.group.lockTitle}
+              aria-label={locked ? m.group.unlockAria : m.group.lockAria}
+            >
+              {locked ? <LockClosedIcon /> : <LockOpenIcon />}
+            </button>
           </div>
         )}
       </div>

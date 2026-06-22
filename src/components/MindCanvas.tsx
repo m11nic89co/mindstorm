@@ -32,6 +32,7 @@ import {
   createGroupResizeSnapshot,
   type GroupResizeSnapshot,
 } from '../lib/groupResize';
+import { applyGroupNodeInteraction } from '../lib/groupLock';
 import { DOUBLE_CLICK_CARD_COLOR } from '../lib/cardTypography';
 import {
   getDemoBoardName,
@@ -151,11 +152,11 @@ function MindCanvasInner() {
   }, [commitNow]);
 
   const onGroupResizeStart = useCallback((groupId: string) => {
+    const group = nodesRef.current.find((n) => n.id === groupId);
+    if (!group || group.data.locked) return;
     dragPausedRef.current = true;
     setGroupResizingId(groupId);
     groupResizeLatestNodesRef.current = null;
-    const group = nodesRef.current.find((n) => n.id === groupId);
-    if (!group) return;
     groupResizeSnapshotRef.current = createGroupResizeSnapshot(group, nodesRef.current);
   }, []);
 
@@ -194,7 +195,10 @@ function MindCanvasInner() {
   );
 
   const hasSelectedGroup = useMemo(
-    () => nodes.some((node) => node.selected && node.type === 'groupCard'),
+    () =>
+      nodes.some(
+        (node) => node.selected && node.type === 'groupCard' && !node.data.locked,
+      ),
     [nodes],
   );
 
@@ -247,9 +251,11 @@ function MindCanvasInner() {
   const updateNode = useCallback(
     (id: string, patch: Partial<CardNodeData>) => {
       setNodes((nds) => {
-        const nextNodes = nds.map((n) =>
-          n.id === id ? { ...n, data: syncNodeI18nOnEdit(n.data, locale, patch) } : n,
-        );
+        const nextNodes = nds.map((n) => {
+          if (n.id !== id) return n;
+          const next = { ...n, data: syncNodeI18nOnEdit(n.data, locale, patch) };
+          return n.type === 'groupCard' ? applyGroupNodeInteraction(next) : next;
+        });
         if ('color' in patch) {
           setEdges((eds) => syncEdgesWithSourceColors(nextNodes, eds));
         }
@@ -530,7 +536,7 @@ function MindCanvasInner() {
       return cloneNodeForPaste(source, createId(prefix), offset);
     });
 
-    setNodes((nds) => mergePastedNodes(nds, pasted));
+    setNodes((nds) => mergePastedNodes(nds, pasted.map((n) => (n.type === 'groupCard' ? applyGroupNodeInteraction(n) : n))));
   }, [setNodes]);
 
   useCanvasShortcuts({
@@ -598,7 +604,7 @@ function MindCanvasInner() {
           />
         )}
 
-        {selectedNode && !selectedEdge && (
+        {selectedNode && !selectedEdge && !selectedNode.data.locked && (
           <SelectionPanel
             nodeType={selectedNode.data.canvasType}
             color={selectedNode.data.color}
