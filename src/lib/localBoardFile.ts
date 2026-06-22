@@ -76,6 +76,14 @@ export function buildFilename(title: string): string {
   return `${sanitizeFilename(title)}${BOARD_FILE_EXTENSION}`;
 }
 
+/** Имя файла по локальной дате и времени, например `2026-06-22_20-54-33`. */
+export function buildTimestampSaveTitle(now: Date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const date = [now.getFullYear(), pad(now.getMonth() + 1), pad(now.getDate())].join('-');
+  const time = [pad(now.getHours()), pad(now.getMinutes()), pad(now.getSeconds())].join('-');
+  return `${date}_${time}`;
+}
+
 export function canUseSaveFilePicker(): boolean {
   return typeof window.showSaveFilePicker === 'function';
 }

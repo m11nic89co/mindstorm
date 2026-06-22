@@ -64,6 +64,7 @@ import {
 import {
   BOARD_FILE_ACCEPT,
   SaveCancelledError,
+  buildTimestampSaveTitle,
   canUseSaveFilePicker,
   readBoardFromFile,
   saveBoardToDisk,
@@ -462,7 +463,7 @@ function MindCanvasInner() {
   }, [applyFlow, fitView, locale]);
 
   const onSave = useCallback(async () => {
-    const title = activeBoardName?.trim() || m.file.defaultTitle;
+    const title = buildTimestampSaveTitle();
 
     if (canUseSaveFilePicker()) {
       try {
@@ -480,7 +481,7 @@ function MindCanvasInner() {
     }
 
     setSaveModalOpen(true);
-  }, [activeBoardName, m.file, nodes, edges, showToast]);
+  }, [m.file, nodes, edges, showToast]);
 
   const onPickFile = useCallback(() => {
     setLoadError(null);
@@ -693,7 +694,6 @@ function MindCanvasInner() {
         {saveModalOpen && (
           <SaveBoardModal
             canvas={flowToCanvas(nodes, edges)}
-            defaultName={activeBoardName ?? undefined}
             onClose={() => setSaveModalOpen(false)}
             onSaved={(name, message) => {
               setActiveBoardName(name);

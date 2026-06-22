@@ -4,6 +4,7 @@ import type { JsonCanvas } from '../types/jsonCanvas';
 import {
   SaveCancelledError,
   buildFilename,
+  buildTimestampSaveTitle,
   saveBoardToDisk,
   saveSuccessMessage,
 } from '../lib/localBoardFile';
@@ -49,7 +50,7 @@ export function SaveBoardModal({
   onSaved: (name: string, message: string) => void;
 }) {
   const { m } = useLocale();
-  const [name, setName] = useState(defaultName ?? m.saveModal.defaultName);
+  const [name, setName] = useState(defaultName ?? buildTimestampSaveTitle());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
