@@ -104,6 +104,32 @@ export function minSizeForNode(node: Node<CardNodeData>): { w: number; h: number
   return { w: MIN_TEXT_WIDTH, h: MIN_TEXT_HEIGHT };
 }
 
+/**
+ * Узлы, которые масштабируются вместе с группой при resize:
+ * — выделенные text-карточки и группы внутри rootGroup;
+ * — всё содержимое выделенной вложенной группы (рекурсивно).
+ * Невыделенные карточки остаются на месте с прежним размером.
+ */
+export function nodesToResizeWithGroup(
+  rootGroup: Node<CardNodeData>,
+  nodes: Node<CardNodeData>[],
+): Node<CardNodeData>[] {
+  const insideTree = nodesInsideGroupTree(rootGroup, nodes);
+  const result = new Map<string, Node<CardNodeData>>();
+
+  for (const node of insideTree) {
+    if (!node.selected) continue;
+    result.set(node.id, node);
+    if (isGroupNode(node)) {
+      for (const desc of nodesInsideGroupTree(node, nodes)) {
+        result.set(desc.id, desc);
+      }
+    }
+  }
+
+  return Array.from(result.values());
+}
+
 export function createGroupResizeSnapshot(
   group: Node<CardNodeData>,
   nodes: Node<CardNodeData>[],
@@ -114,7 +140,7 @@ export function createGroupResizeSnapshot(
   const safeW = groupW > 0 ? groupW : 1;
   const safeH = groupH > 0 ? groupH : 1;
 
-  const children = nodesInsideGroupTree(group, nodes).map((child) => {
+  const children = nodesToResizeWithGroup(group, nodes).map((child) => {
     const { w, h } = nodeSize(child);
     return {
       id: child.id,

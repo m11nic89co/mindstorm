@@ -8,6 +8,7 @@ import {
   createGroupResizeSnapshot,
   nodeSize,
   nodesInsideGroupTree,
+  nodesToResizeWithGroup,
 } from './groupResize';
 
 function textNode(
@@ -16,6 +17,7 @@ function textNode(
   y: number,
   w = 200,
   h = 100,
+  selected = false,
 ): Node<CardNodeData> {
   return {
     id,
@@ -23,6 +25,7 @@ function textNode(
     position: { x, y },
     width: w,
     height: h,
+    selected,
     data: { canvasType: 'text', text: id, label: id },
   };
 }
@@ -33,6 +36,7 @@ function groupNode(
   y: number,
   w = 400,
   h = 300,
+  selected = false,
 ): Node<CardNodeData> {
   return {
     id,
@@ -40,6 +44,7 @@ function groupNode(
     position: { x, y },
     width: w,
     height: h,
+    selected,
     data: { canvasType: 'group', label: id },
   };
 }
@@ -68,10 +73,32 @@ describe('nodesInsideGroupTree', () => {
   });
 });
 
+describe('nodesToResizeWithGroup', () => {
+  it('returns only selected nodes inside the group', () => {
+    const root = groupNode('g1', 0, 0, 400, 300);
+    const selected = textNode('sel', 50, 50, 200, 100, true);
+    const unselected = textNode('unsel', 150, 150, 200, 100, false);
+    const nodes = [root, selected, unselected];
+
+    const ids = nodesToResizeWithGroup(root, nodes).map((n) => n.id);
+    expect(ids).toEqual(['sel']);
+  });
+
+  it('includes full subtree when a nested group is selected', () => {
+    const root = groupNode('root', 0, 0, 600, 500);
+    const nested = groupNode('nested', 80, 80, 200, 160, true);
+    const innerCard = textNode('inner', 120, 120, 120, 80, false);
+    const nodes = [root, nested, innerCard];
+
+    const ids = nodesToResizeWithGroup(root, nodes).map((n) => n.id);
+    expect(ids).toEqual(expect.arrayContaining(['nested', 'inner']));
+  });
+});
+
 describe('createGroupResizeSnapshot + applyGroupResizeToNodes', () => {
   it('scales text cards proportionally when the root group is resized', () => {
     const root = groupNode('g1', 100, 100, 400, 300);
-    const card = textNode('c1', 200, 175, 200, 100);
+    const card = textNode('c1', 200, 175, 200, 100, true);
     const nodes = [root, card];
 
     const snapshot = createGroupResizeSnapshot(root, nodes);
@@ -87,9 +114,29 @@ describe('createGroupResizeSnapshot + applyGroupResizeToNodes', () => {
     expect(nodeSize(resizedCard)).toEqual({ w: 400, h: 200 });
   });
 
+  it('leaves unselected cards unchanged when the root group is resized', () => {
+    const root = groupNode('g1', 100, 100, 400, 300);
+    const card = textNode('c1', 200, 175, 200, 100, false);
+    const nodes = [root, card];
+
+    const snapshot = createGroupResizeSnapshot(root, nodes);
+    expect(snapshot.children).toHaveLength(0);
+
+    const next = applyGroupResizeToNodes(nodes, snapshot, {
+      x: 100,
+      y: 100,
+      width: 800,
+      height: 600,
+    });
+
+    const unchanged = next.find((n) => n.id === 'c1')!;
+    expect(unchanged.position).toEqual(card.position);
+    expect(nodeSize(unchanged)).toEqual(nodeSize(card));
+  });
+
   it('scales nested groups and their children from root snapshot', () => {
     const root = groupNode('root', 0, 0, 400, 400);
-    const nested = groupNode('nested', 50, 50, 150, 120);
+    const nested = groupNode('nested', 50, 50, 150, 120, true);
     const inner = textNode('inner', 80, 80, 80, 60);
     const nodes = [root, nested, inner];
 
@@ -112,7 +159,7 @@ describe('createGroupResizeSnapshot + applyGroupResizeToNodes', () => {
 
   it('does not change nodes outside the group bbox', () => {
     const root = groupNode('g1', 0, 0, 200, 200);
-    const inside = textNode('in', 50, 50);
+    const inside = textNode('in', 50, 50, 200, 100, true);
     const outside = textNode('out', 400, 50);
     const nodes = [root, inside, outside];
 
@@ -131,8 +178,8 @@ describe('createGroupResizeSnapshot + applyGroupResizeToNodes', () => {
 
   it('enforces minimum sizes for text cards and nested groups', () => {
     const root = groupNode('g1', 0, 0, 400, 400);
-    const tinyText = textNode('text', 150, 150, 200, 100);
-    const tinyGroup = groupNode('sub', 160, 160, 180, 140);
+    const tinyText = textNode('text', 150, 150, 200, 100, true);
+    const tinyGroup = groupNode('sub', 160, 160, 180, 140, true);
     const nodes = [root, tinyText, tinyGroup];
 
     const snapshot = createGroupResizeSnapshot(root, nodes);
