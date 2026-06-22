@@ -591,7 +591,7 @@ function MindCanvasInner() {
           connectionMode={ConnectionMode.Loose}
           fitView
           fitViewOptions={{ padding: 0.2 }}
-          minZoom={0.15}
+          minZoom={0.02}
           maxZoom={2}
           panOnScroll={false}
           zoomOnScroll
