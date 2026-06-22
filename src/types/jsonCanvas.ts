@@ -38,6 +38,10 @@ export interface JsonCanvasTextNode extends JsonCanvasNodeBase {
   text: string;
   /** Расширение MindStorm — название карточки в UI */
   label?: string;
+  /** MindStorm: размер шрифта заголовка (px) */
+  labelFontSize?: number;
+  /** MindStorm: размер шрифта тела (px) */
+  textFontSize?: number;
 }
 
 export interface JsonCanvasLinkNode extends JsonCanvasNodeBase {
@@ -91,6 +95,10 @@ export type CardNodeData = {
   text?: string;
   url?: string;
   label?: string;
+  /** MindStorm: размер шрифта заголовка text-карточки (px) */
+  labelFontSize?: number;
+  /** MindStorm: размер шрифта тела text-карточки (px) */
+  textFontSize?: number;
   file?: string;
   color?: CanvasColor;
   i18n?: NodeI18n;

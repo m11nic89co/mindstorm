@@ -52,6 +52,13 @@ export type Messages = {
     card: string;
     groupNamePlaceholder: string;
     cardNamePlaceholder: string;
+    titleFontSize: string;
+    titleFontSizeDecrease: string;
+    titleFontSizeIncrease: string;
+    bodyFontSize: string;
+    bodyFontSizeDecrease: string;
+    bodyFontSizeIncrease: string;
+    fontSizeUnit: string;
     color: string;
   };
   saveModal: {
@@ -190,6 +197,13 @@ export const messagesRu: Messages = {
     card: 'Карточка',
     groupNamePlaceholder: 'Название группы...',
     cardNamePlaceholder: 'Заголовок карточки...',
+    titleFontSize: 'Размер заголовка',
+    titleFontSizeDecrease: 'Уменьшить размер заголовка',
+    titleFontSizeIncrease: 'Увеличить размер заголовка',
+    bodyFontSize: 'Размер текста',
+    bodyFontSizeDecrease: 'Уменьшить размер текста',
+    bodyFontSizeIncrease: 'Увеличить размер текста',
+    fontSizeUnit: 'px',
     color: 'Цвет',
   },
   saveModal: {
@@ -324,6 +338,13 @@ export const messagesEn: Messages = {
     card: 'Card',
     groupNamePlaceholder: 'Group name...',
     cardNamePlaceholder: 'Card title...',
+    titleFontSize: 'Title size',
+    titleFontSizeDecrease: 'Decrease title size',
+    titleFontSizeIncrease: 'Increase title size',
+    bodyFontSize: 'Body text size',
+    bodyFontSizeDecrease: 'Decrease body text size',
+    bodyFontSizeIncrease: 'Increase body text size',
+    fontSizeUnit: 'px',
     color: 'Color',
   },
   saveModal: {
@@ -458,6 +479,13 @@ export const messagesEs: Messages = {
     card: 'Carta',
     groupNamePlaceholder: 'Nombre del grupo...',
     cardNamePlaceholder: 'Título de la carta...',
+    titleFontSize: 'Tamaño del título',
+    titleFontSizeDecrease: 'Reducir tamaño del título',
+    titleFontSizeIncrease: 'Aumentar tamaño del título',
+    bodyFontSize: 'Tamaño del texto',
+    bodyFontSizeDecrease: 'Reducir tamaño del texto',
+    bodyFontSizeIncrease: 'Aumentar tamaño del texto',
+    fontSizeUnit: 'px',
     color: 'Color',
   },
   saveModal: {
@@ -591,6 +619,13 @@ export const messagesZh: Messages = {
     card: '卡片',
     groupNamePlaceholder: '分组名称...',
     cardNamePlaceholder: '卡片标题...',
+    titleFontSize: '标题字号',
+    titleFontSizeDecrease: '减小标题字号',
+    titleFontSizeIncrease: '增大标题字号',
+    bodyFontSize: '正文字号',
+    bodyFontSizeDecrease: '减小正文字号',
+    bodyFontSizeIncrease: '增大正文字号',
+    fontSizeUnit: 'px',
     color: '颜色',
   },
   saveModal: {

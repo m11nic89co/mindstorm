@@ -51,14 +51,16 @@
 ### Пропорциональный resize (реализовано)
 
 ```
-onResizeStart → createGroupResizeSnapshot (центр узла внутри bbox)
+onResizeStart → createGroupResizeSnapshot (выделенные узлы с центром внутри bbox)
 onResize      → applyGroupResizeToNodes (position + width/height ∝ группе)
 onResizeEnd   → commitNow + persistCanvas
 ```
 
 Модуль: `src/lib/groupResize.ts`. Callbacks пробрасываются через `CanvasActionsContext` из `MindCanvas.tsx` в `GroupCardNode`.
 
-- Масштабируются **text-карточки и вложенные группы** (рекурсивно `nodesInsideGroupTree`).
+- Меняется рамка группы всегда; **масштабируются только выделенные** text-карточки и группы (`nodesToResizeWithGroup`).
+- Выделенная вложенная группа → масштабируется вместе с содержимым (рекурсивно через `nodesInsideGroupTree`).
+- Невыделенные карточки внутри рамки остаются на месте с прежним размером.
 - Минимальные размеры: text 160×72, group 220×120.
 - Drag группы не группирует содержимое автоматически; это отдельная запланированная фича.
 

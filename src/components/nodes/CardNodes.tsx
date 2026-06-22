@@ -3,10 +3,11 @@ import {
   type Node,
   type NodeProps,
 } from '@xyflow/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useCanvasActions } from '../../context/canvasActions';
 import { useLocale } from '../../i18n/LocaleProvider';
 import { resolveColor } from '../../lib/colors';
+import { resolveLabelFontSize, resolveTextFontSize } from '../../lib/cardTypography';
 import type { CardNodeData } from '../../types/jsonCanvas';
 import { EdgeHandles } from './edgeHandles';
 
@@ -18,16 +19,26 @@ const resizerHandles =
 const resizerLines = '!border-indigo-400/45';
 
 const cardTitleTypography =
-  'w-full truncate text-[15px] font-semibold leading-snug tracking-tight text-white/95';
+  'w-full truncate font-semibold leading-snug tracking-tight text-white/95';
+
+const cardTitlePlaceholderClass = 'font-medium text-white/35';
 
 const cardBodyTypography =
-  'min-h-[2.5rem] w-full flex-1 text-sm leading-relaxed text-white/88 whitespace-pre-wrap';
+  'min-h-[2.5rem] w-full flex-1 leading-relaxed text-white/88 whitespace-pre-wrap';
 
-function CardBodyText({ text, placeholder }: { text: string; placeholder: string }) {
+function CardBodyText({
+  text,
+  placeholder,
+  style,
+}: {
+  text: string;
+  placeholder: string;
+  style?: CSSProperties;
+}) {
   if (!text) {
-    return <span className={`${cardBodyTypography} text-white/35`}>{placeholder}</span>;
+    return <span className={`${cardBodyTypography} text-white/35`} style={style}>{placeholder}</span>;
   }
-  return <div className={cardBodyTypography}>{text}</div>;
+  return <div className={cardBodyTypography} style={style}>{text}</div>;
 }
 
 export function TextCardNode({ id, data, selected }: TextCardProps) {
@@ -42,6 +53,10 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
   const [optimisticBody, setOptimisticBody] = useState<string | null>(null);
   const bodyTextareaRef = useRef<HTMLTextAreaElement>(null);
   const palette = resolveColor(data.color);
+  const titleFontSize = resolveLabelFontSize(data.labelFontSize);
+  const titleStyle = { fontSize: titleFontSize };
+  const bodyFontSize = resolveTextFontSize(data.textFontSize);
+  const bodyStyle = { fontSize: bodyFontSize };
 
   const storedTitle = data.label ?? '';
   const storedBody = data.text ?? '';
@@ -163,12 +178,14 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
                   }
                 }}
                 className={`${cardTitleTypography} nodrag nopan rounded-md bg-transparent outline-none ring-2 ring-indigo-400/35 placeholder:text-white/35`}
+                style={titleStyle}
                 placeholder={m.card.titlePlaceholder}
                 spellCheck
               />
             ) : (
               <div
                 className={`${cardTitleTypography} min-h-[1.35rem] cursor-text`}
+                style={titleStyle}
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   beginTitleEdit();
@@ -178,7 +195,7 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
                 {visibleTitle ? (
                   visibleTitle
                 ) : (
-                  <span className="font-medium text-white/35">{m.card.titlePlaceholder}</span>
+                  <span className={cardTitlePlaceholderClass}>{m.card.titlePlaceholder}</span>
                 )}
               </div>
             )}
@@ -208,11 +225,12 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
                   }
                 }}
                 className={`${cardBodyTypography} nodrag nopan h-full resize-none bg-transparent outline-none placeholder:text-white/35`}
+                style={bodyStyle}
                 placeholder={m.card.placeholder}
                 spellCheck
               />
             ) : (
-              <CardBodyText text={visibleBody} placeholder={m.card.placeholder} />
+              <CardBodyText text={visibleBody} placeholder={m.card.placeholder} style={bodyStyle} />
             )}
           </div>
         </div>

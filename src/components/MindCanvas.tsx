@@ -32,6 +32,7 @@ import {
   createGroupResizeSnapshot,
   type GroupResizeSnapshot,
 } from '../lib/groupResize';
+import { DOUBLE_CLICK_CARD_COLOR } from '../lib/cardTypography';
 import {
   getDemoBoardName,
   demoFlowPresentation,
@@ -312,7 +313,7 @@ function MindCanvasInner() {
   );
 
   const addTextCard = useCallback(
-    (position?: { x: number; y: number }) => {
+    (position?: { x: number; y: number }, color = '5') => {
       const center = screenToFlowPosition({
         x: window.innerWidth / 2,
         y: window.innerHeight / 2,
@@ -330,7 +331,7 @@ function MindCanvasInner() {
           i18n: Object.fromEntries(
             LOCALES.map((loc) => [loc, { text: messagesFor(loc).card.defaultText, label: '' }]),
           ) as NodeI18n,
-          color: '5',
+          color: color as CardNodeData['color'],
         },
         zIndex: 1,
       };
@@ -379,7 +380,7 @@ function MindCanvasInner() {
       ) {
         paneClickRef.current = null;
         const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
-        addTextCard({ x: position.x - 130, y: position.y - 60 });
+        addTextCard({ x: position.x - 130, y: position.y - 60 }, DOUBLE_CLICK_CARD_COLOR);
         return;
       }
 
@@ -562,8 +563,12 @@ function MindCanvasInner() {
             nodeType={selectedNode.data.canvasType}
             color={selectedNode.data.color}
             label={selectedNode.data.label}
+            labelFontSize={selectedNode.data.labelFontSize}
+            textFontSize={selectedNode.data.textFontSize}
             onColorChange={(color) => updateNode(selectedNode.id, { color })}
             onLabelChange={(label) => updateNode(selectedNode.id, { label })}
+            onLabelFontSizeChange={(size) => updateNode(selectedNode.id, { labelFontSize: size })}
+            onTextFontSizeChange={(size) => updateNode(selectedNode.id, { textFontSize: size })}
           />
         )}
 

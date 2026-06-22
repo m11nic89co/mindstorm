@@ -36,7 +36,7 @@
 - `zIndexMode="manual"`, `elevateNodesOnSelect={false}` на ReactFlow.
 - «Сначала» — **не** вызывает `resetHistory` (нужен Undo).
 - Новые UI-строки — **во все 4 языка** в `messages.ts` (`ru`, `en`, `es`, `zh`).
-- Resize группы масштабирует и карточки, и вложенные группы (рекурсивно) через `groupResize.ts`.
+- Resize группы: меняется рамка; масштабируются только **выделенные** карточки и вложенные группы (рекурсивно для выделенной вложенной группы) через `groupResize.ts` / `nodesToResizeWithGroup`.
 - Text-карточка: `label` (заголовок) и `text` (тело) — **раздельные** зоны в `CardNodes.tsx`; не смешивать при редактировании.
 - Группировка содержимого группы — см. [docs/GROUPING.md](./docs/GROUPING.md) (пока не реализовано).
 
