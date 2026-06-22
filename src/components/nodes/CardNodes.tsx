@@ -29,7 +29,15 @@ const cardBodyTypography =
 
 function LockOpenIcon() {
   return (
-    <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+    <svg
+      viewBox="0 0 20 20"
+      className="block shrink-0"
+      style={{ width: '1em', height: '1em' }}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      aria-hidden
+    >
       <path strokeLinecap="round" d="M5.5 9V6.25a4.25 4.25 0 118.5 0V9" />
       <rect x="4.25" y="9" width="11.5" height="7.75" rx="2" />
     </svg>
@@ -38,7 +46,15 @@ function LockOpenIcon() {
 
 function LockClosedIcon() {
   return (
-    <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+    <svg
+      viewBox="0 0 20 20"
+      className="block shrink-0"
+      style={{ width: '1em', height: '1em' }}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      aria-hidden
+    >
       <rect x="4.25" y="9" width="11.5" height="7.75" rx="2" />
       <path strokeLinecap="round" d="M7 9V6.5a3 3 0 116 0V9" />
     </svg>
@@ -275,6 +291,12 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
     paddingRight: badgeStyle.paddingRight,
     paddingTop: badgeStyle.paddingTop,
     paddingBottom: badgeStyle.paddingBottom,
+    gap: `${Math.max(4, Math.round(badgeStyle.fontSize * 0.2))}px`,
+  };
+
+  const lockButtonStyle: CSSProperties = {
+    padding: `${Math.max(2, Math.round(badgeStyle.fontSize * 0.08))}px`,
+    lineHeight: 0,
   };
 
   const storedLabel = data.label ?? '';
@@ -300,7 +322,7 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
   };
 
   const badgeShellClass =
-    'group-label-badge pointer-events-auto absolute left-4 z-[1] flex max-w-[200px] items-center gap-1 rounded-full font-medium text-white/80';
+    'group-label-badge pointer-events-auto absolute left-4 z-[1] flex max-w-[200px] items-center rounded-full font-medium text-white/80';
 
   const commitLabelEdit = () => {
     const next = inputRef.current?.value ?? '';
@@ -382,7 +404,8 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
             />
             <button
               type="button"
-              className="group-lock-btn nodrag nopan shrink-0 rounded-full p-0.5 text-white/75 transition hover:bg-white/10 hover:text-white"
+              className="group-lock-btn nodrag nopan shrink-0 rounded-full text-white/75 transition hover:bg-white/10 hover:text-white"
+              style={lockButtonStyle}
               onClick={toggleLock}
               title={m.group.lockTitle}
               aria-label={m.group.lockAria}
@@ -407,7 +430,8 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
             </span>
             <button
               type="button"
-              className="group-lock-btn nodrag nopan shrink-0 rounded-full p-0.5 text-white/75 transition hover:bg-white/10 hover:text-white"
+              className="group-lock-btn nodrag nopan shrink-0 rounded-full text-white/75 transition hover:bg-white/10 hover:text-white"
+              style={lockButtonStyle}
               onClick={toggleLock}
               title={locked ? m.group.unlockTitle : m.group.lockTitle}
               aria-label={locked ? m.group.unlockAria : m.group.lockAria}

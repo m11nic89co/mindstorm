@@ -44,7 +44,7 @@
 - **Замок группы** (`locked` в data, `groupLock.ts`): закреплённая группа — только фон; кликабелен замок на метке; `draggable`/`selectable: false`.
 - **Ctrl+C / Ctrl+V** — копия узлов (`nodeClipboard.ts`); горячие клавиши по **`event.code`** (RU/EN раскладка).
 - Text-карточка: `labelFontSize`, `textFontSize` — панель справа; новая карточка по dblclick — цвет **12** (серый).
-- Метка группы: `labelFontSize` до **200 px**; замок на badge в `GroupCardNode`.
+- Метка группы: `labelFontSize` до **200 px**; замок на badge в `GroupCardNode` (иконка **1em** — тот же размер, что текст метки).
 - Text-карточка: `label` (заголовок) и `text` (тело) — **раздельные** зоны в `CardNodes.tsx`; не смешивать при редактировании.
 - Группировка содержимого группы — см. [docs/GROUPING.md](./docs/GROUPING.md) (пока не реализовано).
 
