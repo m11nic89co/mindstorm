@@ -56,10 +56,13 @@ export function useCanvasHistory(
     [bump],
   );
 
-  const commitNow = useCallback(() => {
-    if (applyingRef.current) return;
-    pushSnapshot(nodes, edges);
-  }, [edges, nodes, pushSnapshot]);
+  const commitNow = useCallback(
+    (override?: Partial<CanvasSnapshot>) => {
+      if (applyingRef.current) return;
+      pushSnapshot(override?.nodes ?? nodes, override?.edges ?? edges);
+    },
+    [edges, nodes, pushSnapshot],
+  );
 
   const canUndo = pointerRef.current > 0;
   const canRedo = pointerRef.current < stackRef.current.length - 1;

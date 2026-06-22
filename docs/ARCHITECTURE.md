@@ -5,13 +5,13 @@
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  Browser                                                │
-│  LocaleProvider (RU/EN)                                 │
+│  LocaleProvider (RU/EN/ES/ZH)                           │
 │  ┌─────────────┐    ┌─────────────────────────────────┐ │
 │  │ Toolbar     │    │ React Flow (MindCanvas)         │ │
 │  │ Undo/Redo   │    │  · TextCardNode (z=1)           │ │
 │  │ Save/Open   │    │  · GroupCardNode (z=-1)         │ │
 │  │ Сначала/Демо│    │  · Edges (z=0, animated)        │ │
-│  │ RU | EN     │    └─────────────────────────────────┘ │
+│  │ RU|EN|ES|中 │    └─────────────────────────────────┘ │
 │  └─────────────┘                                        │
 │  SelectionPanel ──► название + 12 цветов                │
 │  EdgeSelectionPanel ► подпись связи                     │
@@ -35,27 +35,32 @@
 
 | Модуль | Роль |
 |--------|------|
-| `messages.ts` | Словари `messagesRu` / `messagesEn` |
+| `messages.ts` | Словари `messagesRu` / `messagesEn` / `messagesEs` / `messagesZh` |
+| `locales.ts` | `LOCALES`, подписи языка, fallback-порядок `pickFromLocaleMap` |
 | `LocaleProvider.tsx` | React-контекст, `document.documentElement.lang` |
 | `localeStorage.ts` | Ключ `mindstorm.locale.v1` |
 
 Компоненты: `const { locale, m } = useLocale()` — все видимые строки из `m.*`.
 
-Демо-контент на доске — `getDemoCanvas(locale)` с полем `i18n`; при смене RU/EN тексты карточек и групп обновляются через `nodeLocale.ts`.
+Демо-контент на доске — `getDemoCanvas(locale)` с полем `i18n`; при смене RU/EN/ES/ZH тексты карточек, групп и подписей связей обновляются через `nodeLocale.ts`.
 
 ## Группы на холсте
 
-Группа — визуальная рамка (без `parentId` в React Flow). «Внутри группы» = карточка **геометрически** в bbox группы.
+Группа — визуальная рамка (без `parentId` в React Flow). «Внутри группы» = **центр** узла в bbox группы.
 
 ### Пропорциональный resize (реализовано)
 
 ```
-onResizeStart → createGroupResizeSnapshot (центр карточки внутри bbox)
+onResizeStart → createGroupResizeSnapshot (центр узла внутри bbox)
 onResize      → applyGroupResizeToNodes (position + width/height ∝ группе)
 onResizeEnd   → commitNow + persistCanvas
 ```
 
 Модуль: `src/lib/groupResize.ts`. Callbacks пробрасываются через `CanvasActionsContext` из `MindCanvas.tsx` в `GroupCardNode`.
+
+- Масштабируются **text-карточки и вложенные группы** (рекурсивно `nodesInsideGroupTree`).
+- Минимальные размеры: text 160×72, group 220×120.
+- Drag группы не группирует содержимое автоматически; это отдельная запланированная фича.
 
 ### Группировка содержимого (запланировано)
 
@@ -102,7 +107,7 @@ onResizeEnd   → commitNow + persistCanvas
 |--------|--------|
 | **Сначала** / **New** | `accent` (бирюзовая рамка) |
 | **↺ Демо** / **↺ Demo** | обычная |
-| **RU \| EN** | компактный переключатель справа |
+| **RU \| EN \| ES \| 中** | компактный переключатель справа |
 
 ## PWA
 

@@ -110,13 +110,13 @@ export function Toolbar({
 }
 
 function LanguageToggle() {
-  const { locale, setLocale } = useLocale();
+  const { locale, m, setLocale } = useLocale();
 
   return (
     <div
       className="flex shrink-0 items-center rounded-lg border border-white/10 bg-black/20 p-0.5"
       role="group"
-      aria-label="Language"
+      aria-label={m.toolbar.languageAria}
     >
       {LOCALES.map((code) => (
         <button

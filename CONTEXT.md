@@ -41,7 +41,7 @@ G:\Мой диск\Projects\MindStorm
 
 Интерактивная доска для брейншторма в духе **Obsidian Canvas**. Формат данных — **JSON Canvas**. Хранение схем — **локально** (файл на диске + черновик в `localStorage`). GitHub OAuth / PAT **удалены** (июнь 2026).
 
-Интерфейс: **русский по умолчанию**, переключатель **RU / EN** в toolbar.
+Интерфейс: **русский по умолчанию**, переключатель **RU / EN / ES / 中** в toolbar.
 
 ---
 
@@ -65,7 +65,8 @@ MindStorm/
 │   ├── ARCHITECTURE.md
 │   ├── DEVELOPMENT.md
 │   ├── FILE_FORMAT.md
-│   └── GROUPING.md         ← план: Группировать / Разгруппировать
+│   ├── GROUPING.md         ← план: Группировать / Разгруппировать
+│   └── PROJECT_INSPECTION_2026-06-22.md ← аудит состояния проекта
 ├── canvases/
 │   └── README.md           ← референсные .canvas (опционально)
 ├── public/                 ← PWA, иконки, manifest
@@ -75,12 +76,13 @@ MindStorm/
 │   ├── App.tsx
 │   ├── main.tsx            ← LocaleProvider
 │   ├── i18n/
-│   │   ├── messages.ts     ← строки RU / EN
+│   │   ├── messages.ts     ← строки RU / EN / ES / ZH
+│   │   ├── locales.ts      ← список локалей + fallback-порядок
 │   │   ├── LocaleProvider.tsx
 │   │   └── localeStorage.ts
 │   ├── components/
 │   │   ├── MindCanvas.tsx  ← главный экран
-│   │   ├── Toolbar.tsx     ← toolbar, RU/EN, панели выделения
+│   │   ├── Toolbar.tsx     ← toolbar, RU/EN/ES/中, панели выделения
 │   │   ├── FileModals.tsx
 │   │   ├── DemoSplash.tsx
 │   │   ├── Toast.tsx
@@ -96,7 +98,8 @@ MindStorm/
 │   │   └── useDebouncedPersist.ts
 │   ├── lib/
 │   │   ├── jsonCanvas.ts
-│   │   ├── demoCanvas.ts   ← двуязычная демо-схема (i18n)
+│   │   ├── demoCanvas.ts   ← демо-схема с i18n
+│   │   ├── demoLocaleCopies.ts ← ES/ZH-копии демо-узлов и связей
 │   │   ├── nodeLocale.ts   ← i18n содержимого карточек/групп/рёбер
 │   │   ├── flowEdges.ts
 │   │   ├── groupResize.ts  ← пропорциональный resize карточек внутри группы
@@ -130,15 +133,16 @@ MindStorm/
 
 - **Undo/Redo** — крупные SVG-кнопки слева.
 - **Сначала** — акцентная кнопка (бирюзовая); **↺ Демо** — обычная.
-- **RU | EN** — переключатель языка (сохраняется в localStorage).
+- **RU | EN | ES | 中** — переключатель языка (сохраняется в localStorage).
 - **SelectionPanel** — название + 12 цветов (6×2) для карточки или группы.
 - **EdgeSelectionPanel** — подпись связи, удаление, перенаправление.
 
 ### `i18n/`
 
-- `messages.ts` — все UI-строки (`messagesRu`, `messagesEn`).
-- `LocaleProvider` — контекст `{ locale, m, setLocale, toggleLocale }`; хук `useLocale()`.
-- Новые строки UI добавлять **в оба языка** в `messages.ts`.
+- `messages.ts` — все UI-строки (`messagesRu`, `messagesEn`, `messagesEs`, `messagesZh`).
+- `locales.ts` — `LOCALES`, подписи кнопок языка, `pickFromLocaleMap` и fallback-порядок.
+- `LocaleProvider` — контекст `{ locale, m, setLocale }`; хук `useLocale()`.
+- Новые строки UI добавлять **во все 4 языка** в `messages.ts`.
 
 ### `jsonCanvas.ts`
 
@@ -149,7 +153,8 @@ MindStorm/
 
 ### `demoCanvas.ts`
 
-- `DEMO_CANVAS_I18N` — одна схема с переводами RU/EN в поле `i18n`.
+- `DEMO_CANVAS_I18N` — одна схема с переводами в поле `i18n` (`ru`, `en`, `es`, `zh`).
+- База RU/EN + доп. копии ES/ZH в `demoLocaleCopies.ts`.
 - `getDemoCanvas(locale)`, `getDemoBoardName(locale)`, `demoFlowPresentation(locale)`, `demoStats(locale)`.
 
 ### `nodeLocale.ts`
@@ -170,8 +175,10 @@ MindStorm/
 
 ### `groupResize.ts`
 
-- На старте resize группы — снимок карточек, чей **центр** внутри bbox группы.
-- Во время resize — пропорциональное изменение `position`, `width`, `height` (мин. 160×72).
+- На старте resize группы — снимок узлов внутри root-группы по критерию центра.
+- Во время resize — пропорциональное изменение `position`, `width`, `height`.
+- Масштабируются **текстовые карточки и вложенные группы** (рекурсивно через `nodesInsideGroupTree`).
+- Минимумы: text 160×72, group 220×120.
 - На `onResizeEnd` — `commitNow()` + `persistCanvas` (история и черновик).
 
 ### `flowEdges.ts`
@@ -199,7 +206,7 @@ MindStorm/
 |------|------------|
 | `mindstorm.canvas.v1` | Черновик схемы (JSON Canvas) |
 | `mindstorm.boardName` | Имя текущей схемы в UI |
-| `mindstorm.locale.v1` | Язык UI: `ru` или `en` |
+| `mindstorm.locale.v1` | Язык UI: `ru` / `en` / `es` / `zh` |
 | `mindstorm.demoWelcomeSeen.v1` | Splash демо уже показывали |
 
 Legacy (миграция при чтении): `mindshtorm.canvas.v1`, `mindshtorm.boardName`.
@@ -214,7 +221,7 @@ Legacy (миграция при чтении): `mindshtorm.canvas.v1`, `mindshto
 | **Загрузить** | Выбор файла. Toast «Открыто: …» / «Opened: …». |
 | **Сначала** (акцент) | Подтверждение → пустая доска; **Undo** вернёт прежнее. |
 | **↺ Демо** | Демо-схема на текущем языке + splash. |
-| **RU / EN** | Смена языка UI **и** содержимого доски (карточки, группы, подписи связей), если есть `i18n`. |
+| **RU / EN / ES / 中** | Смена языка UI **и** содержимого доски (карточки, группы, подписи связей), если есть `i18n`. |
 | **Клик по узлу** | Панель: название + цвет. |
 | **Клик по связи** | Панель: подпись, удаление. |
 
@@ -234,6 +241,8 @@ npm run build
 git push origin main
 ```
 
+Рекомендуемая версия Node.js для локальной разработки и CI: **22 LTS** (минимум 20+).
+
 Git author для deploy-скрипта — через **env vars** (не `git config`):
 
 - `GIT_AUTHOR_NAME=m11nic89co`
@@ -241,13 +250,13 @@ Git author для deploy-скрипта — через **env vars** (не `git c
 
 После деплоя: **Ctrl+Shift+R** на https://m11nic89co.github.io/mindstorm/
 
-CI: `.github/workflows/deploy.yml` — build + GitHub Pages при push в `main`.
+CI: `.github/workflows/deploy.yml` — `npm run test` + build + GitHub Pages при push в `main`.
 
 ---
 
 ## Соглашения для разработки
 
-1. **Язык UI** — русский по умолчанию; все новые строки — в `src/i18n/messages.ts` (RU + EN).
+1. **Язык UI** — русский по умолчанию; все новые строки — в `src/i18n/messages.ts` (RU + EN + ES + ZH).
 2. **Название продукта** — всегда **MindStorm**.
 3. **Минимальный diff** — не рефакторить без запроса.
 4. **Коммиты** — только по явной просьбе пользователя.
@@ -265,10 +274,13 @@ CI: `.github/workflows/deploy.yml` — build + GitHub Pages при push в `main
 | 2026-06 | z-index: группы под рёбрами |
 | 2026-06 | Переименование MindShtorm → **MindStorm**, `.mindstorm` |
 | 2026-06 | 12 цветов, 8 handles, панель выделения, Undo/Redo, «Сначала» + confirm |
-| 2026-06 | Локализация **RU/EN**, две демо-схемы; «Сначала» — accent-кнопка |
+| 2026-06 | Локализация **RU/EN/ES/ZH**, одна демо-схема `DEMO_CANVAS_I18N`; «Сначала» — accent-кнопка |
 | 2026-06 | i18n **содержимого доски** (`nodeLocale.ts`, `i18n` в JSON); разведение параллельных связей |
 | 2026-06 | **Resize группы** — пропорциональное масштабирование карточек внутри (`groupResize.ts`) |
-| 2026-06 | **План:** кнопки «Группировать» / «Разгруппировать» для содержимого группы → [docs/GROUPING.md](./docs/GROUPING.md) |
+| 2026-06 | **Nested resize** — рекурсивное масштабирование вложенных групп и карточек |
+| 2026-06 | Добавлены локали **ES** и **ZH** в UI, демо и i18n узлов/рёбер |
+| 2026-06 | **План:** кнопки «Группировать» / «Разгруппировать» → [docs/GROUPING.md](./docs/GROUPING.md) |
+| 2026-06 | Закрытие техдолга: resize race fix, Vitest, CI test gate, Node 22, i18n aria |
 
 ---
 

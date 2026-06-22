@@ -2,7 +2,7 @@
 
 ## Требования
 
-- **Node.js** 20+ (LTS)
+- **Node.js** 22 LTS (минимум 20+)
 - **npm** 10+
 - Windows: `C:\Program Files\nodejs` в PATH для PowerShell/Cursor
 
@@ -24,6 +24,7 @@ Production: `base: '/mindstorm/'` (`vite.config.ts`).
 | Команда | Действие |
 |---------|----------|
 | `npm run dev` | Vite dev server |
+| `npm run test` | Unit-тесты (Vitest) |
 | `npm run build` | `tsc -b && vite build` → `dist/` |
 | `npm run preview` | Просмотр production build |
 | `npm run deploy:pages` | Build + push `gh-pages` (запасной) |
@@ -32,7 +33,7 @@ Production: `base: '/mindstorm/'` (`vite.config.ts`).
 
 ### Основной способ (рекомендуется)
 
-Push в `main` → **CI** (`.github/workflows/deploy.yml`) → сайт обновляется автоматически.
+Push в `main` → **CI** (`.github/workflows/deploy.yml`) → `npm run test` → `npm run build` → сайт обновляется автоматически.
 
 ```powershell
 $env:Path = "C:\Program Files\nodejs;" + $env:Path
@@ -69,19 +70,20 @@ npm run deploy:pages
 | Задача | Где |
 |--------|-----|
 | Код, Cursor, git commit/push | `G:\Мой диск\Projects\MindStorm` |
-| `npm install` / `npm run build` (если Drive ломает npm) | `C:\Projects\MindStorm` без `.git` |
+| `npm install` / `npm run test` / `npm run build` (если Drive ломает npm) | `C:\Projects\MindStorm` без `.git` |
 
 ```powershell
 robocopy "G:\Мой диск\Projects\MindStorm\src" "C:\Projects\MindStorm\src" /MIR /NFL /NDL /NJH /NJS /nc /ns /np
 cd C:\Projects\MindStorm
+npm.cmd run test
 npm.cmd run build
 ```
 
 ## Локализация (i18n)
 
-1. Строки UI — в `src/i18n/messages.ts` (`messagesRu` и `messagesEn`).
+1. Строки UI — в `src/i18n/messages.ts` (`messagesRu`, `messagesEn`, `messagesEs`, `messagesZh`).
 2. В компонентах: `const { m } = useLocale()` → `m.toolbar.save` и т.д.
-3. Демо-схема — `src/lib/demoCanvas.ts` (`DEMO_CANVAS_I18N`, i18n RU/EN).
+3. Демо-схема — `src/lib/demoCanvas.ts` (`DEMO_CANVAS_I18N`) + `src/lib/demoLocaleCopies.ts` (ES/ZH).
 4. Ключ localStorage: `mindstorm.locale.v1`.
 5. План группировки содержимого группы — [GROUPING.md](./GROUPING.md).
 
@@ -95,4 +97,10 @@ npm.cmd run build
 
 ## TypeScript
 
-Strict через `tsc -b`. Отдельного ESLint нет.
+Strict через `tsc -b`. Автотесты — Vitest (`npm run test`).
+ESLint пока осознанно отложен: текущий quality gate — TypeScript strict + unit-тесты + build в CI.
+
+## CI notes
+
+- GitHub Pages deploy: `.github/workflows/deploy.yml` (build + publish).
+- В CI используется Node setup; держите версию в актуальном LTS (22+), чтобы избежать deprecated-warning на раннерах.

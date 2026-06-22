@@ -25,6 +25,13 @@ const MIN_TEXT_HEIGHT = 72;
 const MIN_GROUP_WIDTH = 220;
 const MIN_GROUP_HEIGHT = 120;
 
+export const GROUP_RESIZE_MIN = {
+  textWidth: MIN_TEXT_WIDTH,
+  textHeight: MIN_TEXT_HEIGHT,
+  groupWidth: MIN_GROUP_WIDTH,
+  groupHeight: MIN_GROUP_HEIGHT,
+} as const;
+
 export function nodeSize(node: Node<CardNodeData>): { w: number; h: number } {
   return {
     w: Number(node.width ?? node.measured?.width ?? node.style?.width ?? 260),

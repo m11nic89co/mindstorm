@@ -8,7 +8,7 @@ alwaysApply: true
 Прочитай **CONTEXT.md** в корне при первом обращении к проекту.
 
 - Название: **MindStorm** (большая S). Не MindShtorm.
-- UI: **RU** по умолчанию, переключатель **RU/EN** в toolbar. Строки — `src/i18n/messages.ts`.
+- UI: **RU** по умолчанию, переключатель **RU/EN/ES/中** в toolbar. Строки — `src/i18n/messages.ts`, локали — `src/i18n/locales.ts`.
 - Коммиты только по запросу пользователя.
 - Группы всегда под линиями связей (`src/index.css`, z-index -1).
 - Сохранение локальное (`.mindstorm`), GitHub auth удалён.

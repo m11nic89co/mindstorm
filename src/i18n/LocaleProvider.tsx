@@ -8,7 +8,6 @@ type LocaleContextValue = {
   locale: Locale;
   m: Messages;
   setLocale: (locale: Locale) => void;
-  toggleLocale: () => void;
 };
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
@@ -21,20 +20,13 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     writeLocale(next);
   }, []);
 
-  const toggleLocale = useCallback(() => {
-    setLocale(locale === 'ru' ? 'en' : 'ru');
-  }, [locale, setLocale]);
-
   const m = useMemo(() => messagesFor(locale), [locale]);
 
   useEffect(() => {
     document.documentElement.lang = LOCALE_HTML_LANG[locale];
   }, [locale]);
 
-  const value = useMemo(
-    () => ({ locale, m, setLocale, toggleLocale }),
-    [locale, m, setLocale, toggleLocale],
-  );
+  const value = useMemo(() => ({ locale, m, setLocale }), [locale, m, setLocale]);
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }

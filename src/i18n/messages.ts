@@ -19,6 +19,7 @@ export type Messages = {
     demo: string;
     demoTitle: string;
     statsTitle: string;
+    languageAria: string;
   };
   hints: {
     desktop: string;
@@ -153,6 +154,7 @@ export const messagesRu: Messages = {
     demo: 'Демо',
     demoTitle: 'Загрузить демо-схему MindStorm',
     statsTitle: 'Сколько карточек и линий на доске',
+    languageAria: 'Язык интерфейса',
   },
   hints: {
     desktop:
@@ -284,6 +286,7 @@ export const messagesEn: Messages = {
     demo: 'Demo',
     demoTitle: 'Load the MindStorm demo board',
     statsTitle: 'Number of cards and connections on the board',
+    languageAria: 'Interface language',
   },
   hints: {
     desktop:
@@ -415,6 +418,7 @@ export const messagesEs: Messages = {
     demo: 'Demo',
     demoTitle: 'Cargar el tablero demo de MindStorm',
     statsTitle: 'Número de cartas y conexiones en el tablero',
+    languageAria: 'Idioma de la interfaz',
   },
   hints: {
     desktop:
@@ -546,6 +550,7 @@ export const messagesZh: Messages = {
     demo: '演示',
     demoTitle: '加载 MindStorm 演示画布',
     statsTitle: '画布上的卡片和连线数量',
+    languageAria: '界面语言',
   },
   hints: {
     desktop: '双击 — 新卡片 · 点击节点 — 名称和颜色 · 点击连线 — 标签 · Delete',

@@ -106,6 +106,7 @@ function MindCanvasInner() {
   const edgesRef = useRef(edges);
   const connectStartNodeRef = useRef<string | null>(null);
   const groupResizeSnapshotRef = useRef<GroupResizeSnapshot | null>(null);
+  const groupResizeLatestNodesRef = useRef<Node<CardNodeData>[] | null>(null);
   nodesRef.current = nodes;
   edgesRef.current = edges;
   const toastTimer = useRef<number | undefined>(undefined);
@@ -143,6 +144,7 @@ function MindCanvasInner() {
   const onGroupResizeStart = useCallback((groupId: string) => {
     dragPausedRef.current = true;
     setGroupResizingId(groupId);
+    groupResizeLatestNodesRef.current = null;
     const group = nodesRef.current.find((n) => n.id === groupId);
     if (!group) return;
     groupResizeSnapshotRef.current = createGroupResizeSnapshot(group, nodesRef.current);
@@ -153,25 +155,31 @@ function MindCanvasInner() {
       const snapshot = groupResizeSnapshotRef.current;
       if (!snapshot || snapshot.groupId !== groupId) return;
       const group = nodesRef.current.find((n) => n.id === groupId);
-      setNodes((nds) =>
-        applyGroupResizeToNodes(nds, snapshot, {
+      setNodes((nds) => {
+        const next = applyGroupResizeToNodes(nds, snapshot, {
           x: params.x ?? group?.position.x ?? snapshot.groupX,
           y: params.y ?? group?.position.y ?? snapshot.groupY,
           width: params.width,
           height: params.height,
-        }),
-      );
+        });
+        groupResizeLatestNodesRef.current = next;
+        nodesRef.current = next;
+        return next;
+      });
     },
     [setNodes],
   );
 
   const onGroupResizeEnd = useCallback(
     (_groupId: string) => {
+      const finalNodes = groupResizeLatestNodesRef.current ?? nodesRef.current;
+      groupResizeLatestNodesRef.current = null;
+      groupResizeSnapshotRef.current = null;
+      nodesRef.current = finalNodes;
       dragPausedRef.current = false;
       setGroupResizingId(null);
-      groupResizeSnapshotRef.current = null;
-      commitNow();
-      persistCanvas(nodesRef.current, edgesRef.current);
+      commitNow({ nodes: finalNodes });
+      persistCanvas(finalNodes, edgesRef.current);
     },
     [commitNow],
   );
