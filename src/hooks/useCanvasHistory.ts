@@ -133,13 +133,13 @@ export function runHistoryShortcut(
   if (!event.metaKey && !event.ctrlKey) return false;
   if (isTypingTarget(event.target)) return false;
 
-  const key = event.key.toLowerCase();
-  if (key === 'z' && !event.shiftKey) {
+  // event.code — физическая клавиша (KeyZ/KeyY), не зависит от RU/EN раскладки
+  if (event.code === 'KeyZ' && !event.shiftKey) {
     event.preventDefault();
     undo();
     return true;
   }
-  if (key === 'y' || (key === 'z' && event.shiftKey)) {
+  if (event.code === 'KeyY' || (event.code === 'KeyZ' && event.shiftKey)) {
     event.preventDefault();
     redo();
     return true;

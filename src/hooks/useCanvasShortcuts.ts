@@ -21,14 +21,14 @@ export function useCanvasShortcuts({
       if (runHistoryShortcut(event, undo, redo)) return;
 
       if ((event.ctrlKey || event.metaKey) && !event.altKey) {
-        const key = event.key.toLowerCase();
-        if (key === 'c' && onCopySelection) {
+        // event.code — физическая клавиша, работает при RU/EN раскладке
+        if (event.code === 'KeyC' && onCopySelection) {
           if (isTypingTarget(event.target)) return;
           event.preventDefault();
           onCopySelection();
           return;
         }
-        if (key === 'v' && onPasteClipboard) {
+        if (event.code === 'KeyV' && onPasteClipboard) {
           if (isTypingTarget(event.target)) return;
           event.preventDefault();
           onPasteClipboard();
