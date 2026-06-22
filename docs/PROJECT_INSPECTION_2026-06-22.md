@@ -78,4 +78,5 @@
 ~~3. Ввести минимальный quality gate в CI: test + build~~ ✅  
 ~~4. Уточнить Node policy (22 LTS)~~ ✅  
 
-См. [TECH_DEBT_PLAN.md](./TECH_DEBT_PLAN.md) — чекпоинты и финальная приёмка по мере прохождения CI.
+См. [TECH_DEBT_PLAN.md](./TECH_DEBT_PLAN.md) — чекпоинты закрыты 2026-06-22.  
+CI: run `27961757501` (commit `3b75326`) — success.
