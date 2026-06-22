@@ -141,10 +141,7 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
         <EdgeHandles />
 
         <div className="flex h-full min-h-0 flex-col">
-          <div
-            className="shrink-0 border-b px-4 pb-2.5 pt-3"
-            style={{ borderColor: `${palette.border}` }}
-          >
+          <div className="shrink-0 border-b border-white/40 px-4 pb-2.5 pt-3">
             {editingTitle ? (
               <input
                 key={titleEditSession}
