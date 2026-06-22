@@ -142,7 +142,7 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
 
         <div className="flex h-full min-h-0 flex-col">
           <div
-            className="nodrag nopan shrink-0 border-b px-4 pb-2.5 pt-3"
+            className="shrink-0 border-b px-4 pb-2.5 pt-3"
             style={{ borderColor: `${palette.border}` }}
           >
             {editingTitle ? (
@@ -171,7 +171,7 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
               />
             ) : (
               <div
-                className={`${cardTitleTypography} nodrag nopan min-h-[1.35rem] cursor-text`}
+                className={`${cardTitleTypography} min-h-[1.35rem] cursor-text`}
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   beginTitleEdit();
@@ -188,7 +188,7 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
           </div>
 
           <div
-            className="nodrag nopan flex min-h-0 flex-1 flex-col overflow-auto px-4 py-3"
+            className="flex min-h-0 flex-1 flex-col overflow-auto px-4 py-3"
             onDoubleClick={(e) => {
               e.stopPropagation();
               beginBodyEdit();
