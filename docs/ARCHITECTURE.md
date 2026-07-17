@@ -10,8 +10,7 @@
 │  │ Toolbar     │    │ React Flow (MindCanvas)         │ │
 │  │ Undo/Redo   │    │  · TextCardNode (z=1)           │ │
 │  │ Text/Card/Grp│   │  · PlainTextNode (z=1)         │ │
-│  │ Save/Open   │    │  · GroupCardNode (z=-1)         │ │
-│  │ 🖨 / ☀☾    │    │  · Edges (z=0, animated)        │ │
+│  │ 📂💾🖨☀☾   │    │  · GroupCardNode (z=-1)         │ │
 │  │ Сначала/Демо│    └─────────────────────────────────┘ │
 │  │ RU|EN|ES|中 │                                        │
 │  └─────────────┘                                        │
@@ -56,7 +55,7 @@
 | `PrintBoardModal` | Диалог: вся схема / только выделенное + layoutHint |
 | `MindCanvas.tsx` | Пауза history/persist; `isPrinting` — без MiniMap/Controls; `setPrintLight`; fitView; restore |
 | `ThemeProvider` | `setPrintLight` — light-палитра на время печати (читаемый текст) |
-| `index.css` | `@page A4 landscape`, тёмный текст карточек, скрытие panel/minimap / `.no-print` |
+| `index.css` | `@page A4 landscape`, тёмный текст карточек, серый фон подписей рёбер, скрытие panel/minimap / `.no-print` |
 
 Выделение: клик / Shift+клик / ПКМ-рамка. В фрагмент входят выделенные узлы, endpoints выделенных рёбер и все рёбра между узлами фрагмента. **300 DPI** задаётся в диалоге печати ОС (браузер не форсирует DPI).
 
@@ -173,7 +172,7 @@ toggle     → updateNode({ locked }) в GroupCardNode (кнопка на badge)
 |--------|--------|
 | **Сначала** / **New** | `accent` (бирюзовая рамка) |
 | **T Текст** → **+ Карточка** → **◻ Группа** | слева направо: plain → card → group |
-| **🖨** / **☀☾** | одинаковые icon-кнопки рядом → PrintModal / theme toggle |
+| **📂 → 💾 → 🖨 → ☀☾** | справа: Load → Save → Print → Theme (`IconToolbarButton`) |
 | **↺ Демо** / **↺ Demo** | обычная |
 | **RU \| EN \| ES \| 中** | компактный переключатель справа |
 

@@ -94,9 +94,9 @@ npm.cmd run build
 2. Цвета карточек зависят от темы: `resolveColor(color, theme)`; цвет plain-текста — `textInk(color, theme)`.
 3. Печать: фрагмент — `src/lib/printBoard.ts`; layout — `PRINT_SCALE = 1` в `src/lib/printLayout.ts`; UI — `PrintBoardModal`.
 4. На время печати: `setPrintLight(true)` + MiniMap/Controls **не монтируются** (`isPrinting`) — иначе Tailwind `sm:!block` пробивает `@media print`.
-5. Print CSS: A4 landscape; тёмный текст карточек (иначе white-on-white в dark); chrome — `.no-print`.
+5. Print CSS: A4 landscape; тёмный текст карточек (иначе white-on-white в dark); подписи рёбер — серый `.react-flow__edge-textbg`; chrome — `.no-print`.
 6. Plain-текст: RF `plainText`, файл `plain: true` на `type: "text"`.
-7. Save: PNG по умолчанию (`exportPng.ts`); папка — `fileHandleStorage.ts` (IndexedDB).
+7. Save/Load: иконки справа **Загрузить → Сохранить → Печать → Тема** (`IconToolbarButton`); PNG по умолчанию (`exportPng.ts`); папка — `fileHandleStorage.ts` (IndexedDB).
 
 ## Git
 

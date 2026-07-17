@@ -72,15 +72,13 @@ export function Toolbar({
         }}
       >
         <div
-          className="mr-1 flex shrink-0 items-center gap-1.5 border-r pr-2 sm:mr-2 sm:gap-2 sm:pr-3"
+          className="mr-1 flex shrink-0 items-center gap-2 border-r pr-2 sm:mr-2 sm:pr-3"
           style={{ borderColor: 'var(--ms-panel-border)' }}
         >
           <LogoMark />
           <div className="text-sm font-semibold tracking-tight" style={{ color: 'var(--ms-text)' }}>
             MindStorm
           </div>
-          <SaveButton onClick={onSave} />
-          <LoadButton onClick={onLoad} />
         </div>
 
         <div
@@ -129,6 +127,8 @@ export function Toolbar({
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
+          <LoadButton onClick={onLoad} />
+          <SaveButton onClick={onSave} />
           <PrintButton onClick={onPrint} />
           <ThemeToggle />
         </div>

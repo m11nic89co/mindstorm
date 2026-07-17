@@ -9,10 +9,10 @@
 - Ответы пользователю — **на русском**.
 - UI приложения: **RU по умолчанию**, есть **EN / ES / ZH** (`src/i18n/messages.ts`, `src/i18n/locales.ts`).
 - Тема: **dark по умолчанию**, переключение light/dark (`src/theme/`, `mindstorm.theme.v1`).
-- Печать: диалог вся/выделение; A4 landscape, `fitView` + `PRINT_SCALE = 1`, читаемый текст (`setPrintLight` + print CSS), без minimap (`printBoard.ts`, `printLayout.ts`).
+- Печать: диалог вся/выделение; A4 landscape, `fitView` + `PRINT_SCALE = 1`, читаемый текст (`setPrintLight` + print CSS), серые подписи связей, без minimap (`printBoard.ts`, `printLayout.ts`).
 - Простой текст: `plainText` / `plain: true` — цвет + размер, без рамки карточки.
 - Сохранение: PNG по умолчанию (`exportPng.ts`); `.mindstorm` для редактирования; папка — IndexedDB (`fileHandleStorage.ts`).
-- Toolbar узлы слева направо: **Текст → Карточка → Группа**.
+- Toolbar: справа иконки **Загрузить → Сохранить → Печать → Тема**; узлы слева направо **Текст → Карточка → Группа**.
 - Коммиты и push — **только по явной просьбе**.
 
 ## Критичные файлы
@@ -57,7 +57,8 @@
 - Text-карточка: `label` (заголовок) и `text` (тело) — **раздельные** зоны в `CardNodes.tsx`; не смешивать при редактировании.
 - Plain-текст: `canvasType: 'plain'`, RF type `plainText`; в файле `type: "text"` + `plain: true`; цвет через `textInk`, не через фон карточки.
 - Тема: chrome через `--ms-*` и `data-theme`; карточки — `resolveColor(..., theme)`; не хардкодить только dark-цвета в новом UI.
-- Печать: не писать `hidden` в черновик — пауза `dragPausedRef` + restore после `afterprint`; UI chrome — `.no-print`; layout — A4 landscape + `PRINT_SCALE` 1 (`printLayout.ts`); на время печати — `setPrintLight(true)` (читаемый текст на белой бумаге); **MiniMap/Controls** — не рендерить при `isPrinting` (CSS одного `display:none` недостаточно из‑за `sm:!block`).
+- Печать: не писать `hidden` в черновик — пауза `dragPausedRef` + restore после `afterprint`; UI chrome — `.no-print`; layout — A4 landscape + `PRINT_SCALE` 1 (`printLayout.ts`); на время печати — `setPrintLight(true)` (читаемый текст на белой бумаге); подписи рёбер — серый фон (`.react-flow__edge-textbg`); **MiniMap/Controls** — не рендерить при `isPrinting` (CSS одного `display:none` недостаточно из‑за `sm:!block`).
+- Toolbar: **Load → Save → Print → Theme** — `IconToolbarButton` справа (не у логотипа).
 - PNG — только превью; редактируемая схема — `.mindstorm` / `.canvas`.
 - Группировка содержимого группы — см. [docs/GROUPING.md](./docs/GROUPING.md) (пока не реализовано).
 
