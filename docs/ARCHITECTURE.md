@@ -54,7 +54,8 @@
 | `PrintBoardModal` | Диалог: вся схема / только выделенное + layoutHint |
 | `MindCanvas.tsx` | Пауза history/persist; `isPrinting` — без MiniMap/Controls; `setPrintLight`; fitView; restore |
 | `ThemeProvider` | `setPrintLight` — light-палитра на время печати (читаемый текст) |
-| `index.css` | `@page A4 landscape`, тёмный текст карточек, серый фон подписей рёбер, скрытие panel/minimap / `.no-print` |
+| `index.css` | `@page A4 landscape`, тёмный текст карточек, `.ms-edge-label` на печати, скрытие panel/minimap / `.no-print` |
+| `MindSmoothStepEdge.tsx` | HTML-подписи рёбер (`EdgeLabelRenderer`) — без обрезки на печати |
 
 Выделение: клик / Shift+клик / ПКМ-рамка. В фрагмент входят выделенные узлы, endpoints выделенных рёбер и все рёбра между узлами фрагмента. **300 DPI** задаётся в диалоге печати ОС (браузер не форсирует DPI).
 

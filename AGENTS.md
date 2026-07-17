@@ -9,7 +9,7 @@
 - Ответы пользователю — **на русском**.
 - UI приложения: **RU по умолчанию**, есть **EN / ES / ZH** (`src/i18n/messages.ts`, `src/i18n/locales.ts`).
 - Тема: **dark по умолчанию**, переключение light/dark (`src/theme/`, `mindstorm.theme.v1`).
-- Печать: диалог вся/выделение; A4 landscape, `fitView` + `PRINT_SCALE = 1`, читаемый текст (`setPrintLight` + print CSS), серые подписи связей, без minimap (`printBoard.ts`, `printLayout.ts`).
+- Печать: диалог вся/выделение; A4 landscape, `fitView` + `PRINT_SCALE = 1`, читаемый текст (`setPrintLight` + print CSS), подписи связей — HTML (`.ms-edge-label`, без обрезки), без minimap.
 - Простой текст: `plainText` / `plain: true` — цвет + размер, без рамки карточки.
 - Сохранение: оба файла в папку saves — `.mindstorm` + PNG (`exportPng.ts`, `showDirectoryPicker`); папка — IndexedDB (`fileHandleStorage.ts`).
 - Toolbar: справа **Сначала → Загрузить → Сохранить → Печать → Тема**; текстовые **Демо → Текст → Карточка → Группа**; hover-подсказки под курсором (`useHoverTip`).
@@ -27,6 +27,7 @@
 | PNG / папка save-load | `src/lib/exportPng.ts`, `src/lib/fileHandleStorage.ts` |
 | Локализация | `src/i18n/messages.ts`, `src/i18n/locales.ts`, `LocaleProvider.tsx` |
 | Точки связи | `src/components/nodes/edgeHandles.tsx` |
+| Подписи связей | `src/components/edges/MindSmoothStepEdge.tsx` (HTML `EdgeLabelRenderer`) |
 | Слои групп/рёбер | `src/index.css` |
 | Save/load / storage | `src/lib/localBoardFile.ts`, `src/lib/boardStorage.ts`, `fileHandleStorage.ts`, `exportPng.ts` |
 | JSON Canvas | `src/lib/jsonCanvas.ts`, `src/lib/flowEdges.ts` |
@@ -57,7 +58,7 @@
 - Text-карточка: `label` (заголовок) и `text` (тело) — **раздельные** зоны в `CardNodes.tsx`; не смешивать при редактировании.
 - Plain-текст: `canvasType: 'plain'`, RF type `plainText`; в файле `type: "text"` + `plain: true`; цвет через `textInk`, не через фон карточки.
 - Тема: chrome через `--ms-*` и `data-theme`; карточки — `resolveColor(..., theme)`; не хардкодить только dark-цвета в новом UI.
-- Печать: не писать `hidden` в черновик — пауза `dragPausedRef` + restore после `afterprint`; UI chrome — `.no-print`; layout — A4 landscape + `PRINT_SCALE` 1 (`printLayout.ts`); на время печати — `setPrintLight(true)` (читаемый текст на белой бумаге); подписи рёбер — серый фон (`.react-flow__edge-textbg`); **MiniMap/Controls** — не рендерить при `isPrinting` (CSS одного `display:none` недостаточно из‑за `sm:!block`).
+- Печать: не писать `hidden` в черновик — пауза `dragPausedRef` + restore после `afterprint`; UI chrome — `.no-print`; layout — A4 landscape + `PRINT_SCALE` 1 (`printLayout.ts`); на время печати — `setPrintLight(true)`; подписи рёбер — **HTML** `.ms-edge-label` (не SVG EdgeText — иначе длинный текст режется на печати); серый фон на `@media print`; **MiniMap/Controls** — не рендерить при `isPrinting`.
 - Toolbar: **New → Load → Save → Print → Theme** — `IconToolbarButton` справа («Сначала» = чистый лист с +); подсказки снизу от курсора.
 - Save: в выбранную папку сразу **`.mindstorm` + `.png`** (`resolveSavesDirectory`).
 - PNG — превью рядом с JSON; редактируемая схема — `.mindstorm` / `.canvas`.
