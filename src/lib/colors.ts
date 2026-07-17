@@ -74,3 +74,25 @@ export function swatchTitle(
 ): string {
   return colorNames?.[color] ?? PRESET_COLORS_DARK[color]?.name ?? customLabel;
 }
+
+/** Насыщенный цвет текста для plain-узлов (читаемый на светлой и тёмной теме). */
+const TEXT_INK: Record<string, string> = {
+  '1': '#ef4444',
+  '2': '#f97316',
+  '3': '#ca8a04',
+  '4': '#16a34a',
+  '5': '#0891b2',
+  '6': '#9333ea',
+  '7': '#e11d48',
+  '8': '#c026d3',
+  '9': '#65a30d',
+  '10': '#0d9488',
+  '11': '#2563eb',
+  '12': '#64748b',
+};
+
+export function textInk(color?: CanvasColor, theme: Theme = 'dark'): string {
+  if (color && color in TEXT_INK) return TEXT_INK[color];
+  if (color && typeof color === 'string' && color.startsWith('#')) return color;
+  return theme === 'light' ? '#0f172a' : '#e2e8f0';
+}

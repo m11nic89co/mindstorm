@@ -47,8 +47,12 @@ export function isTextCardNode(node: Node<CardNodeData>): boolean {
   return node.data.canvasType === 'text' || node.type === 'textCard';
 }
 
+export function isPlainTextNode(node: Node<CardNodeData>): boolean {
+  return node.data.canvasType === 'plain' || node.type === 'plainText';
+}
+
 export function isResizableGroupContent(node: Node<CardNodeData>): boolean {
-  return isTextCardNode(node) || isGroupNode(node);
+  return isTextCardNode(node) || isPlainTextNode(node) || isGroupNode(node);
 }
 
 export function nodeCenter(node: Node<CardNodeData>): { x: number; y: number } {

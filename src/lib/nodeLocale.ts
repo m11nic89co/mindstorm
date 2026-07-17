@@ -30,7 +30,7 @@ export function materializeNodeLocale(data: CardNodeData, locale: Locale): CardN
   const copy = pickLocaleCopy(i18n, locale);
   const next: CardNodeData = { ...data, i18n };
 
-  if (data.canvasType === 'text') {
+  if (data.canvasType === 'text' || data.canvasType === 'plain') {
     if (copy?.text !== undefined) next.text = copy.text;
     if (copy?.label !== undefined) next.label = copy.label;
   } else if (data.canvasType === 'group' && copy?.label !== undefined) {

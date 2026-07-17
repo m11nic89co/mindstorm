@@ -35,7 +35,7 @@
 
 | type | Поля | Описание |
 |------|------|----------|
-| `text` | `text`, `label?` | Карточка: `label` — заголовок (верх в UI), `text` — тело (низ); поля независимы |
+| `text` | `text`, `label?`, `plain?` | Карточка (`label` + `text`) или **простой текст** (`plain: true` — только `text`, без рамки) |
 | `group` | `label?` | Группа |
 | `link` | `url` | Ссылка — тип в коде, UI минимален |
 | `file` | `file` | Файл Obsidian — тип в коде, UI минимален |
@@ -48,7 +48,8 @@
 |------|-----|----------|
 | `label` | `text` | Заголовок карточки (верхняя зона в UI) |
 | `labelFontSize` | `text` | Размер шрифта заголовка (px, 10–36, default 15) |
-| `textFontSize` | `text` | Размер шрифта тела (px, 10–36, default 14) |
+| `textFontSize` | `text` | Размер шрифта тела / plain-текста (карточка: 10–36; plain: 10–96) |
+| `plain` | `text` | `true` — простой текст на холсте (без карточки), цвет = цвет текста |
 | `labelFontSize` | `group` | Размер шрифта метки группы (px, 8–200, default 12) |
 | `locked` | `group` | `true` — группа закреплена как фон (см. `groupLock.ts`) |
 | `i18n` | `text`, `group`, `edges` | Переводы (`ru`, `en`, `es`, `zh`): `*.text`, `*.label` |

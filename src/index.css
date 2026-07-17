@@ -169,11 +169,13 @@ body {
   z-index: -1 !important;
 }
 
-.mind-canvas .react-flow__node-textCard {
+.mind-canvas .react-flow__node-textCard,
+.mind-canvas .react-flow__node-plainText {
   z-index: 1 !important;
 }
 
-.mind-canvas .react-flow__node-textCard.selected {
+.mind-canvas .react-flow__node-textCard.selected,
+.mind-canvas .react-flow__node-plainText.selected {
   z-index: 2 !important;
 }
 
@@ -190,9 +192,11 @@ body {
 
 /* Группа под карточками — ручки resize не должны перекрываться содержимым */
 .mind-canvas.mind-canvas--group-selected .react-flow__node-textCard,
+.mind-canvas.mind-canvas--group-selected .react-flow__node-plainText,
 .mind-canvas.mind-canvas--group-selected .react-flow__node-groupCard .card-face,
 .mind-canvas.mind-canvas--group-selected .react-flow__node-groupCard .react-flow__handle,
 .mind-canvas.mind-canvas--group-resizing .react-flow__node-textCard,
+.mind-canvas.mind-canvas--group-resizing .react-flow__node-plainText,
 .mind-canvas.mind-canvas--group-resizing .react-flow__node-groupCard .card-face,
 .mind-canvas.mind-canvas--group-resizing .react-flow__node-groupCard .react-flow__handle {
   pointer-events: none !important;
@@ -372,24 +376,26 @@ body {
   animation: donate-copy-pulse 0.45s ease-out;
 }
 
-/* --- Печать: только холст --- */
+/* --- Печать: A4 альбом, по центру, без chrome/minimap --- */
 @media print {
   @page {
-    margin: 8mm;
-    size: auto;
+    size: A4 landscape;
+    margin: 12mm;
   }
 
   html,
   body,
   #root {
-    height: auto !important;
-    overflow: visible !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    overflow: hidden !important;
     background: #fff !important;
   }
 
   body * {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .no-print {
@@ -397,9 +403,13 @@ body {
   }
 
   .mind-board-shell {
-    height: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
     min-height: 0 !important;
-    overflow: visible !important;
+    overflow: hidden !important;
     background: #fff !important;
   }
 
@@ -407,17 +417,22 @@ body {
     display: none !important;
   }
 
-  .mind-canvas.react-flow,
-  .mind-canvas .react-flow__renderer,
-  .mind-canvas .react-flow__viewport {
+  .mind-canvas.react-flow {
     width: 100% !important;
-    height: auto !important;
-    min-height: 70vh !important;
+    height: 100% !important;
+    background: #fff !important;
+  }
+
+  .mind-canvas .react-flow__renderer {
+    width: 100% !important;
+    height: 100% !important;
   }
 
   .mind-canvas .react-flow__controls,
   .mind-canvas .react-flow__minimap,
-  .mind-canvas .react-flow__panel {
+  .mind-canvas .react-flow__panel,
+  .mind-canvas .react-flow__attribution,
+  .mind-canvas .react-flow__background {
     display: none !important;
   }
 

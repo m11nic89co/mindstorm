@@ -182,6 +182,10 @@ export function PrintBoardModal({
         />
       </div>
 
+      <p className="mt-3 text-[11px] leading-snug" style={{ color: 'var(--ms-text-faint)' }}>
+        {m.printModal.layoutHint}
+      </p>
+
       <div className="mt-4 flex gap-2">
         <button
           type="button"

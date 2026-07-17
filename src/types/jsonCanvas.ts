@@ -42,6 +42,8 @@ export interface JsonCanvasTextNode extends JsonCanvasNodeBase {
   labelFontSize?: number;
   /** MindStorm: размер шрифта тела (px) */
   textFontSize?: number;
+  /** MindStorm: простой текст на холсте (без рамки карточки) */
+  plain?: boolean;
 }
 
 export interface JsonCanvasLinkNode extends JsonCanvasNodeBase {
@@ -95,13 +97,13 @@ export interface JsonCanvas {
 }
 
 export type CardNodeData = {
-  canvasType: 'text' | 'link' | 'group' | 'file';
+  canvasType: 'text' | 'plain' | 'link' | 'group' | 'file';
   text?: string;
   url?: string;
   label?: string;
   /** MindStorm: размер шрифта заголовка карточки или метки группы (px) */
   labelFontSize?: number;
-  /** MindStorm: размер шрифта тела text-карточки (px) */
+  /** MindStorm: размер шрифта тела text-карточки / plain-текста (px) */
   textFontSize?: number;
   /** MindStorm: группа закреплена — только фон, активен замок на метке */
   locked?: boolean;

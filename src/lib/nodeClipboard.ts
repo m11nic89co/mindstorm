@@ -4,7 +4,7 @@ import type { CardNodeData } from '../types/jsonCanvas';
 export const PASTE_OFFSET = { x: 28, y: 28 } as const;
 
 export function isCopyableNode(node: Node<CardNodeData>): boolean {
-  return node.type === 'textCard' || node.type === 'groupCard';
+  return node.type === 'textCard' || node.type === 'plainText' || node.type === 'groupCard';
 }
 
 export function cloneNodeForPaste(
@@ -29,6 +29,6 @@ export function mergePastedNodes(
 ): Node<CardNodeData>[] {
   const deselected = existing.map((node) => ({ ...node, selected: false }));
   const groups = pasted.filter((node) => node.type === 'groupCard');
-  const cards = pasted.filter((node) => node.type === 'textCard');
+  const cards = pasted.filter((node) => node.type === 'textCard' || node.type === 'plainText');
   return [...groups, ...cards, ...deselected];
 }

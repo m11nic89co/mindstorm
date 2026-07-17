@@ -23,3 +23,18 @@ export function resolveTextFontSize(size?: number): number {
   if (size == null || !Number.isFinite(size)) return DEFAULT_TEXT_FONT_SIZE;
   return clampCardFontSize(size);
 }
+
+/** Простой текст на холсте (без карточки). */
+export const DEFAULT_PLAIN_FONT_SIZE = 18;
+export const MIN_PLAIN_FONT_SIZE = 10;
+export const MAX_PLAIN_FONT_SIZE = 96;
+export const DEFAULT_PLAIN_COLOR = '12';
+
+export function clampPlainFontSize(size: number): number {
+  return Math.min(MAX_PLAIN_FONT_SIZE, Math.max(MIN_PLAIN_FONT_SIZE, Math.round(size)));
+}
+
+export function resolvePlainFontSize(size?: number): number {
+  if (size == null || !Number.isFinite(size)) return DEFAULT_PLAIN_FONT_SIZE;
+  return clampPlainFontSize(size);
+}

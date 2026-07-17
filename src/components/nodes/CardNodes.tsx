@@ -6,9 +6,13 @@ import {
 import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react';
 import { useCanvasActions } from '../../context/canvasActions';
 import { useLocale } from '../../i18n/LocaleProvider';
-import { resolveColor } from '../../lib/colors';
+import { resolveColor, textInk } from '../../lib/colors';
 import { groupLabelBadgeStyle } from '../../lib/groupLabel';
-import { resolveLabelFontSize, resolveTextFontSize } from '../../lib/cardTypography';
+import {
+  resolveLabelFontSize,
+  resolvePlainFontSize,
+  resolveTextFontSize,
+} from '../../lib/cardTypography';
 import { useTheme } from '../../theme/ThemeProvider';
 import type { CardNodeData } from '../../types/jsonCanvas';
 import { EdgeHandles } from './edgeHandles';
@@ -441,6 +445,111 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
             >
               {locked ? <LockClosedIcon /> : <LockOpenIcon />}
             </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+/** Простой текст на холсте — без рамки карточки, цвет и размер настраиваются. */
+export function PlainTextNode({ id, data, selected }: TextCardProps) {
+  const { updateNode } = useCanvasActions();
+  const { m } = useLocale();
+  const { theme } = useTheme();
+  const [editing, setEditing] = useState(false);
+  const [editSession, setEditSession] = useState(0);
+  const [optimisticText, setOptimisticText] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const ink = textInk(data.color, theme);
+  const fontSize = resolvePlainFontSize(data.textFontSize);
+  const storedText = data.text ?? '';
+  const visibleText = optimisticText ?? storedText;
+
+  useEffect(() => {
+    if (optimisticText !== null && storedText === optimisticText) {
+      setOptimisticText(null);
+    }
+  }, [storedText, optimisticText]);
+
+  const beginEdit = () => {
+    setEditSession((session) => session + 1);
+    setEditing(true);
+  };
+
+  const commitEdit = () => {
+    const next = textareaRef.current?.value ?? '';
+    setEditing(false);
+    if (next !== storedText) {
+      setOptimisticText(next);
+      updateNode(id, { text: next });
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditing(false);
+    setOptimisticText(null);
+  };
+
+  useEffect(() => {
+    if (!editing) return;
+    const el = textareaRef.current;
+    if (!el) return;
+    el.focus();
+    const end = el.value.length;
+    el.setSelectionRange(end, end);
+  }, [editing, editSession]);
+
+  return (
+    <>
+      <NodeResizer
+        isVisible={selected}
+        minWidth={80}
+        minHeight={36}
+        maxWidth={900}
+        maxHeight={600}
+        color="#818cf8"
+        handleClassName={resizerHandles}
+        lineClassName={resizerLines}
+      />
+      <div
+        className={`relative h-full w-full rounded-lg px-1 py-0.5 transition ${
+          selected ? 'ring-2 ring-indigo-400/60' : ''
+        }`}
+        style={{ color: ink }}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          beginEdit();
+        }}
+      >
+        {editing ? (
+          <textarea
+            key={editSession}
+            ref={textareaRef}
+            defaultValue={storedText}
+            onBlur={commitEdit}
+            onMouseDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                if (textareaRef.current) textareaRef.current.value = storedText;
+                cancelEdit();
+              }
+            }}
+            className="nodrag nopan h-full w-full resize-none bg-transparent font-medium leading-snug outline-none"
+            style={{ fontSize, color: ink }}
+            placeholder={m.plain.placeholder}
+            spellCheck
+          />
+        ) : (
+          <div
+            className="h-full w-full cursor-text whitespace-pre-wrap font-medium leading-snug"
+            style={{ fontSize }}
+            title={m.plain.editHint}
+          >
+            {visibleText || <span className="opacity-40">{m.plain.placeholder}</span>}
           </div>
         )}
       </div>

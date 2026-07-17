@@ -34,7 +34,12 @@ import {
   type GroupResizeSnapshot,
 } from '../lib/groupResize';
 import { applyGroupNodeInteraction } from '../lib/groupLock';
-import { DOUBLE_CLICK_CARD_COLOR } from '../lib/cardTypography';
+import {
+  DEFAULT_PLAIN_COLOR,
+  DEFAULT_PLAIN_FONT_SIZE,
+  DOUBLE_CLICK_CARD_COLOR,
+} from '../lib/cardTypography';
+import { PRINT_SCALE, viewportAtScale } from '../lib/printLayout';
 import {
   getDemoBoardName,
   demoFlowPresentation,
@@ -74,7 +79,7 @@ import {
 } from '../lib/localBoardFile';
 import type { CardNodeData, JsonCanvas, NodeI18n } from '../types/jsonCanvas';
 import { HintBar, EdgeSelectionPanel, SelectionPanel, Toolbar } from './Toolbar';
-import { GroupCardNode, TextCardNode } from './nodes/CardNodes';
+import { GroupCardNode, PlainTextNode, TextCardNode } from './nodes/CardNodes';
 import { useCanvasHistory } from '../hooks/useCanvasHistory';
 import { useCanvasShortcuts } from '../hooks/useCanvasShortcuts';
 import { useDebouncedPersist } from '../hooks/useDebouncedPersist';
@@ -88,6 +93,7 @@ import {
 
 const nodeTypes: NodeTypes = {
   textCard: TextCardNode,
+  plainText: PlainTextNode,
   groupCard: GroupCardNode,
 };
 
@@ -369,6 +375,34 @@ function MindCanvasInner() {
     [m.card.defaultText, screenToFlowPosition, setNodes],
   );
 
+  const addPlainText = useCallback(
+    (position?: { x: number; y: number }) => {
+      const center = screenToFlowPosition({
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+      });
+
+      const node: Node<CardNodeData> = {
+        id: createId('plain'),
+        type: 'plainText',
+        position: position ?? { x: center.x - 80, y: center.y - 20 },
+        style: { width: 200, height: 48 },
+        data: {
+          canvasType: 'plain',
+          text: m.plain.defaultText,
+          textFontSize: DEFAULT_PLAIN_FONT_SIZE,
+          color: DEFAULT_PLAIN_COLOR,
+          i18n: Object.fromEntries(
+            LOCALES.map((loc) => [loc, { text: messagesFor(loc).plain.defaultText }]),
+          ) as NodeI18n,
+        },
+        zIndex: 1,
+      };
+      setNodes((nds) => [...nds, node]);
+    },
+    [m.plain.defaultText, screenToFlowPosition, setNodes],
+  );
+
   const addGroup = useCallback(() => {
     const center = screenToFlowPosition({
       x: window.innerWidth / 2,
@@ -605,19 +639,25 @@ function MindCanvasInner() {
 
       const visibleNodes = prepared.nodes.filter((node) => !node.hidden);
       const finish = () => {
-        window.setTimeout(() => window.print(), 60);
+        const fitted = getViewport();
+        const scaled = viewportAtScale(fitted, PRINT_SCALE, {
+          x: window.innerWidth / 2,
+          y: window.innerHeight / 2,
+        });
+        setViewport(scaled, { duration: 0 });
+        window.setTimeout(() => window.print(), 80);
       };
 
       window.requestAnimationFrame(() => {
         void fitView({
           nodes: visibleNodes.length ? visibleNodes : undefined,
-          padding: 0.12,
+          padding: 0.18,
           duration: 0,
           maxZoom: 1.25,
         }).then(finish);
       });
     },
-    [fitView, getViewport, setEdges, setNodes],
+    [fitView, getViewport, setEdges, setNodes, setViewport],
   );
 
   useEffect(() => {
@@ -663,6 +703,7 @@ function MindCanvasInner() {
 
         <Toolbar
           onAddText={() => addTextCard()}
+          onAddPlain={() => addPlainText()}
           onAddGroup={addGroup}
           onSave={() => void onSave()}
           onLoad={onPickFile}
@@ -706,10 +747,12 @@ function MindCanvasInner() {
             nodeType={selectedNode.data.canvasType}
             color={selectedNode.data.color}
             label={selectedNode.data.label}
+            text={selectedNode.data.text}
             labelFontSize={selectedNode.data.labelFontSize}
             textFontSize={selectedNode.data.textFontSize}
             onColorChange={(color) => updateNode(selectedNode.id, { color })}
             onLabelChange={(label) => updateNode(selectedNode.id, { label })}
+            onTextChange={(text) => updateNode(selectedNode.id, { text })}
             onLabelFontSizeChange={(size) => updateNode(selectedNode.id, { labelFontSize: size })}
             onTextFontSizeChange={(size) => updateNode(selectedNode.id, { textFontSize: size })}
           />

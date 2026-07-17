@@ -44,6 +44,7 @@ export function canvasToFlow(canvas: JsonCanvas): { nodes: Node<CardNodeData>[];
       if (node.label) data.label = node.label;
       if (node.labelFontSize != null) data.labelFontSize = node.labelFontSize;
       if (node.textFontSize != null) data.textFontSize = node.textFontSize;
+      if (node.plain === true) data.canvasType = 'plain';
     }
     if (node.type === 'link') data.url = node.url;
     if (node.type === 'group') {
@@ -54,9 +55,12 @@ export function canvasToFlow(canvas: JsonCanvas): { nodes: Node<CardNodeData>[];
     if (node.type === 'file') data.file = node.file;
     if (node.i18n) data.i18n = node.i18n;
 
+    const flowType =
+      node.type === 'group' ? 'groupCard' : data.canvasType === 'plain' ? 'plainText' : 'textCard';
+
     return {
       id: node.id,
-      type: node.type === 'group' ? 'groupCard' : 'textCard',
+      type: flowType,
       position: { x: node.x, y: node.y },
       style: { width: node.width, height: node.height },
       data,
@@ -117,6 +121,17 @@ function flowNodeToCanvas(node: Node<CardNodeData>): JsonCanvasNode {
 
   if (node.data.canvasType === 'file') {
     return { ...base, type: 'file', file: node.data.file ?? 'attachment.png' };
+  }
+
+  if (node.data.canvasType === 'plain') {
+    return {
+      ...base,
+      type: 'text',
+      text: node.data.text ?? '',
+      plain: true,
+      ...(node.data.textFontSize != null ? { textFontSize: node.data.textFontSize } : {}),
+      i18n: node.data.i18n,
+    };
   }
 
   return {

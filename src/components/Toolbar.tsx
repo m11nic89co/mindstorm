@@ -8,10 +8,14 @@ import { AUTHOR_NAME, LIVE_URL, REPO_URL } from '../lib/siteMeta';
 import { COLOR_IDS, swatchFill, swatchTitle } from '../lib/colors';
 import {
   clampCardFontSize,
+  clampPlainFontSize,
   DEFAULT_LABEL_FONT_SIZE,
+  DEFAULT_PLAIN_FONT_SIZE,
   DEFAULT_TEXT_FONT_SIZE,
   MAX_CARD_FONT_SIZE,
+  MAX_PLAIN_FONT_SIZE,
   MIN_CARD_FONT_SIZE,
+  MIN_PLAIN_FONT_SIZE,
 } from '../lib/cardTypography';
 import {
   clampGroupLabelFontSize,
@@ -22,6 +26,7 @@ import {
 
 type ToolbarProps = {
   onAddText: () => void;
+  onAddPlain: () => void;
   onAddGroup: () => void;
   onSave: () => void;
   onLoad: () => void;
@@ -39,6 +44,7 @@ type ToolbarProps = {
 
 export function Toolbar({
   onAddText,
+  onAddPlain,
   onAddGroup,
   onSave,
   onLoad,
@@ -102,6 +108,10 @@ export function Toolbar({
             <span className="sm:hidden">+</span>
             <span className="hidden sm:inline">{m.toolbar.addCardShort}</span>
           </ToolbarButton>
+          <ToolbarButton onClick={onAddPlain} title={m.toolbar.addPlain}>
+            <span className="sm:hidden">T</span>
+            <span className="hidden sm:inline">{m.toolbar.addPlainShort}</span>
+          </ToolbarButton>
           <ToolbarButton onClick={onAddGroup} title={m.toolbar.addGroup}>
             <span className="sm:hidden">◻</span>
             <span className="hidden sm:inline">{m.toolbar.addGroupShort}</span>
@@ -114,10 +124,6 @@ export function Toolbar({
             <span className="sm:hidden">📂</span>
             <span className="hidden sm:inline">{m.toolbar.load}</span>
           </ToolbarButton>
-          <ToolbarButton onClick={onPrint} title={m.toolbar.printTitle}>
-            <span className="sm:hidden">{m.toolbar.printShort}</span>
-            <span className="hidden sm:inline">{m.toolbar.print}</span>
-          </ToolbarButton>
           <ToolbarButton onClick={onNewBoard} title={m.toolbar.newBoardTitle} accent>
             <span className="sm:hidden">↺</span>
             <span className="hidden sm:inline">{m.toolbar.newBoard}</span>
@@ -128,7 +134,10 @@ export function Toolbar({
           </ToolbarButton>
         </div>
 
-        <ThemeToggle />
+        <div className="flex shrink-0 items-center gap-1">
+          <PrintButton onClick={onPrint} />
+          <ThemeToggle />
+        </div>
         <LanguageToggle />
 
         <div
@@ -146,17 +155,23 @@ export function Toolbar({
   );
 }
 
-function ThemeToggle() {
-  const { m } = useLocale();
-  const { theme, toggleTheme } = useTheme();
-  const toLight = theme === 'dark';
-
+function IconToolbarButton({
+  onClick,
+  title,
+  ariaLabel,
+  children,
+}: {
+  onClick: () => void;
+  title: string;
+  ariaLabel: string;
+  children: ReactNode;
+}) {
   return (
     <button
       type="button"
-      onClick={toggleTheme}
-      title={toLight ? m.toolbar.themeToLight : m.toolbar.themeToDark}
-      aria-label={m.toolbar.themeAria}
+      onClick={onClick}
+      title={title}
+      aria-label={ariaLabel}
       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition active:scale-95 sm:h-10 sm:w-10"
       style={{
         borderColor: 'var(--ms-btn-border)',
@@ -164,8 +179,33 @@ function ThemeToggle() {
         color: 'var(--ms-text-soft)',
       }}
     >
-      {toLight ? <SunIcon /> : <MoonIcon />}
+      {children}
     </button>
+  );
+}
+
+function PrintButton({ onClick }: { onClick: () => void }) {
+  const { m } = useLocale();
+  return (
+    <IconToolbarButton onClick={onClick} title={m.toolbar.printTitle} ariaLabel={m.toolbar.print}>
+      <PrinterIcon />
+    </IconToolbarButton>
+  );
+}
+
+function ThemeToggle() {
+  const { m } = useLocale();
+  const { theme, toggleTheme } = useTheme();
+  const toLight = theme === 'dark';
+
+  return (
+    <IconToolbarButton
+      onClick={toggleTheme}
+      title={toLight ? m.toolbar.themeToLight : m.toolbar.themeToDark}
+      ariaLabel={m.toolbar.themeAria}
+    >
+      {toLight ? <SunIcon /> : <MoonIcon />}
+    </IconToolbarButton>
   );
 }
 
@@ -253,6 +293,34 @@ function MoonIcon() {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
         d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function PrinterIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M7 8V4h10v4"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M7 13h10v7H7v-7Z"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -554,29 +622,41 @@ export function SelectionPanel({
   nodeType,
   color,
   label,
+  text,
   labelFontSize,
   textFontSize,
   onColorChange,
   onLabelChange,
+  onTextChange,
   onLabelFontSizeChange,
   onTextFontSizeChange,
 }: {
-  nodeType: 'text' | 'group' | 'link' | 'file';
+  nodeType: 'text' | 'plain' | 'group' | 'link' | 'file';
   color?: string;
   label?: string;
+  text?: string;
   labelFontSize?: number;
   textFontSize?: number;
   onColorChange: (color: string) => void;
   onLabelChange: (label: string) => void;
+  onTextChange?: (text: string) => void;
   onLabelFontSizeChange?: (size: number) => void;
   onTextFontSizeChange?: (size: number) => void;
 }) {
   const { m } = useLocale();
   const isGroup = nodeType === 'group';
   const isTextCard = nodeType === 'text';
+  const isPlain = nodeType === 'plain';
   const resolvedTitleSize = labelFontSize ?? DEFAULT_LABEL_FONT_SIZE;
   const resolvedBodySize = textFontSize ?? DEFAULT_TEXT_FONT_SIZE;
+  const resolvedPlainSize = textFontSize ?? DEFAULT_PLAIN_FONT_SIZE;
   const resolvedGroupLabelSize = labelFontSize ?? DEFAULT_GROUP_LABEL_FONT_SIZE;
+
+  const panelTitle = isGroup
+    ? m.selectionPanel.group
+    : isPlain
+      ? m.selectionPanel.plain
+      : m.selectionPanel.card;
 
   return (
     <div
@@ -589,19 +669,34 @@ export function SelectionPanel({
     >
       <div className="flex flex-col gap-1.5">
         <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--ms-text-muted)' }}>
-          {isGroup ? m.selectionPanel.group : m.selectionPanel.card}
+          {panelTitle}
         </span>
-        <input
-          value={label ?? ''}
-          onChange={(e) => onLabelChange(e.target.value)}
-          placeholder={isGroup ? m.selectionPanel.groupNamePlaceholder : m.selectionPanel.cardNamePlaceholder}
-          className="rounded-xl border px-3 py-2 text-xs outline-none ring-indigo-400/40 focus:ring-2"
-          style={{
-            borderColor: 'var(--ms-panel-border)',
-            background: 'var(--ms-input-bg)',
-            color: 'var(--ms-text)',
-          }}
-        />
+        {isPlain ? (
+          <textarea
+            value={text ?? ''}
+            onChange={(e) => onTextChange?.(e.target.value)}
+            placeholder={m.selectionPanel.plainPlaceholder}
+            rows={3}
+            className="rounded-xl border px-3 py-2 text-xs outline-none ring-indigo-400/40 focus:ring-2"
+            style={{
+              borderColor: 'var(--ms-panel-border)',
+              background: 'var(--ms-input-bg)',
+              color: 'var(--ms-text)',
+            }}
+          />
+        ) : (
+          <input
+            value={label ?? ''}
+            onChange={(e) => onLabelChange(e.target.value)}
+            placeholder={isGroup ? m.selectionPanel.groupNamePlaceholder : m.selectionPanel.cardNamePlaceholder}
+            className="rounded-xl border px-3 py-2 text-xs outline-none ring-indigo-400/40 focus:ring-2"
+            style={{
+              borderColor: 'var(--ms-panel-border)',
+              background: 'var(--ms-input-bg)',
+              color: 'var(--ms-text)',
+            }}
+          />
+        )}
       </div>
       {isGroup && onLabelFontSizeChange && (
         <FontSizeControl
@@ -640,6 +735,19 @@ export function SelectionPanel({
           min={MIN_CARD_FONT_SIZE}
           max={MAX_CARD_FONT_SIZE}
           clamp={clampCardFontSize}
+        />
+      )}
+      {isPlain && onTextFontSizeChange && (
+        <FontSizeControl
+          label={m.selectionPanel.plainFontSize}
+          value={resolvedPlainSize}
+          onChange={onTextFontSizeChange}
+          decreaseAria={m.selectionPanel.plainFontSizeDecrease}
+          increaseAria={m.selectionPanel.plainFontSizeIncrease}
+          unit={m.selectionPanel.fontSizeUnit}
+          min={MIN_PLAIN_FONT_SIZE}
+          max={MAX_PLAIN_FONT_SIZE}
+          clamp={clampPlainFontSize}
         />
       )}
       <div className="flex flex-col gap-1.5">

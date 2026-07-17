@@ -8,6 +8,8 @@ export type Messages = {
     redoAria: string;
     addCard: string;
     addCardShort: string;
+    addPlain: string;
+    addPlainShort: string;
     addGroup: string;
     addGroupShort: string;
     save: string;
@@ -56,14 +58,19 @@ export type Messages = {
   selectionPanel: {
     group: string;
     card: string;
+    plain: string;
     groupNamePlaceholder: string;
     cardNamePlaceholder: string;
+    plainPlaceholder: string;
     titleFontSize: string;
     titleFontSizeDecrease: string;
     titleFontSizeIncrease: string;
     bodyFontSize: string;
     bodyFontSizeDecrease: string;
     bodyFontSizeIncrease: string;
+    plainFontSize: string;
+    plainFontSizeDecrease: string;
+    plainFontSizeIncrease: string;
     groupLabelFontSize: string;
     groupLabelFontSizeDecrease: string;
     groupLabelFontSizeIncrease: string;
@@ -91,6 +98,7 @@ export type Messages = {
     selection: string;
     selectionHint: string;
     selectionEmpty: string;
+    layoutHint: string;
     cancel: string;
     confirm: string;
   };
@@ -115,6 +123,11 @@ export type Messages = {
     defaultText: string;
     titlePlaceholder: string;
     titleEditHint: string;
+  };
+  plain: {
+    defaultText: string;
+    placeholder: string;
+    editHint: string;
   };
   group: {
     defaultLabel: string;
@@ -176,6 +189,8 @@ export const messagesRu: Messages = {
     redoAria: 'Вернуть',
     addCard: 'Добавить карточку',
     addCardShort: '+ Карточка',
+    addPlain: 'Добавить текст',
+    addPlainShort: 'T Текст',
     addGroup: 'Добавить группу',
     addGroupShort: '◻ Группа',
     save: 'Сохранить',
@@ -225,14 +240,19 @@ export const messagesRu: Messages = {
   selectionPanel: {
     group: 'Название группы',
     card: 'Карточка',
+    plain: 'Текст',
     groupNamePlaceholder: 'Название группы...',
     cardNamePlaceholder: 'Заголовок карточки...',
+    plainPlaceholder: 'Текст на схеме...',
     titleFontSize: 'Размер заголовка',
     titleFontSizeDecrease: 'Уменьшить размер заголовка',
     titleFontSizeIncrease: 'Увеличить размер заголовка',
     bodyFontSize: 'Размер текста',
     bodyFontSizeDecrease: 'Уменьшить размер текста',
     bodyFontSizeIncrease: 'Увеличить размер текста',
+    plainFontSize: 'Размер шрифта',
+    plainFontSizeDecrease: 'Уменьшить размер текста',
+    plainFontSizeIncrease: 'Увеличить размер текста',
     groupLabelFontSize: 'Размер метки',
     groupLabelFontSizeDecrease: 'Уменьшить размер метки группы',
     groupLabelFontSizeIncrease: 'Увеличить размер метки группы',
@@ -261,6 +281,7 @@ export const messagesRu: Messages = {
     selection: 'Только выделенное',
     selectionHint: 'Выделенные узлы и связи между ними',
     selectionEmpty: 'Сначала выделите карточки, группы или связи (клик / Shift / ПКМ-рамка)',
+    layoutHint: 'A4 альбом · по центру · масштаб 50% · без мини-карты · в диалоге печати выберите 300 DPI',
     cancel: 'Отмена',
     confirm: 'Печать',
   },
@@ -298,6 +319,11 @@ export const messagesRu: Messages = {
     defaultText: '',
     titlePlaceholder: 'Заголовок',
     titleEditHint: 'Двойной клик — редактировать заголовок',
+  },
+  plain: {
+    defaultText: 'Текст',
+    placeholder: 'Введите текст…',
+    editHint: 'Двойной клик — редактировать',
   },
   group: {
     defaultLabel: 'Группа',
@@ -341,6 +367,8 @@ export const messagesEn: Messages = {
     redoAria: 'Redo',
     addCard: 'Add card',
     addCardShort: '+ Card',
+    addPlain: 'Add text',
+    addPlainShort: 'T Text',
     addGroup: 'Add group',
     addGroupShort: '◻ Group',
     save: 'Save',
@@ -390,14 +418,19 @@ export const messagesEn: Messages = {
   selectionPanel: {
     group: 'Group name',
     card: 'Card',
+    plain: 'Text',
     groupNamePlaceholder: 'Group name...',
     cardNamePlaceholder: 'Card title...',
+    plainPlaceholder: 'Text on the board...',
     titleFontSize: 'Title size',
     titleFontSizeDecrease: 'Decrease title size',
     titleFontSizeIncrease: 'Increase title size',
     bodyFontSize: 'Body text size',
     bodyFontSizeDecrease: 'Decrease body text size',
     bodyFontSizeIncrease: 'Increase body text size',
+    plainFontSize: 'Font size',
+    plainFontSizeDecrease: 'Decrease text size',
+    plainFontSizeIncrease: 'Increase text size',
     groupLabelFontSize: 'Label size',
     groupLabelFontSizeDecrease: 'Decrease group label size',
     groupLabelFontSizeIncrease: 'Increase group label size',
@@ -426,6 +459,7 @@ export const messagesEn: Messages = {
     selection: 'Selection only',
     selectionHint: 'Selected nodes and links between them',
     selectionEmpty: 'Select cards, groups, or links first (click / Shift / right-drag)',
+    layoutHint: 'A4 landscape · centered · 50% scale · no minimap · choose 300 DPI in the print dialog',
     cancel: 'Cancel',
     confirm: 'Print',
   },
@@ -463,6 +497,11 @@ export const messagesEn: Messages = {
     defaultText: '',
     titlePlaceholder: 'Title',
     titleEditHint: 'Double-click to edit title',
+  },
+  plain: {
+    defaultText: 'Text',
+    placeholder: 'Enter text…',
+    editHint: 'Double-click to edit',
   },
   group: {
     defaultLabel: 'Group',
@@ -506,6 +545,8 @@ export const messagesEs: Messages = {
     redoAria: 'Rehacer',
     addCard: 'Añadir carta',
     addCardShort: '+ Carta',
+    addPlain: 'Añadir texto',
+    addPlainShort: 'T Texto',
     addGroup: 'Añadir grupo',
     addGroupShort: '◻ Grupo',
     save: 'Guardar',
@@ -555,14 +596,19 @@ export const messagesEs: Messages = {
   selectionPanel: {
     group: 'Nombre del grupo',
     card: 'Carta',
+    plain: 'Texto',
     groupNamePlaceholder: 'Nombre del grupo...',
     cardNamePlaceholder: 'Título de la carta...',
+    plainPlaceholder: 'Texto en el tablero...',
     titleFontSize: 'Tamaño del título',
     titleFontSizeDecrease: 'Reducir tamaño del título',
     titleFontSizeIncrease: 'Aumentar tamaño del título',
     bodyFontSize: 'Tamaño del texto',
     bodyFontSizeDecrease: 'Reducir tamaño del texto',
     bodyFontSizeIncrease: 'Aumentar tamaño del texto',
+    plainFontSize: 'Tamaño de fuente',
+    plainFontSizeDecrease: 'Reducir tamaño del texto',
+    plainFontSizeIncrease: 'Aumentar tamaño del texto',
     groupLabelFontSize: 'Tamaño de la etiqueta',
     groupLabelFontSizeDecrease: 'Reducir tamaño de la etiqueta del grupo',
     groupLabelFontSizeIncrease: 'Aumentar tamaño de la etiqueta del grupo',
@@ -591,6 +637,7 @@ export const messagesEs: Messages = {
     selection: 'Solo selección',
     selectionHint: 'Nodos seleccionados y enlaces entre ellos',
     selectionEmpty: 'Selecciona cartas, grupos o enlaces (clic / Shift / arrastre derecho)',
+    layoutHint: 'A4 horizontal · centrado · escala 50% · sin minimapa · elige 300 DPI en el diálogo de impresión',
     cancel: 'Cancelar',
     confirm: 'Imprimir',
   },
@@ -628,6 +675,11 @@ export const messagesEs: Messages = {
     defaultText: '',
     titlePlaceholder: 'Título',
     titleEditHint: 'Doble clic para editar el título',
+  },
+  plain: {
+    defaultText: 'Texto',
+    placeholder: 'Escribe texto…',
+    editHint: 'Doble clic para editar',
   },
   group: {
     defaultLabel: 'Grupo',
@@ -671,6 +723,8 @@ export const messagesZh: Messages = {
     redoAria: '重做',
     addCard: '添加卡片',
     addCardShort: '+ 卡片',
+    addPlain: '添加文本',
+    addPlainShort: 'T 文本',
     addGroup: '添加分组',
     addGroupShort: '◻ 分组',
     save: '保存',
@@ -719,14 +773,19 @@ export const messagesZh: Messages = {
   selectionPanel: {
     group: '分组名称',
     card: '卡片',
+    plain: '文本',
     groupNamePlaceholder: '分组名称...',
     cardNamePlaceholder: '卡片标题...',
+    plainPlaceholder: '画布上的文本...',
     titleFontSize: '标题字号',
     titleFontSizeDecrease: '减小标题字号',
     titleFontSizeIncrease: '增大标题字号',
     bodyFontSize: '正文字号',
     bodyFontSizeDecrease: '减小正文字号',
     bodyFontSizeIncrease: '增大正文字号',
+    plainFontSize: '字号',
+    plainFontSizeDecrease: '减小字号',
+    plainFontSizeIncrease: '增大字号',
     groupLabelFontSize: '标签字号',
     groupLabelFontSizeDecrease: '减小分组标签字号',
     groupLabelFontSizeIncrease: '增大分组标签字号',
@@ -754,6 +813,7 @@ export const messagesZh: Messages = {
     selection: '仅选中内容',
     selectionHint: '选中的节点及它们之间的连线',
     selectionEmpty: '请先选中卡片、分组或连线（单击 / Shift / 右键框选）',
+    layoutHint: 'A4 横向 · 居中 · 50% 缩放 · 无小地图 · 请在打印对话框中选择 300 DPI',
     cancel: '取消',
     confirm: '打印',
   },
@@ -791,6 +851,11 @@ export const messagesZh: Messages = {
     defaultText: '',
     titlePlaceholder: '标题',
     titleEditHint: '双击编辑标题',
+  },
+  plain: {
+    defaultText: '文本',
+    placeholder: '输入文本…',
+    editHint: '双击编辑',
   },
   group: {
     defaultLabel: '分组',
