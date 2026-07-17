@@ -1,6 +1,7 @@
 const DB_NAME = 'mindstorm.fs.v1';
 const STORE = 'handles';
 const KEY_LAST_FILE = 'lastFile';
+const KEY_SAVES_DIR = 'savesDir';
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -16,12 +17,12 @@ function openDb(): Promise<IDBDatabase> {
   });
 }
 
-export async function rememberFileHandle(handle: FileSystemFileHandle): Promise<void> {
+async function putHandle(key: string, handle: FileSystemHandle): Promise<void> {
   try {
     const db = await openDb();
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(STORE, 'readwrite');
-      tx.objectStore(STORE).put(handle, KEY_LAST_FILE);
+      tx.objectStore(STORE).put(handle, key);
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error ?? new Error('IndexedDB write failed'));
     });
@@ -31,13 +32,13 @@ export async function rememberFileHandle(handle: FileSystemFileHandle): Promise<
   }
 }
 
-export async function readLastFileHandle(): Promise<FileSystemFileHandle | null> {
+async function getHandle<T extends FileSystemHandle>(key: string): Promise<T | null> {
   try {
     const db = await openDb();
-    const handle = await new Promise<FileSystemFileHandle | null>((resolve, reject) => {
+    const handle = await new Promise<T | null>((resolve, reject) => {
       const tx = db.transaction(STORE, 'readonly');
-      const req = tx.objectStore(STORE).get(KEY_LAST_FILE);
-      req.onsuccess = () => resolve((req.result as FileSystemFileHandle | undefined) ?? null);
+      const req = tx.objectStore(STORE).get(key);
+      req.onsuccess = () => resolve((req.result as T | undefined) ?? null);
       req.onerror = () => reject(req.error ?? new Error('IndexedDB read failed'));
     });
     db.close();
@@ -45,6 +46,22 @@ export async function readLastFileHandle(): Promise<FileSystemFileHandle | null>
   } catch {
     return null;
   }
+}
+
+export async function rememberFileHandle(handle: FileSystemFileHandle): Promise<void> {
+  await putHandle(KEY_LAST_FILE, handle);
+}
+
+export async function rememberSavesDirHandle(handle: FileSystemDirectoryHandle): Promise<void> {
+  await putHandle(KEY_SAVES_DIR, handle);
+}
+
+export async function readLastFileHandle(): Promise<FileSystemFileHandle | null> {
+  return getHandle<FileSystemFileHandle>(KEY_LAST_FILE);
+}
+
+export async function readSavesDirHandle(): Promise<FileSystemDirectoryHandle | null> {
+  return getHandle<FileSystemDirectoryHandle>(KEY_SAVES_DIR);
 }
 
 export async function ensureHandlePermission(
@@ -67,8 +84,32 @@ export async function ensureHandlePermission(
   return false;
 }
 
-/** startIn для диалогов: последний файл (открывает его папку) или undefined. */
-export async function getStartInHandle(): Promise<FileSystemFileHandle | undefined> {
+/** Папка сохранений: из IndexedDB или диалог выбора. */
+export async function resolveSavesDirectory(): Promise<FileSystemDirectoryHandle> {
+  const remembered = await readSavesDirHandle();
+  if (remembered && (await ensureHandlePermission(remembered, 'readwrite'))) {
+    return remembered;
+  }
+
+  const picker = window.showDirectoryPicker;
+  if (!picker) {
+    throw new Error('DIRECTORY_PICKER_UNAVAILABLE');
+  }
+
+  const dir = await picker.call(window, {
+    id: 'mindstorm-saves',
+    mode: 'readwrite',
+    startIn: remembered ?? 'documents',
+  });
+  await rememberSavesDirHandle(dir);
+  return dir;
+}
+
+/** startIn для диалогов: папка saves или последний файл. */
+export async function getStartInHandle(): Promise<FileSystemHandle | undefined> {
+  const dir = await readSavesDirHandle();
+  if (dir && (await ensureHandlePermission(dir, 'read'))) return dir;
+
   const last = await readLastFileHandle();
   if (!last) return undefined;
   const ok = await ensureHandlePermission(last, 'read');

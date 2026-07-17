@@ -157,6 +157,7 @@ export type Messages = {
     fallbackTitle: string;
     savedAs: (filename: string) => string;
     savedDownloads: (filename: string) => string;
+    savedFolder: (filename: string) => string;
     typeDescription: string;
     pngTypeDescription: string;
   };
@@ -195,9 +196,9 @@ export const messagesRu: Messages = {
     addGroup: 'Добавить группу',
     addGroupShort: '◻ Группа',
     save: 'Сохранить',
-    saveTitle: 'Сохранить схему (PNG по умолчанию или .mindstorm)',
+    saveTitle: 'Сохранить в папку: .mindstorm + PNG',
     load: 'Загрузить',
-    loadTitle: 'Загрузить схему .mindstorm из той же папки',
+    loadTitle: 'Загрузить схему .mindstorm из папки сохранений',
     newBoard: 'Сначала',
     newBoardTitle: 'Новая пустая схема',
     demo: 'Демо',
@@ -263,10 +264,10 @@ export const messagesRu: Messages = {
   saveModal: {
     title: 'Сохранить схему',
     description:
-      'По умолчанию сохраняется PNG (быстрый просмотр). В диалоге можно выбрать .mindstorm — чтобы потом снова открыть и править.',
+      'Выберите папку сохранений: туда запишутся два файла — редактируемый .mindstorm и PNG-превью с тем же именем.',
     nameLabel: 'Название',
     namePlaceholder: 'брейншторм-2026',
-    filenamePrefix: 'Будет сохранён файл:',
+    filenamePrefix: 'Будут сохранены файлы:',
     enterName: 'Введите название схемы',
     saveFailed: 'Не удалось сохранить файл',
     saving: 'Сохраняю…',
@@ -354,7 +355,8 @@ export const messagesRu: Messages = {
     defaultTitle: 'моя-схема',
     fallbackTitle: 'схема',
     savedAs: (filename) => `Сохранено: ${filename}`,
-    savedDownloads: (filename) => `Файл ${filename} отправлен в папку «Загрузки»`,
+    savedDownloads: (filename) => `Файлы ${filename} отправлены в папку «Загрузки»`,
+    savedFolder: (filename) => `Сохранено в папку: ${filename}`,
     typeDescription: 'Схема MindStorm (.mindstorm)',
     pngTypeDescription: 'Картинка схемы (PNG)',
   },
@@ -374,9 +376,9 @@ export const messagesEn: Messages = {
     addGroup: 'Add group',
     addGroupShort: '◻ Group',
     save: 'Save',
-    saveTitle: 'Save board (PNG by default or .mindstorm)',
+    saveTitle: 'Save to folder: .mindstorm + PNG',
     load: 'Open',
-    loadTitle: 'Open a .mindstorm board from the same folder',
+    loadTitle: 'Open a .mindstorm board from the saves folder',
     newBoard: 'New',
     newBoardTitle: 'Start with a blank board',
     demo: 'Demo',
@@ -442,10 +444,10 @@ export const messagesEn: Messages = {
   saveModal: {
     title: 'Save board',
     description:
-      'PNG is the default (quick preview). Pick .mindstorm in the dialog if you want to reopen and edit later.',
+      'Pick a saves folder: both an editable .mindstorm and a PNG preview with the same name will be written there.',
     nameLabel: 'Name',
     namePlaceholder: 'brainstorm-2026',
-    filenamePrefix: 'File to save:',
+    filenamePrefix: 'Files to save:',
     enterName: 'Enter a board name',
     saveFailed: 'Could not save the file',
     saving: 'Saving…',
@@ -534,6 +536,7 @@ export const messagesEn: Messages = {
     fallbackTitle: 'board',
     savedAs: (filename) => `Saved: ${filename}`,
     savedDownloads: (filename) => `${filename} was saved to your Downloads folder`,
+    savedFolder: (filename) => `Saved to folder: ${filename}`,
     typeDescription: 'MindStorm board (.mindstorm)',
     pngTypeDescription: 'Board image (PNG)',
   },
@@ -553,9 +556,9 @@ export const messagesEs: Messages = {
     addGroup: 'Añadir grupo',
     addGroupShort: '◻ Grupo',
     save: 'Guardar',
-    saveTitle: 'Guardar esquema (PNG por defecto o .mindstorm)',
+    saveTitle: 'Guardar en carpeta: .mindstorm + PNG',
     load: 'Abrir',
-    loadTitle: 'Abrir un .mindstorm desde la misma carpeta',
+    loadTitle: 'Abrir un .mindstorm desde la carpeta de guardados',
     newBoard: 'Nuevo',
     newBoardTitle: 'Tablero vacío',
     demo: 'Demo',
@@ -621,10 +624,10 @@ export const messagesEs: Messages = {
   saveModal: {
     title: 'Guardar esquema',
     description:
-      'Por defecto se guarda PNG (vista rápida). Elige .mindstorm en el diálogo si quieres volver a editarlo.',
+      'Elige una carpeta de guardados: se escribirán un .mindstorm editable y un PNG con el mismo nombre.',
     nameLabel: 'Nombre',
     namePlaceholder: 'brainstorm-2026',
-    filenamePrefix: 'Archivo a guardar:',
+    filenamePrefix: 'Archivos a guardar:',
     enterName: 'Introduce un nombre',
     saveFailed: 'No se pudo guardar el archivo',
     saving: 'Guardando…',
@@ -713,6 +716,7 @@ export const messagesEs: Messages = {
     fallbackTitle: 'esquema',
     savedAs: (filename) => `Guardado: ${filename}`,
     savedDownloads: (filename) => `${filename} se guardó en Descargas`,
+    savedFolder: (filename) => `Guardado en carpeta: ${filename}`,
     typeDescription: 'Esquema MindStorm (.mindstorm)',
     pngTypeDescription: 'Imagen del esquema (PNG)',
   },
@@ -732,9 +736,9 @@ export const messagesZh: Messages = {
     addGroup: '添加分组',
     addGroupShort: '◻ 分组',
     save: '保存',
-    saveTitle: '保存画布（默认 PNG 或 .mindstorm）',
+    saveTitle: '保存到文件夹：.mindstorm + PNG',
     load: '打开',
-    loadTitle: '从同一文件夹打开 .mindstorm',
+    loadTitle: '从保存文件夹打开 .mindstorm',
     newBoard: '新建',
     newBoardTitle: '空白画布',
     demo: '演示',
@@ -798,7 +802,7 @@ export const messagesZh: Messages = {
   },
   saveModal: {
     title: '保存画布',
-    description: '默认保存 PNG（快速预览）。若需再次编辑，请在对话框中选择 .mindstorm。',
+    description: '选择保存文件夹：将写入可编辑的 .mindstorm 和同名 PNG 预览。',
     nameLabel: '名称',
     namePlaceholder: 'brainstorm-2026',
     filenamePrefix: '将保存文件：',
@@ -889,6 +893,7 @@ export const messagesZh: Messages = {
     fallbackTitle: '画布',
     savedAs: (filename) => `已保存：${filename}`,
     savedDownloads: (filename) => `${filename} 已保存到下载文件夹`,
+    savedFolder: (filename) => `已保存到文件夹：${filename}`,
     typeDescription: 'MindStorm 画布 (.mindstorm)',
     pngTypeDescription: '画布图片 (PNG)',
   },

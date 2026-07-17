@@ -138,9 +138,9 @@ export function SaveBoardModal({
       />
       <p className="mb-4 text-[11px]" style={{ color: 'var(--ms-text-muted)' }}>
         {m.saveModal.filenamePrefix}{' '}
+        <code style={{ color: 'var(--ms-accent-text)' }}>{boardFilename}</code>
+        <span className="mx-1 opacity-40">+</span>
         <code style={{ color: 'var(--ms-accent-text)' }}>{previewFilename}</code>
-        <span className="mx-1 opacity-40">/</span>
-        <code style={{ color: 'var(--ms-text-faint)' }}>{boardFilename}</code>
       </p>
       {error && <p className="mb-3 text-xs text-red-300">{error}</p>}
       {done && (

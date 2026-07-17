@@ -148,7 +148,7 @@ export function Toolbar({
   );
 }
 
-/** Подсказка при наведении — portal, чтобы не обрезалась overflow toolbar. */
+/** Подсказка при наведении — portal под курсором мыши. */
 function ToolbarHoverTip({
   tip,
   open,
@@ -168,7 +168,7 @@ function ToolbarHoverTip({
       style={{
         left,
         top,
-        transform: 'translate(-50%, calc(-100% - 8px))',
+        transform: 'translate(-50%, 14px)',
         borderColor: 'var(--ms-badge-border)',
         background: 'var(--ms-badge-bg)',
         color: 'var(--ms-text)',
@@ -185,30 +185,48 @@ function useHoverTip(tip: string, disabled = false) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ left: 0, top: 0 });
 
-  const showAt = useCallback(
+  const showAtCursor = useCallback(
+    (clientX: number, clientY: number) => {
+      if (disabled || !tip) return;
+      setPos({ left: clientX, top: clientY });
+      setOpen(true);
+    },
+    [disabled, tip],
+  );
+
+  const showBelowElement = useCallback(
     (el: HTMLElement) => {
       if (disabled || !tip) return;
       const r = el.getBoundingClientRect();
-      setPos({ left: r.left + r.width / 2, top: r.top });
+      setPos({ left: r.left + r.width / 2, top: r.bottom });
       setOpen(true);
     },
     [disabled, tip],
   );
 
   const onEnter = useCallback(
-    (e: MouseEvent<HTMLElement>) => showAt(e.currentTarget),
-    [showAt],
+    (e: MouseEvent<HTMLElement>) => showAtCursor(e.clientX, e.clientY),
+    [showAtCursor],
+  );
+
+  const onMove = useCallback(
+    (e: MouseEvent<HTMLElement>) => {
+      if (!open || disabled || !tip) return;
+      setPos({ left: e.clientX, top: e.clientY });
+    },
+    [disabled, open, tip],
   );
 
   const onFocus = useCallback(
-    (e: FocusEvent<HTMLElement>) => showAt(e.currentTarget),
-    [showAt],
+    (e: FocusEvent<HTMLElement>) => showBelowElement(e.currentTarget),
+    [showBelowElement],
   );
 
   const hide = useCallback(() => setOpen(false), []);
 
   return {
     onEnter,
+    onMove,
     onFocus,
     onLeave: hide,
     onBlur: hide,
@@ -252,6 +270,7 @@ function IconToolbarButton({
               }
         }
         onMouseEnter={tip.onEnter}
+        onMouseMove={tip.onMove}
         onMouseLeave={tip.onLeave}
         onFocus={tip.onFocus}
         onBlur={tip.onBlur}
@@ -370,6 +389,7 @@ function LangButton({
         aria-pressed={active}
         aria-label={tip}
         onMouseEnter={hover.onEnter}
+        onMouseMove={hover.onMove}
         onMouseLeave={hover.onLeave}
         onFocus={hover.onFocus}
         onBlur={hover.onBlur}
@@ -412,6 +432,7 @@ function HistoryButton({
           color: 'var(--ms-text-soft)',
         }}
         onMouseEnter={tip.onEnter}
+        onMouseMove={tip.onMove}
         onMouseLeave={tip.onLeave}
         onFocus={tip.onFocus}
         onBlur={tip.onBlur}
@@ -641,6 +662,7 @@ function ToolbarButton({
           if (disabled || accent) return;
           e.currentTarget.style.background = 'var(--ms-btn-hover)';
         }}
+        onMouseMove={tip.onMove}
         onMouseLeave={(e) => {
           tip.onLeave();
           if (disabled || accent) return;

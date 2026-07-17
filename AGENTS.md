@@ -11,8 +11,8 @@
 - Тема: **dark по умолчанию**, переключение light/dark (`src/theme/`, `mindstorm.theme.v1`).
 - Печать: диалог вся/выделение; A4 landscape, `fitView` + `PRINT_SCALE = 1`, читаемый текст (`setPrintLight` + print CSS), серые подписи связей, без minimap (`printBoard.ts`, `printLayout.ts`).
 - Простой текст: `plainText` / `plain: true` — цвет + размер, без рамки карточки.
-- Сохранение: PNG по умолчанию (`exportPng.ts`); `.mindstorm` для редактирования; папка — IndexedDB (`fileHandleStorage.ts`).
-- Toolbar: справа **Сначала → Загрузить → Сохранить → Печать → Тема**; текстовые **Демо → Текст → Карточка → Группа**; hover-подсказки через portal (`useHoverTip`).
+- Сохранение: оба файла в папку saves — `.mindstorm` + PNG (`exportPng.ts`, `showDirectoryPicker`); папка — IndexedDB (`fileHandleStorage.ts`).
+- Toolbar: справа **Сначала → Загрузить → Сохранить → Печать → Тема**; текстовые **Демо → Текст → Карточка → Группа**; hover-подсказки под курсором (`useHoverTip`).
 - Коммиты и push — **только по явной просьбе**.
 
 ## Критичные файлы
@@ -58,8 +58,9 @@
 - Plain-текст: `canvasType: 'plain'`, RF type `plainText`; в файле `type: "text"` + `plain: true`; цвет через `textInk`, не через фон карточки.
 - Тема: chrome через `--ms-*` и `data-theme`; карточки — `resolveColor(..., theme)`; не хардкодить только dark-цвета в новом UI.
 - Печать: не писать `hidden` в черновик — пауза `dragPausedRef` + restore после `afterprint`; UI chrome — `.no-print`; layout — A4 landscape + `PRINT_SCALE` 1 (`printLayout.ts`); на время печати — `setPrintLight(true)` (читаемый текст на белой бумаге); подписи рёбер — серый фон (`.react-flow__edge-textbg`); **MiniMap/Controls** — не рендерить при `isPrinting` (CSS одного `display:none` недостаточно из‑за `sm:!block`).
-- Toolbar: **New → Load → Save → Print → Theme** — `IconToolbarButton` справа («Сначала» = чистый лист с +).
-- PNG — только превью; редактируемая схема — `.mindstorm` / `.canvas`.
+- Toolbar: **New → Load → Save → Print → Theme** — `IconToolbarButton` справа («Сначала» = чистый лист с +); подсказки снизу от курсора.
+- Save: в выбранную папку сразу **`.mindstorm` + `.png`** (`resolveSavesDirectory`).
+- PNG — превью рядом с JSON; редактируемая схема — `.mindstorm` / `.canvas`.
 - Группировка содержимого группы — см. [docs/GROUPING.md](./docs/GROUPING.md) (пока не реализовано).
 
 ## Деплoy (Windows)

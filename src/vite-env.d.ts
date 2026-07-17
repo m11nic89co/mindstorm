@@ -26,9 +26,16 @@ type WellKnownDirectory =
   | 'pictures'
   | 'videos';
 
+type DirectoryPickerOptions = {
+  id?: string;
+  mode?: 'read' | 'readwrite';
+  startIn?: FileSystemHandle | WellKnownDirectory;
+};
+
 interface Window {
   showSaveFilePicker?: (options?: SaveFilePickerOptions) => Promise<FileSystemFileHandle>;
   showOpenFilePicker?: (options?: OpenFilePickerOptions) => Promise<FileSystemFileHandle[]>;
+  showDirectoryPicker?: (options?: DirectoryPickerOptions) => Promise<FileSystemDirectoryHandle>;
 }
 
 interface FileSystemHandlePermissionDescriptor {

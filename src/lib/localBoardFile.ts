@@ -1,5 +1,9 @@
 import type { JsonCanvas } from '../types/jsonCanvas';
-import { getStartInHandle, rememberFileHandle } from './fileHandleStorage';
+import {
+  getStartInHandle,
+  rememberFileHandle,
+  resolveSavesDirectory,
+} from './fileHandleStorage';
 import { triggerPngDownload } from './exportPng';
 import { parseCanvasFile } from './jsonCanvas';
 
@@ -19,11 +23,12 @@ export type MindStormBoardFile = {
   canvas: JsonCanvas;
 };
 
-export type SaveBoardFormat = 'png' | 'mindstorm';
+export type SaveBoardFormat = 'both' | 'png' | 'mindstorm';
 
 export type SaveBoardResult = {
+  /** Краткое описание для toast (оба имени или одно). */
   filename: string;
-  method: 'picker' | 'download';
+  method: 'folder' | 'download';
   format: SaveBoardFormat;
 };
 
@@ -95,7 +100,11 @@ export function buildTimestampSaveTitle(now: Date = new Date()): string {
 }
 
 export function canUseSaveFilePicker(): boolean {
-  return typeof window.showSaveFilePicker === 'function';
+  return typeof window.showDirectoryPicker === 'function' || typeof window.showSaveFilePicker === 'function';
+}
+
+export function canUseDirectoryPicker(): boolean {
+  return typeof window.showDirectoryPicker === 'function';
 }
 
 export function canUseOpenFilePicker(): boolean {
@@ -115,19 +124,30 @@ function triggerJsonDownload(filename: string, json: string) {
   window.setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-function isPngName(name: string): boolean {
-  return name.toLowerCase().endsWith(PNG_FILE_EXTENSION);
+async function writeBlobToDirectory(
+  dir: FileSystemDirectoryHandle,
+  filename: string,
+  blob: Blob,
+): Promise<FileSystemFileHandle> {
+  const fileHandle = await dir.getFileHandle(filename, { create: true });
+  const writable = await fileHandle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+  return fileHandle;
 }
 
 export type SaveBoardOptions = {
   defaultTitle?: string;
   typeDescription?: string;
   pngTypeDescription?: string;
-  /** PNG-снимок схемы — если есть, PNG будет форматом по умолчанию */
+  /** PNG-снимок схемы — пишется рядом с .mindstorm */
   pngBlob?: Blob;
 };
 
-/** Системный диалог «Сохранить как» (Chrome/Edge) или скачивание. По умолчанию PNG. */
+/**
+ * Сохраняет схему в папку: `.mindstorm` (JSON) + PNG (если есть снимок).
+ * Chrome/Edge: выбор/запоминание папки. Иначе — оба файла в «Загрузки».
+ */
 export async function saveBoardToDisk(
   title: string,
   canvas: JsonCanvas,
@@ -137,54 +157,43 @@ export async function saveBoardToDisk(
   const pngName = buildPngFilename(safeTitle);
   const boardName = buildFilename(safeTitle);
   const json = JSON.stringify(buildBoardFile(safeTitle, canvas), null, 2);
-  const preferPng = Boolean(options?.pngBlob);
+  const jsonBlob = new Blob([json], { type: 'application/json;charset=utf-8' });
+  const pngBlob = options?.pngBlob;
 
-  const picker = window.showSaveFilePicker;
-  if (picker) {
+  if (canUseDirectoryPicker()) {
     try {
-      const startIn = await getStartInHandle();
-      const types: Array<{ description?: string; accept: Record<string, string[]> }> = [];
-      if (preferPng) {
-        types.push({
-          description: options?.pngTypeDescription ?? 'PNG image',
-          accept: { 'image/png': ['.png'] },
-        });
+      const dir = await resolveSavesDirectory();
+      const boardHandle = await writeBlobToDirectory(dir, boardName, jsonBlob);
+      await rememberFileHandle(boardHandle);
+
+      if (pngBlob) {
+        await writeBlobToDirectory(dir, pngName, pngBlob);
+        return {
+          filename: `${boardName} + ${pngName}`,
+          method: 'folder',
+          format: 'both',
+        };
       }
-      types.push({
-        description: options?.typeDescription ?? 'MindStorm board',
-        accept: { 'application/json': ['.mindstorm'] },
-      });
 
-      const handle = await picker.call(window, {
-        suggestedName: preferPng ? pngName : boardName,
-        ...(startIn ? { startIn } : {}),
-        types,
-      });
-
-      const format: SaveBoardFormat = isPngName(handle.name) && options?.pngBlob ? 'png' : 'mindstorm';
-      const blob =
-        format === 'png' && options?.pngBlob
-          ? options.pngBlob
-          : new Blob([json], { type: 'application/json;charset=utf-8' });
-
-      const writable = await handle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-      await rememberFileHandle(handle);
-      return { filename: handle.name, method: 'picker', format };
+      return { filename: boardName, method: 'folder', format: 'mindstorm' };
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         throw new SaveCancelledError();
       }
+      /* нет permission / picker недоступен — fallback на download */
     }
   }
 
-  if (preferPng && options?.pngBlob) {
-    triggerPngDownload(pngName, options.pngBlob);
-    return { filename: pngName, method: 'download', format: 'png' };
+  triggerJsonDownload(boardName, json);
+  if (pngBlob) {
+    window.setTimeout(() => triggerPngDownload(pngName, pngBlob), 200);
+    return {
+      filename: `${boardName} + ${pngName}`,
+      method: 'download',
+      format: 'both',
+    };
   }
 
-  triggerJsonDownload(boardName, json);
   return { filename: boardName, method: 'download', format: 'mindstorm' };
 }
 
@@ -194,7 +203,7 @@ export type OpenBoardResult = {
   filename: string;
 };
 
-/** Системный диалог «Открыть» в той же папке, что и последнее сохранение. */
+/** Системный диалог «Открыть» в папке сохранений. */
 export async function openBoardFromDisk(options?: {
   typeDescription?: string;
 }): Promise<OpenBoardResult> {
@@ -250,15 +259,20 @@ export function readBoardFromFile(file: File): Promise<{ title: string; canvas: 
 }
 
 export function titleFromFilename(filename: string): string {
-  return filename.replace(/\.(mindstorm|mindshtorm|canvas|png)$/i, '') || 'моя-схема';
+  const first = filename.split('+')[0]?.trim() ?? filename;
+  return first.replace(/\.(mindstorm|mindshtorm|canvas|png)$/i, '') || 'моя-схема';
 }
 
 export function saveSuccessMessage(
   result: SaveBoardResult,
-  messages: { savedAs: (filename: string) => string; savedDownloads: (filename: string) => string },
+  messages: {
+    savedAs: (filename: string) => string;
+    savedDownloads: (filename: string) => string;
+    savedFolder?: (filename: string) => string;
+  },
 ): string {
-  if (result.method === 'picker') {
-    return messages.savedAs(result.filename);
+  if (result.method === 'folder') {
+    return (messages.savedFolder ?? messages.savedAs)(result.filename);
   }
   return messages.savedDownloads(result.filename);
 }

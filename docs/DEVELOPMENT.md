@@ -96,7 +96,7 @@ npm.cmd run build
 4. На время печати: `setPrintLight(true)` + MiniMap/Controls **не монтируются** (`isPrinting`) — иначе Tailwind `sm:!block` пробивает `@media print`.
 5. Print CSS: A4 landscape; тёмный текст карточек (иначе white-on-white в dark); подписи рёбер — серый `.react-flow__edge-textbg`; chrome — `.no-print`.
 6. Plain-текст: RF `plainText`, файл `plain: true` на `type: "text"`.
-7. Иконки справа: **Сначала → Загрузить → Сохранить → Печать → Тема**; текстовые: **Демо → Текст → Карточка → Группа**; PNG (`exportPng.ts`); папка — `fileHandleStorage.ts`.
+7. Сохранение: папка saves → **`.mindstorm` + PNG** (`showDirectoryPicker` / `resolveSavesDirectory`); подсказки toolbar — снизу от курсора.
 
 ## Git
 
