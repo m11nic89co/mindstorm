@@ -462,6 +462,15 @@ body {
     stroke-width: 2.5px !important;
   }
 
+  /* Подписи на связях: вместо почти чёрного фона — серый. */
+  .mind-canvas .react-flow__edge-textbg {
+    fill: #94a3b8 !important;
+  }
+
+  .mind-canvas .react-flow__edge-text {
+    fill: #ffffff !important;
+  }
+
   /*
    * Тёмная тема: белый текст на почти прозрачной карточке → на белой бумаге
    * не виден. Печать: тёмный текст + непрозрачность; фон — из light-палитры
