@@ -10,6 +10,7 @@
 - UI приложения: **RU по умолчанию**, есть **EN / ES / ZH** (`src/i18n/messages.ts`, `src/i18n/locales.ts`).
 - Тема: **dark по умолчанию**, переключение light/dark (`src/theme/`, `mindstorm.theme.v1`).
 - Печать: диалог вся/выделение; A4 landscape, `fitView` + `PRINT_SCALE = 1`, читаемый текст (`setPrintLight` + print CSS), подписи связей — HTML (`.ms-edge-label`, без обрезки), без minimap.
+- Связи: **16 точек** (по 4 на сторону); подписи — размер/цвет; авто-разведение коридоров у стороны узла (runtime).
 - Простой текст: `plainText` / `plain: true` — цвет + размер, без рамки карточки.
 - Сохранение: системный **«Сохранить как»** (`showSaveFilePicker`); имя = префикс прошлого + текущие дата/время (`suggestSaveTitle`); `.mindstorm` + PNG в `png/` (`exportPng.ts`, `localBoardFile.ts`); папка — IndexedDB (`fileHandleStorage.ts`).
 - Toolbar: справа **Сначала → Загрузить → Сохранить → Печать → Тема**; текстовые **Демо → Текст → Карточка → Группа**; hover-подсказки под курсором (`useHoverTip`).
@@ -26,8 +27,10 @@
 | Простой текст | `PlainTextNode` в `CardNodes.tsx`, `plain` в `jsonCanvas.ts` |
 | PNG / save-load | `src/lib/exportPng.ts`, `localBoardFile.ts` (`suggestSaveTitle`, `showSaveFilePicker`), `fileHandleStorage.ts` |
 | Локализация | `src/i18n/messages.ts`, `src/i18n/locales.ts`, `LocaleProvider.tsx` |
-| Точки связи | `src/components/nodes/edgeHandles.tsx` |
+| Точки связи | `src/components/nodes/edgeHandles.tsx` (4 на сторону, 16 всего) |
 | Подписи связей | `src/components/edges/MindSmoothStepEdge.tsx` (HTML `EdgeLabelRenderer`) |
+| Разведение линий | `src/lib/flowEdges.ts` (`assignEdgeLaneOffsets`) |
+| Типографика подписи связи | `src/lib/edgeLabel.ts` |
 | Слои групп/рёбер | `src/index.css` |
 | Save/load / storage | `src/lib/localBoardFile.ts`, `src/lib/boardStorage.ts`, `fileHandleStorage.ts`, `exportPng.ts` |
 | JSON Canvas | `src/lib/jsonCanvas.ts`, `src/lib/flowEdges.ts` |

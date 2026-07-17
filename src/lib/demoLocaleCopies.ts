@@ -13,7 +13,7 @@ const DEMO_NODE_ES: NodeCopyMap = {
   g_product: { label: 'Producto' },
   product_features: {
     label: 'Funciones',
-    text: '## Funciones\n• 12 colores para cartas y grupos\n• 8 puntos de conexión (2 por lado)\n• Etiquetas en conexiones · Undo/Redo · RU/EN/ES/中',
+    text: '## Funciones\n• 12 colores para cartas y grupos\n• 16 puntos de conexión (4 por lado)\n• Etiquetas en conexiones · Undo/Redo · RU/EN/ES/中',
   },
   product_files: {
     label: 'Archivos',
@@ -52,7 +52,7 @@ const DEMO_NODE_ZH: NodeCopyMap = {
   g_product: { label: '产品' },
   product_features: {
     label: '功能',
-    text: '## 功能\n• 卡片和分组 12 种颜色\n• 每边 2 个连接点（共 8 个）\n• 连线标签 · 撤销/重做 · RU/EN/ES/中',
+    text: '## 功能\n• 卡片和分组 12 种颜色\n• 每边 4 个连接点（共 16 个）\n• 连线标签 · 撤销/重做 · RU/EN/ES/中',
   },
   product_files: {
     label: '文件',

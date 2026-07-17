@@ -153,6 +153,7 @@ toggle     → updateNode({ locked }) в GroupCardNode (кнопка на badge)
 - **Plain:** `data.text` + `textFontSize` + `color` → цвет шрифта (`textInk`); без handles.
 - Рёбра: `smoothstep`, `animated`, цвет от **source**, стрелка на **target**.
 - Handles: `EdgeHandles` — 16 точек (`source-{side}-{a|b|c|d}`, по 4 на сторону), `ConnectionMode.Loose` (не у plain).
+- Авто-разведение: `assignEdgeLaneOffsets` в `flowEdges.ts` — коридоры у стороны узла (`offset` + `stepPosition`); в файл не сохраняется.
 - `zIndexMode="manual"`, `elevateNodesOnSelect={false}`.
 
 ## Слои (z-index)
@@ -168,7 +169,7 @@ toggle     → updateNode({ locked }) в GroupCardNode (кнопка на badge)
 | Панель | Когда | Содержимое |
 |--------|-------|------------|
 | `SelectionPanel` | Выбран узел (не закреплённая группа) | Карточка: название + размеры; plain: текст + размер (10–96) + цвет; группа: метка + размер + цвет |
-| `EdgeSelectionPanel` | Выбрана связь | Подпись, удаление |
+| `EdgeSelectionPanel` | Выбрана связь | Подпись, размер/цвет текста, удаление |
 
 ## Горячие клавиши
 

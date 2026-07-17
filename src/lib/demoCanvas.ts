@@ -59,7 +59,7 @@ const DEMO_CANVAS_RU: JsonCanvas = {
       height: 180,
       color: '11',
       label: 'Возможности',
-      text: '## Возможности\n• 12 цветов карточек и групп\n• 8 точек связи (по 2 на сторону)\n• Подписи на связях · Undo/Redo · RU/EN',
+      text: '## Возможности\n• 12 цветов карточек и групп\n• 16 точек связи (по 4 на сторону)\n• Подписи на связях · Undo/Redo · RU/EN',
     },
     {
       id: 'product_files',
@@ -296,7 +296,7 @@ const DEMO_CANVAS_EN: JsonCanvas = {
       height: 180,
       color: '11',
       label: 'Features',
-      text: '## Features\n• 12 colors for cards & groups\n• 8 connection points (2 per side)\n• Edge labels · Undo/Redo · RU/EN',
+      text: '## Features\n• 12 colors for cards & groups\n• 16 connection points (4 per side)\n• Edge labels · Undo/Redo · RU/EN',
     },
     {
       id: 'product_files',
