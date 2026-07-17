@@ -9,7 +9,8 @@
 - Ответы пользователю — **на русском**.
 - UI приложения: **RU по умолчанию**, есть **EN / ES / ZH** (`src/i18n/messages.ts`, `src/i18n/locales.ts`).
 - Тема: **dark по умолчанию**, переключение light/dark (`src/theme/`, `mindstorm.theme.v1`).
-- Печать: диалог вся схема / выделение (`printBoard.ts`, `PrintBoardModal`).
+- Печать: диалог вся/выделение; A4 landscape, 50%, центр, без minimap (`printBoard.ts`, `printLayout.ts`).
+- Простой текст: `plainText` / `plain: true` — цвет + размер, без рамки карточки.
 - Коммиты и push — **только по явной просьбе**.
 
 ## Критичные файлы
@@ -19,7 +20,8 @@
 | Холст, UX | `src/components/MindCanvas.tsx` |
 | Toolbar, панели, RU/EN/ES/ZH | `src/components/Toolbar.tsx` |
 | Тема light/dark | `src/theme/ThemeProvider.tsx`, `src/index.css` (`--ms-*`) |
-| Печать (вся / выделение) | `src/lib/printBoard.ts`, `PrintBoardModal` в `FileModals.tsx` |
+| Печать (вся / выделение) | `src/lib/printBoard.ts`, `src/lib/printLayout.ts`, `PrintBoardModal` |
+| Простой текст | `PlainTextNode` в `CardNodes.tsx`, `plain` в `jsonCanvas.ts` |
 | Локализация | `src/i18n/messages.ts`, `src/i18n/locales.ts`, `LocaleProvider.tsx` |
 | Точки связи | `src/components/nodes/edgeHandles.tsx` |
 | Слои групп/рёбер | `src/index.css` |
@@ -50,8 +52,9 @@
 - Text-карточка: `labelFontSize`, `textFontSize` — панель справа; новая карточка по dblclick — цвет **12** (серый).
 - Метка группы: `labelFontSize` до **200 px**; замок на badge в `GroupCardNode` (иконка **1em** — тот же размер, что текст метки).
 - Text-карточка: `label` (заголовок) и `text` (тело) — **раздельные** зоны в `CardNodes.tsx`; не смешивать при редактировании.
+- Plain-текст: `canvasType: 'plain'`, RF type `plainText`; в файле `type: "text"` + `plain: true`; цвет через `textInk`, не через фон карточки.
 - Тема: chrome через `--ms-*` и `data-theme`; карточки — `resolveColor(..., theme)`; не хардкодить только dark-цвета в новом UI.
-- Печать: не писать `hidden` в черновик — пауза `dragPausedRef` + restore после `afterprint`; UI chrome — класс `.no-print`.
+- Печать: не писать `hidden` в черновик — пауза `dragPausedRef` + restore после `afterprint`; UI chrome — `.no-print`; layout — A4 landscape + `PRINT_SCALE` 0.5 (`printLayout.ts`); **MiniMap/Controls** — не рендерить при `isPrinting` (CSS одного `display:none` недостаточно из‑за `sm:!block`).
 - Группировка содержимого группы — см. [docs/GROUPING.md](./docs/GROUPING.md) (пока не реализовано).
 
 ## Деплoy (Windows)

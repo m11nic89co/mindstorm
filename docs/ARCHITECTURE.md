@@ -9,12 +9,13 @@
 │  ┌─────────────┐    ┌─────────────────────────────────┐ │
 │  │ Toolbar     │    │ React Flow (MindCanvas)         │ │
 │  │ Undo/Redo   │    │  · TextCardNode (z=1)           │ │
+│  │ Card/Text/Grp│   │  · PlainTextNode (z=1)         │ │
 │  │ Save/Open   │    │  · GroupCardNode (z=-1)         │ │
-│  │ Print/Theme │    │  · Edges (z=0, animated)        │ │
+│  │ 🖨 / ☀☾    │    │  · Edges (z=0, animated)        │ │
 │  │ Сначала/Демо│    └─────────────────────────────────┘ │
 │  │ RU|EN|ES|中 │                                        │
 │  └─────────────┘                                        │
-│  SelectionPanel ──► название + 12 цветов                │
+│  SelectionPanel ──► карточка / plain / группа + цвета   │
 │  EdgeSelectionPanel ► подпись связи                     │
 │  PrintBoardModal ──► вся схема / выделение              │
 │         │                                               │
@@ -32,7 +33,7 @@
 4. **Загрузить:** File → `parseBoardFile` → state.
 5. **Сначала:** confirm → `commitNow()` → пустые nodes/edges **без** `resetHistory` → Undo.
 6. **Демо:** `demoFlowPresentation(locale)` → анимация появления.
-7. **Печать:** `PrintBoardModal` → `printBoard.ts` (hide non-fragment) → `fitView` → `window.print()` → `afterprint` restore.
+7. **Печать:** `PrintBoardModal` → `printBoard.ts` → `isPrinting` (без MiniMap) → `fitView` → zoom ×0.5 (`printLayout.ts`) → `window.print()` (A4 landscape) → `afterprint` restore.
 
 ## Тема (light / dark)
 
@@ -41,7 +42,7 @@
 | `ThemeProvider.tsx` | Контекст, `data-theme` на `<html>`, meta `theme-color` |
 | `themeStorage.ts` | Ключ `mindstorm.theme.v1` |
 | `index.css` | Переменные `--ms-*` для chrome UI |
-| `colors.ts` | `resolveColor(color, theme)` — палитры карточек |
+| `colors.ts` | `resolveColor` (карточки), `textInk` (plain) |
 
 Компоненты: `const { theme, toggleTheme } = useTheme()`. По умолчанию — **dark**.
 
@@ -50,11 +51,20 @@
 | Модуль | Роль |
 |--------|------|
 | `printBoard.ts` | Фрагмент из выделения; `applyPrintVisibility` |
-| `PrintBoardModal` | Диалог: вся схема / только выделенное |
-| `MindCanvas.tsx` | Пауза history/persist, fitView, restore viewport |
-| `index.css` | `@media print` + класс `.no-print` |
+| `printLayout.ts` | `PRINT_SCALE = 0.5`, `viewportAtScale` |
+| `PrintBoardModal` | Диалог: вся схема / только выделенное + layoutHint |
+| `MindCanvas.tsx` | Пауза history/persist; `isPrinting` — без MiniMap/Controls; fitView + scale; restore |
+| `index.css` | `@page A4 landscape`, центр, скрытие panel/minimap / `.no-print` |
 
-Выделение: клик / Shift+клик / ПКМ-рамка. В фрагмент входят выделенные узлы, endpoints выделенных рёбер и все рёбра между узлами фрагмента.
+Выделение: клик / Shift+клик / ПКМ-рамка. В фрагмент входят выделенные узлы, endpoints выделенных рёбер и все рёбра между узлами фрагмента. **300 DPI** задаётся в диалоге печати ОС (браузер не форсирует DPI).
+
+## Узлы на холсте
+
+| RF type | `canvasType` | Файл | UI |
+|---------|--------------|------|-----|
+| `textCard` | `text` | `type: "text"` | Карточка: заголовок + тело |
+| `plainText` | `plain` | `type: "text"`, `plain: true` | Простой текст, цвет шрифта |
+| `groupCard` | `group` | `type: "group"` | Рамка-группа + замок |
 
 ## Локализация
 
@@ -110,17 +120,18 @@ toggle     → updateNode({ locked }) в GroupCardNode (кнопка на badge)
 
 ## React Flow
 
-- Узлы: `textCard`, `groupCard`.
+- Узлы: `textCard`, `plainText`, `groupCard`.
 - **Text-карточка:** `data.label` — заголовок (верх), `data.text` — тело (низ); в `CardNodes.tsx` — отдельное редактирование по двойному клику.
+- **Plain:** `data.text` + `textFontSize` + `color` → цвет шрифта (`textInk`); без handles.
 - Рёбра: `smoothstep`, `animated`, цвет от **source**, стрелка на **target**.
-- Handles: `EdgeHandles` — 8 точек (`source-{side}-{a|b}`), `ConnectionMode.Loose`.
+- Handles: `EdgeHandles` — 8 точек (`source-{side}-{a|b}`), `ConnectionMode.Loose` (не у plain).
 - `zIndexMode="manual"`, `elevateNodesOnSelect={false}`.
 
 ## Слои (z-index)
 
 - `.react-flow__node-groupCard` → `z-index: -1`
 - `.react-flow__edges` → `z-index: 0`
-- Карточки → `z-index: 1+`
+- Карточки и plain → `z-index: 1+`
 
 Метка группы — badge на верхней кромке с **замком** справа; масштаб `labelFontSize` до 200 px (иконка замка — `1em`, как текст метки). Заголовок text-карточки — **внутри** узла, над разделителем.
 
@@ -128,7 +139,7 @@ toggle     → updateNode({ locked }) в GroupCardNode (кнопка на badge)
 
 | Панель | Когда | Содержимое |
 |--------|-------|------------|
-| `SelectionPanel` | Выбран узел (не закреплённая группа) | Название; карточка: размер заголовка и текста; группа: размер метки; 12 цветов |
+| `SelectionPanel` | Выбран узел (не закреплённая группа) | Карточка: название + размеры; plain: текст + размер (10–96) + цвет; группа: метка + размер + цвет |
 | `EdgeSelectionPanel` | Выбрана связь | Подпись, удаление |
 
 ## Горячие клавиши
@@ -151,8 +162,8 @@ toggle     → updateNode({ locked }) в GroupCardNode (кнопка на badge)
 | Кнопка | Стиль |
 |--------|--------|
 | **Сначала** / **New** | `accent` (бирюзовая рамка) |
-| **Печать** / **Print** | обычная → `PrintBoardModal` |
-| **☀ / ☾** | переключатель темы |
+| **T Текст** | обычная → `plainText` узел |
+| **🖨** / **☀☾** | одинаковые icon-кнопки рядом → PrintModal / theme toggle |
 | **↺ Демо** / **↺ Demo** | обычная |
 | **RU \| EN \| ES \| 中** | компактный переключатель справа |
 

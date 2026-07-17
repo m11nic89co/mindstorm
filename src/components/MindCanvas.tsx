@@ -138,6 +138,7 @@ function MindCanvasInner() {
 
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [printModalOpen, setPrintModalOpen] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const printRestoreRef = useRef<{
     nodes: Node<CardNodeData>[];
     edges: Edge[];
@@ -604,6 +605,7 @@ function MindCanvasInner() {
   const restoreAfterPrint = useCallback(() => {
     const snapshot = printRestoreRef.current;
     printRestoreRef.current = null;
+    setIsPrinting(false);
     if (!snapshot) {
       dragPausedRef.current = false;
       return;
@@ -619,6 +621,7 @@ function MindCanvasInner() {
   const runPrint = useCallback(
     (scope: PrintScope) => {
       setPrintModalOpen(false);
+      setIsPrinting(true);
 
       const sourceNodes = nodesRef.current;
       const sourceEdges = edgesRef.current;
@@ -816,24 +819,28 @@ function MindCanvasInner() {
           className={`mind-canvas${demoRevealing ? ' mind-canvas--demo-reveal' : ''}${canvasDragging ? ' mind-canvas--dragging' : ''}${hasSelectedGroup ? ' mind-canvas--group-selected' : ''}${groupResizingId ? ' mind-canvas--group-resizing' : ''}`}
         >
           <Background variant={BackgroundVariant.Dots} gap={22} size={1} color={dotsColor} />
-          <Controls
-            showInteractive={false}
-            position="bottom-left"
-            className="no-print !mb-[calc(3.5rem+env(safe-area-inset-bottom))] !ml-2 !rounded-xl !border !shadow-xl !backdrop-blur-xl [&>button]:!h-8 [&>button]:!w-8 [&>button]:!border-[var(--ms-panel-border)] [&>button]:!bg-transparent [&>button]:!text-[var(--ms-control-text)] [&>button:hover]:!bg-[var(--ms-btn-hover)] sm:!mb-4 sm:!ml-4"
-            style={{
-              borderColor: 'var(--ms-panel-border)',
-              background: 'var(--ms-control-bg)',
-            }}
-          />
-          <MiniMap
-            nodeColor={() => 'rgba(99, 102, 241, 0.55)'}
-            maskColor={minimapMask}
-            className="no-print !mb-[calc(3.5rem+env(safe-area-inset-bottom))] !mr-2 !hidden !rounded-xl !border !backdrop-blur-md sm:!mb-4 sm:!mr-4 sm:!block"
-            style={{
-              borderColor: 'var(--ms-panel-border)',
-              background: 'var(--ms-minimap-bg)',
-            }}
-          />
+          {!isPrinting && (
+            <Controls
+              showInteractive={false}
+              position="bottom-left"
+              className="no-print !mb-[calc(3.5rem+env(safe-area-inset-bottom))] !ml-2 !rounded-xl !border !shadow-xl !backdrop-blur-xl [&>button]:!h-8 [&>button]:!w-8 [&>button]:!border-[var(--ms-panel-border)] [&>button]:!bg-transparent [&>button]:!text-[var(--ms-control-text)] [&>button:hover]:!bg-[var(--ms-btn-hover)] sm:!mb-4 sm:!ml-4"
+              style={{
+                borderColor: 'var(--ms-panel-border)',
+                background: 'var(--ms-control-bg)',
+              }}
+            />
+          )}
+          {!isPrinting && (
+            <MiniMap
+              nodeColor={() => 'rgba(99, 102, 241, 0.55)'}
+              maskColor={minimapMask}
+              className="no-print mind-minimap !mb-[calc(3.5rem+env(safe-area-inset-bottom))] !mr-2 !hidden !rounded-xl !border !backdrop-blur-md sm:!mb-4 sm:!mr-4 sm:!block"
+              style={{
+                borderColor: 'var(--ms-panel-border)',
+                background: 'var(--ms-minimap-bg)',
+              }}
+            />
+          )}
         </ReactFlow>
 
         <HintBar />

@@ -430,10 +430,15 @@ body {
 
   .mind-canvas .react-flow__controls,
   .mind-canvas .react-flow__minimap,
+  .mind-canvas .react-flow__panel.react-flow__minimap,
+  .mind-canvas .mind-minimap,
   .mind-canvas .react-flow__panel,
   .mind-canvas .react-flow__attribution,
   .mind-canvas .react-flow__background {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
   .mind-canvas .react-flow__edge.animated .react-flow__edge-path,
