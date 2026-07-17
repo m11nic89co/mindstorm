@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://m11nic89co.github.io/mindstorm/
