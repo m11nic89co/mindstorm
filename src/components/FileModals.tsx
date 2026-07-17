@@ -7,9 +7,9 @@ import {
   SaveCancelledError,
   buildFilename,
   buildPngRelativePath,
-  buildTimestampSaveTitle,
   saveBoardToDisk,
   saveSuccessMessage,
+  suggestSaveTitle,
 } from '../lib/localBoardFile';
 
 type ModalShellProps = {
@@ -67,7 +67,7 @@ export function SaveBoardModal({
   onSaved: (name: string, message: string) => void;
 }) {
   const { m } = useLocale();
-  const [name, setName] = useState(defaultName ?? buildTimestampSaveTitle());
+  const [name, setName] = useState(defaultName ?? suggestSaveTitle(null));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
@@ -100,6 +100,7 @@ export function SaveBoardModal({
         typeDescription: m.file.typeDescription,
         pngTypeDescription: m.file.pngTypeDescription,
         pngBlob,
+        skipNativePicker: true,
       });
       const message = saveSuccessMessage(result, m.file);
       setDone(message);

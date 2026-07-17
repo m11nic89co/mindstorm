@@ -1,8 +1,11 @@
 import type { JsonCanvas } from '../types/jsonCanvas';
 import {
+  ensureHandlePermission,
   getStartInHandle,
   rememberFileHandle,
+  rememberSavesDirHandle,
   resolveSavesDirectory,
+  readSavesDirHandle,
 } from './fileHandleStorage';
 import { triggerPngDownload } from './exportPng';
 import { parseCanvasFile } from './jsonCanvas';
@@ -17,6 +20,9 @@ export const BOARD_FILE_ACCEPT = '.mindstorm,.mindshtorm,.canvas,application/jso
 export const BOARD_FORMAT_ID = 'mindstorm-board';
 export const LEGACY_BOARD_FORMAT_ID = 'mindshtorm-board';
 
+/** Суффикс даты/времени в имени: `2026-07-17_10-13-28`. */
+const TIMESTAMP_SUFFIX_RE = /\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/;
+
 export type MindStormBoardFile = {
   format: typeof BOARD_FORMAT_ID | typeof LEGACY_BOARD_FORMAT_ID;
   version: 1;
@@ -30,7 +36,9 @@ export type SaveBoardFormat = 'both' | 'png' | 'mindstorm';
 export type SaveBoardResult = {
   /** Краткое описание для toast (оба имени или одно). */
   filename: string;
-  method: 'folder' | 'download';
+  /** Итоговое имя схемы (без расширения). */
+  title: string;
+  method: 'picker' | 'folder' | 'download';
   format: SaveBoardFormat;
 };
 
@@ -113,8 +121,31 @@ export function buildTimestampSaveTitle(now: Date = new Date()): string {
   return `${date}_${time}`;
 }
 
+/**
+ * Убирает суффикс `YYYY-MM-DD_HH-MM-SS` из имени (и расширение, если есть).
+ * `SUH2026-07-17_10-13-28` → `SUH`
+ */
+export function stripTimestampSuffix(name: string): string {
+  const withoutExt = name.trim().replace(/\.(mindstorm|mindshtorm|canvas|png)$/i, '');
+  return withoutExt.replace(TIMESTAMP_SUFFIX_RE, '');
+}
+
+/**
+ * Предлагаемое имя для Save As: префикс прошлого имени + текущие дата/время.
+ * `SUH2026-07-17_10-13-28` → `SUH2026-07-17_10-21-00`
+ */
+export function suggestSaveTitle(
+  previousName: string | null | undefined,
+  now: Date = new Date(),
+): string {
+  const stamp = buildTimestampSaveTitle(now);
+  const raw = previousName?.trim();
+  if (!raw) return stamp;
+  return `${stripTimestampSuffix(raw)}${stamp}`;
+}
+
 export function canUseSaveFilePicker(): boolean {
-  return typeof window.showDirectoryPicker === 'function' || typeof window.showSaveFilePicker === 'function';
+  return typeof window.showSaveFilePicker === 'function';
 }
 
 export function canUseDirectoryPicker(): boolean {
@@ -138,43 +169,177 @@ function triggerJsonDownload(filename: string, json: string) {
   window.setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
+async function writeBlobToFileHandle(fileHandle: FileSystemFileHandle, blob: Blob): Promise<void> {
+  const writable = await fileHandle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+}
+
 async function writeBlobToDirectory(
   dir: FileSystemDirectoryHandle,
   filename: string,
   blob: Blob,
 ): Promise<FileSystemFileHandle> {
   const fileHandle = await dir.getFileHandle(filename, { create: true });
-  const writable = await fileHandle.createWritable();
-  await writable.write(blob);
-  await writable.close();
+  await writeBlobToFileHandle(fileHandle, blob);
   return fileHandle;
+}
+
+/** Родительская папка файла — если браузер поддерживает getParent(). */
+async function tryGetParentDirectory(
+  fileHandle: FileSystemFileHandle,
+): Promise<FileSystemDirectoryHandle | null> {
+  const withParent = fileHandle as FileSystemFileHandle & {
+    getParent?: () => Promise<FileSystemDirectoryHandle>;
+  };
+  if (typeof withParent.getParent !== 'function') return null;
+  try {
+    return await withParent.getParent();
+  } catch {
+    return null;
+  }
+}
+
+async function resolvePngParentDirectory(
+  fileHandle: FileSystemFileHandle,
+  startIn?: FileSystemHandle,
+): Promise<FileSystemDirectoryHandle | null> {
+  const parent = await tryGetParentDirectory(fileHandle);
+  if (parent) {
+    await rememberSavesDirHandle(parent);
+    return parent;
+  }
+
+  if (startIn?.kind === 'directory') {
+    const dir = startIn as FileSystemDirectoryHandle;
+    if (await ensureHandlePermission(dir, 'readwrite')) {
+      await rememberSavesDirHandle(dir);
+      return dir;
+    }
+  }
+
+  const remembered = await readSavesDirHandle();
+  if (remembered && (await ensureHandlePermission(remembered, 'readwrite'))) {
+    return remembered;
+  }
+
+  return null;
+}
+
+async function writePngPreview(
+  parentDir: FileSystemDirectoryHandle,
+  title: string,
+  pngBlob: Blob,
+): Promise<string> {
+  const pngDir = await resolvePngDirectory(parentDir);
+  const pngName = buildPngFilename(title);
+  await writeBlobToDirectory(pngDir, pngName, pngBlob);
+  return buildPngRelativePath(title);
 }
 
 export type SaveBoardOptions = {
   defaultTitle?: string;
   typeDescription?: string;
   pngTypeDescription?: string;
-  /** PNG-снимок схемы — пишется в подпапку `png/` внутри saves */
+  /** Готовый PNG (если уже снят). */
   pngBlob?: Blob;
+  /**
+   * Снимок после системного диалога «Сохранить» —
+   * picker должен вызваться сразу по клику (user gesture).
+   */
+  capturePng?: () => Promise<Blob | undefined>;
+  /** Имя уже выбрано в UI — не открывать showSaveFilePicker повторно. */
+  skipNativePicker?: boolean;
 };
 
 /**
- * Сохраняет схему в папку: `.mindstorm` (JSON) в корень saves + PNG в `png/` (если есть снимок).
- * Подпапка `png` создаётся автоматически. Chrome/Edge: выбор/запоминание папки.
- * Иначе — оба файла в «Загрузки».
+ * Сохраняет схему через системный диалог «Сохранить как» (имя + папка).
+ * `.mindstorm` — куда выбрал пользователь; PNG — в `png/` той же папки (если доступна).
+ * Fallback: папка saves / «Загрузки».
  */
 export async function saveBoardToDisk(
   title: string,
   canvas: JsonCanvas,
   options?: SaveBoardOptions,
 ): Promise<SaveBoardResult> {
-  const safeTitle = title.trim() || options?.defaultTitle || 'my-board';
-  const pngName = buildPngFilename(safeTitle);
-  const pngRelPath = buildPngRelativePath(safeTitle);
-  const boardName = buildFilename(safeTitle);
-  const json = JSON.stringify(buildBoardFile(safeTitle, canvas), null, 2);
+  const suggestedTitle = title.trim() || options?.defaultTitle || 'my-board';
+  const typeDescription = options?.typeDescription ?? 'MindStorm board';
+
+  const resolvePngBlob = async (): Promise<Blob | undefined> => {
+    if (options?.pngBlob) return options.pngBlob;
+    if (options?.capturePng) {
+      try {
+        return await options.capturePng();
+      } catch {
+        return undefined;
+      }
+    }
+    return undefined;
+  };
+
+  if (canUseSaveFilePicker() && !options?.skipNativePicker) {
+    try {
+      const startIn = await getStartInHandle();
+      const picker = window.showSaveFilePicker!;
+      const fileHandle = await picker.call(window, {
+        suggestedName: buildFilename(suggestedTitle),
+        id: 'mindstorm-save',
+        ...(startIn ? { startIn } : { startIn: 'documents' as const }),
+        types: [
+          {
+            description: typeDescription,
+            accept: {
+              'application/json': ['.mindstorm', '.mindshtorm'],
+            },
+          },
+        ],
+      });
+
+      const savedTitle = titleFromFilename(fileHandle.name) || suggestedTitle;
+      const json = JSON.stringify(buildBoardFile(savedTitle, canvas), null, 2);
+      const jsonBlob = new Blob([json], { type: 'application/json;charset=utf-8' });
+      await writeBlobToFileHandle(fileHandle, jsonBlob);
+      await rememberFileHandle(fileHandle);
+
+      const pngBlob = await resolvePngBlob();
+      if (pngBlob) {
+        const parent = await resolvePngParentDirectory(fileHandle, startIn);
+        if (parent) {
+          const pngRel = await writePngPreview(parent, savedTitle, pngBlob);
+          return {
+            filename: `${fileHandle.name} + ${pngRel}`,
+            title: savedTitle,
+            method: 'picker',
+            format: 'both',
+          };
+        }
+        window.setTimeout(() => triggerPngDownload(buildPngFilename(savedTitle), pngBlob), 200);
+        return {
+          filename: `${fileHandle.name} + ${buildPngFilename(savedTitle)}`,
+          title: savedTitle,
+          method: 'picker',
+          format: 'both',
+        };
+      }
+
+      return {
+        filename: fileHandle.name,
+        title: savedTitle,
+        method: 'picker',
+        format: 'mindstorm',
+      };
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw new SaveCancelledError();
+      }
+      /* picker недоступен / permission — fallback */
+    }
+  }
+
+  const pngBlob = await resolvePngBlob();
+  const boardName = buildFilename(suggestedTitle);
+  const json = JSON.stringify(buildBoardFile(suggestedTitle, canvas), null, 2);
   const jsonBlob = new Blob([json], { type: 'application/json;charset=utf-8' });
-  const pngBlob = options?.pngBlob;
 
   if (canUseDirectoryPicker()) {
     try {
@@ -183,35 +348,45 @@ export async function saveBoardToDisk(
       await rememberFileHandle(boardHandle);
 
       if (pngBlob) {
-        const pngDir = await resolvePngDirectory(dir);
-        await writeBlobToDirectory(pngDir, pngName, pngBlob);
+        const pngRel = await writePngPreview(dir, suggestedTitle, pngBlob);
         return {
-          filename: `${boardName} + ${pngRelPath}`,
+          filename: `${boardName} + ${pngRel}`,
+          title: suggestedTitle,
           method: 'folder',
           format: 'both',
         };
       }
 
-      return { filename: boardName, method: 'folder', format: 'mindstorm' };
+      return {
+        filename: boardName,
+        title: suggestedTitle,
+        method: 'folder',
+        format: 'mindstorm',
+      };
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         throw new SaveCancelledError();
       }
-      /* нет permission / picker недоступен — fallback на download */
     }
   }
 
   triggerJsonDownload(boardName, json);
   if (pngBlob) {
-    window.setTimeout(() => triggerPngDownload(pngName, pngBlob), 200);
+    window.setTimeout(() => triggerPngDownload(buildPngFilename(suggestedTitle), pngBlob), 200);
     return {
-      filename: `${boardName} + ${pngName}`,
+      filename: `${boardName} + ${buildPngFilename(suggestedTitle)}`,
+      title: suggestedTitle,
       method: 'download',
       format: 'both',
     };
   }
 
-  return { filename: boardName, method: 'download', format: 'mindstorm' };
+  return {
+    filename: boardName,
+    title: suggestedTitle,
+    method: 'download',
+    format: 'mindstorm',
+  };
 }
 
 export type OpenBoardResult = {
@@ -288,8 +463,8 @@ export function saveSuccessMessage(
     savedFolder?: (filename: string) => string;
   },
 ): string {
-  if (result.method === 'folder') {
-    return (messages.savedFolder ?? messages.savedAs)(result.filename);
+  if (result.method === 'download') {
+    return messages.savedDownloads(result.filename);
   }
-  return messages.savedDownloads(result.filename);
+  return (messages.savedFolder ?? messages.savedAs)(result.filename);
 }

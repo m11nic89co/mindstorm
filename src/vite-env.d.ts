@@ -7,7 +7,9 @@ type FilePickerAcceptType = {
 
 type SaveFilePickerOptions = {
   suggestedName?: string;
+  id?: string;
   types?: FilePickerAcceptType[];
+  excludeAcceptAllOption?: boolean;
   startIn?: FileSystemHandle | WellKnownDirectory;
 };
 

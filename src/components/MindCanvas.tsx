@@ -72,10 +72,13 @@ import {
 import {
   BOARD_FILE_ACCEPT,
   SaveCancelledError,
-  buildTimestampSaveTitle,
   canUseOpenFilePicker,
+  canUseSaveFilePicker,
   openBoardFromDisk,
   readBoardFromFile,
+  saveBoardToDisk,
+  saveSuccessMessage,
+  suggestSaveTitle,
 } from '../lib/localBoardFile';
 import { captureBoardPng } from '../lib/exportPng';
 import type { CardNodeData, JsonCanvas, NodeI18n } from '../types/jsonCanvas';
@@ -536,9 +539,30 @@ function MindCanvasInner() {
     }
   }, [fitView, theme]);
 
-  const onSave = useCallback(() => {
+  const onSave = useCallback(async () => {
+    const title = suggestSaveTitle(activeBoardName);
+    const canvas = flowToCanvas(nodes, edges);
+
+    if (canUseSaveFilePicker()) {
+      try {
+        // Системный диалог сразу по клику (user gesture); PNG снимаем после выбора файла.
+        const result = await saveBoardToDisk(title, canvas, {
+          defaultTitle: m.file.defaultTitle,
+          typeDescription: m.file.typeDescription,
+          pngTypeDescription: m.file.pngTypeDescription,
+          capturePng: captureSavePng,
+        });
+        setActiveBoardName(result.title);
+        showToast(saveSuccessMessage(result, m.file));
+        return;
+      } catch (err) {
+        if (err instanceof SaveCancelledError) return;
+        /* fallback на модал, если системный диалог недоступен */
+      }
+    }
+
     setSaveModalOpen(true);
-  }, []);
+  }, [activeBoardName, captureSavePng, edges, m.file, nodes, showToast]);
 
   const onPickFile = useCallback(() => {
     setLoadError(null);
@@ -739,7 +763,7 @@ function MindCanvasInner() {
           onAddText={() => addTextCard()}
           onAddPlain={() => addPlainText()}
           onAddGroup={addGroup}
-          onSave={onSave}
+          onSave={() => void onSave()}
           onLoad={onPickFile}
           onReset={onReset}
           onNewBoard={onNewBoard}
@@ -879,7 +903,7 @@ function MindCanvasInner() {
 
         {saveModalOpen && (
           <SaveBoardModal
-            defaultName={activeBoardName ?? buildTimestampSaveTitle()}
+            defaultName={suggestSaveTitle(activeBoardName)}
             canvas={flowToCanvas(nodes, edges)}
             capturePng={captureSavePng}
             onClose={() => setSaveModalOpen(false)}
