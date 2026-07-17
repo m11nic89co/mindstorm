@@ -74,12 +74,8 @@ import {
   SaveCancelledError,
   buildTimestampSaveTitle,
   canUseOpenFilePicker,
-  canUseSaveFilePicker,
   openBoardFromDisk,
   readBoardFromFile,
-  saveBoardToDisk,
-  saveSuccessMessage,
-  titleFromFilename,
 } from '../lib/localBoardFile';
 import { captureBoardPng } from '../lib/exportPng';
 import type { CardNodeData, JsonCanvas, NodeI18n } from '../types/jsonCanvas';
@@ -520,45 +516,29 @@ function MindCanvasInner() {
     window.setTimeout(() => setDemoRevealing(false), 2800);
   }, [applyFlow, fitView, locale]);
 
-  const onSave = useCallback(async () => {
-    const title = buildTimestampSaveTitle();
-    const canvas = flowToCanvas(nodes, edges);
+  /** Снимок холста для Save As: без chrome, fitView. */
+  const captureSavePng = useCallback(async (): Promise<Blob | undefined> => {
     const bg = theme === 'light' ? '#eef1f7' : '#0b0d14';
-
-    const runSave = async (pngBlob?: Blob) => {
-      const result = await saveBoardToDisk(title, canvas, {
-        defaultTitle: m.file.defaultTitle,
-        typeDescription: m.file.typeDescription,
-        pngTypeDescription: m.file.pngTypeDescription,
-        pngBlob,
+    try {
+      setIsPrinting(true);
+      await new Promise<void>((resolve) => {
+        window.requestAnimationFrame(() => resolve());
       });
-      const savedTitle = titleFromFilename(result.filename);
-      setActiveBoardName(savedTitle);
-      showToast(saveSuccessMessage(result, m.file));
-    };
-
-    if (canUseSaveFilePicker()) {
-      try {
-        setIsPrinting(true);
-        await new Promise<void>((resolve) => {
-          window.requestAnimationFrame(() => resolve());
-        });
-        await fitView({ padding: 0.15, duration: 0, maxZoom: 1.25 });
-        await new Promise<void>((resolve) => {
-          window.setTimeout(() => resolve(), 40);
-        });
-        const pngBlob = await captureBoardPng({ backgroundColor: bg, pixelRatio: 2 });
-        setIsPrinting(false);
-        await runSave(pngBlob);
-        return;
-      } catch (err) {
-        setIsPrinting(false);
-        if (err instanceof SaveCancelledError) return;
-      }
+      await fitView({ padding: 0.15, duration: 0, maxZoom: 1.25 });
+      await new Promise<void>((resolve) => {
+        window.setTimeout(() => resolve(), 40);
+      });
+      return await captureBoardPng({ backgroundColor: bg, pixelRatio: 2 });
+    } catch {
+      return undefined;
+    } finally {
+      setIsPrinting(false);
     }
+  }, [fitView, theme]);
 
+  const onSave = useCallback(() => {
     setSaveModalOpen(true);
-  }, [fitView, m.file, nodes, edges, showToast, theme]);
+  }, []);
 
   const onPickFile = useCallback(() => {
     setLoadError(null);
@@ -759,7 +739,7 @@ function MindCanvasInner() {
           onAddText={() => addTextCard()}
           onAddPlain={() => addPlainText()}
           onAddGroup={addGroup}
-          onSave={() => void onSave()}
+          onSave={onSave}
           onLoad={onPickFile}
           onReset={onReset}
           onNewBoard={onNewBoard}
@@ -899,7 +879,9 @@ function MindCanvasInner() {
 
         {saveModalOpen && (
           <SaveBoardModal
+            defaultName={activeBoardName ?? buildTimestampSaveTitle()}
             canvas={flowToCanvas(nodes, edges)}
+            capturePng={captureSavePng}
             onClose={() => setSaveModalOpen(false)}
             onSaved={(name, message) => {
               setActiveBoardName(name);

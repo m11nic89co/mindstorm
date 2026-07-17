@@ -60,7 +60,7 @@
 - Тема: chrome через `--ms-*` и `data-theme`; карточки — `resolveColor(..., theme)`; не хардкодить только dark-цвета в новом UI.
 - Печать: не писать `hidden` в черновик — пауза `dragPausedRef` + restore после `afterprint`; UI chrome — `.no-print`; layout — A4 landscape + `PRINT_SCALE` 1 (`printLayout.ts`); на время печати — `setPrintLight(true)`; подписи рёбер — **HTML** `.ms-edge-label` (не SVG EdgeText — иначе длинный текст режется на печати); серый фон на `@media print`; **MiniMap/Controls** — не рендерить при `isPrinting`.
 - Toolbar: **New → Load → Save → Print → Theme** — `IconToolbarButton` справа («Сначала» = чистый лист с +); подсказки снизу от курсора.
-- Save: в выбранную папку — **`.mindstorm`** в корень + **`.png`** в `png/` (`resolveSavesDirectory`, `resolvePngDirectory`).
+- Save: диалог **«Сохранить как»** (имя каждый раз) → **`.mindstorm`** в корень + **`.png`** в `png/` (`resolveSavesDirectory`, `resolvePngDirectory`).
 - PNG — превью в подпапке `png/`; редактируемая схема — `.mindstorm` / `.canvas`.
 - Группировка содержимого группы — см. [docs/GROUPING.md](./docs/GROUPING.md) (пока не реализовано).
 

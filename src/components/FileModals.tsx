@@ -6,12 +6,11 @@ import type { JsonCanvas } from '../types/jsonCanvas';
 import {
   SaveCancelledError,
   buildFilename,
-  buildPngFilename,
+  buildPngRelativePath,
   buildTimestampSaveTitle,
   saveBoardToDisk,
   saveSuccessMessage,
 } from '../lib/localBoardFile';
-import { useTheme } from '../theme/ThemeProvider';
 
 type ModalShellProps = {
   title: string;
@@ -56,22 +55,24 @@ function ModalShell({ title, onClose, children }: ModalShellProps) {
 export function SaveBoardModal({
   defaultName,
   canvas,
+  capturePng,
   onClose,
   onSaved,
 }: {
   defaultName?: string;
   canvas: JsonCanvas;
+  /** Опциональный снимок холста (например с fitView); иначе — встроенный capture. */
+  capturePng?: () => Promise<Blob | undefined>;
   onClose: () => void;
   onSaved: (name: string, message: string) => void;
 }) {
   const { m } = useLocale();
-  const { theme } = useTheme();
   const [name, setName] = useState(defaultName ?? buildTimestampSaveTitle());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
 
-  const previewFilename = useMemo(() => buildPngFilename(name), [name]);
+  const previewFilename = useMemo(() => buildPngRelativePath(name), [name]);
   const boardFilename = useMemo(() => buildFilename(name), [name]);
 
   const handleSave = async () => {
@@ -84,12 +85,15 @@ export function SaveBoardModal({
     setBusy(true);
     setError(null);
     try {
-      const bg = theme === 'light' ? '#eef1f7' : '#0b0d14';
       let pngBlob: Blob | undefined;
-      try {
-        pngBlob = await captureBoardPng({ backgroundColor: bg, pixelRatio: 2 });
-      } catch {
-        pngBlob = undefined;
+      if (capturePng) {
+        pngBlob = await capturePng();
+      } else {
+        try {
+          pngBlob = await captureBoardPng({ backgroundColor: '#0b0d14', pixelRatio: 2 });
+        } catch {
+          pngBlob = undefined;
+        }
       }
       const result = await saveBoardToDisk(trimmed, canvas, {
         defaultTitle: m.file.defaultTitle,
@@ -123,6 +127,7 @@ export function SaveBoardModal({
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
+        onFocus={(e) => e.currentTarget.select()}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !busy) void handleSave();
         }}
