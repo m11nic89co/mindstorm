@@ -87,7 +87,7 @@ MindStorm/
 │   ├── components/
 │   │   ├── MindCanvas.tsx  ← главный экран
 │   │   ├── Toolbar.tsx     ← Демо→Текст… ; Сначала→📂💾🖨☀☾ справа
-│   │   ├── FileModals.tsx  ← Save + PrintBoardModal
+│   │   ├── FileModals.tsx  ← PrintBoardModal; SaveBoardModal (fallback)
 │   │   ├── DemoSplash.tsx
 │   │   ├── Toast.tsx
 │   │   ├── nodes/
@@ -206,12 +206,17 @@ MindStorm/
 
 ### `localBoardFile.ts` / `boardStorage.ts` / `exportPng.ts` / `fileHandleStorage.ts`
 
-- Save: в выбранную **папку** через системный диалог — `.mindstorm` и PNG-превью в подпапку **`png/`** (создаётся, если нет). Имя по умолчанию: префикс прошлого + текущие дата/время (`suggestSaveTitle`).
-- Папка: `showSaveFilePicker` / IndexedDB `mindstorm.fs.v1` (`savesDir`).
-- Open: `.mindstorm` / `.canvas` из той же папки (`startIn`).
+- **Сохранить (💾):** системный диалог ОС `showSaveFilePicker` (имя + папка), не кастомный модал.
+- **Имя по умолчанию** — `suggestSaveTitle(activeBoardName)`: от прошлого имени отрезается суффикс `YYYY-MM-DD_HH-MM-SS`, добавляется текущие дата/время.
+  - Пример: было `SUH2026-07-17_10-13-28` → предлагается `SUH2026-07-17_10-25-01`.
+  - Без прошлого имени → только timestamp (`2026-07-17_10-25-01`).
+- **Файлы:** `.mindstorm` — в выбранную папку; PNG-превью — в подпапку **`png/`** (создаётся, если нет), с тем же базовым именем.
+- Папка/последний файл: IndexedDB `mindstorm.fs.v1` (`savesDir`, `lastFile`); `startIn` для следующего Save/Open.
+- Open: `.mindstorm` / `.canvas` (`showOpenFilePicker`).
 - Черновик: `mindstorm.canvas.v1`; имя доски: `mindstorm.boardName`.
 - Если черновика нет — старт с демо на языке из `mindstorm.locale.v1`.
 - PNG **нельзя** открыть как редактируемую схему.
+- Fallback: `SaveBoardModal` (если нет File System Access API) → папка saves / «Загрузки».
 
 ### `CardNodes.tsx` + `edgeHandles.tsx`
 
@@ -291,8 +296,8 @@ Legacy (миграция при чтении): `mindshtorm.canvas.v1`, `mindshto
 | Действие | Поведение |
 |----------|-----------|
 | **Сначала** (лист +) | Первая справа в группе иконок (accent). Подтверждение → пустая доска; **Undo** вернёт прежнее. |
-| **Сохранить** (💾) | Системный диалог Windows/ОС: имя = префикс прошлого + текущие дата/время; можно сменить имя и папку. `.mindstorm` + **PNG** в `png/`. Toast. |
-| **Загрузить** (📂) | `.mindstorm` / `.canvas` из папки сохранений. PNG не открывается. |
+| **Сохранить** (💾) | Системный «Сохранить как»: предлагается `префикс` + текущие дата/время; можно сменить имя и папку. Пишет `.mindstorm` + PNG в `png/`. Toast. |
+| **Загрузить** (📂) | `.mindstorm` / `.canvas`. PNG не открывается. |
 | **Печать** (🖨) | Диалог: **Вся схема** / **Только выделенное**. Layout: A4 альбом, весь холст, читаемый текст, серые подписи связей; 300 DPI — в диалоге ОС. |
 | **☀ / ☾** | Переключение светлой/тёмной темы (`mindstorm.theme.v1`). |
 | **↺ Демо** → **Текст** → **Карточка** → **Группа** | Порядок после Undo/Redo: демо первая, затем узлы. |

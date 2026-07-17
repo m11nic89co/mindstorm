@@ -87,9 +87,21 @@ export interface JsonCanvasEdge {
   toEnd?: 'none' | 'arrow';
   color?: CanvasColor;
   label?: string;
+  /** MindStorm: размер шрифта подписи связи (px) */
+  labelFontSize?: number;
+  /** MindStorm: цвет текста подписи (палитра 1–12) */
+  labelColor?: CanvasColor;
   /** MindStorm: переводы подписи (ru, en, es, zh) */
   i18n?: EdgeI18n;
 }
+
+/** Runtime-данные ребра в React Flow (`edge.data`). */
+export type EdgeData = {
+  sourceColor?: CanvasColor;
+  labelFontSize?: number;
+  labelColor?: CanvasColor;
+  i18n?: EdgeI18n;
+};
 
 export interface JsonCanvas {
   nodes?: JsonCanvasNode[];

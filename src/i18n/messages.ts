@@ -54,6 +54,10 @@ export type Messages = {
     hint: string;
     clearLabel: string;
     delete: string;
+    labelFontSize: string;
+    labelFontSizeDecrease: string;
+    labelFontSizeIncrease: string;
+    labelColor: string;
   };
   selectionPanel: {
     group: string;
@@ -238,6 +242,10 @@ export const messagesRu: Messages = {
     hint: 'Потяните кружок на конце — перенаправить. Delete — удалить.',
     clearLabel: 'Убрать подпись',
     delete: 'Удалить связь',
+    labelFontSize: 'Размер подписи',
+    labelFontSizeDecrease: 'Уменьшить размер подписи',
+    labelFontSizeIncrease: 'Увеличить размер подписи',
+    labelColor: 'Цвет подписи',
   },
   selectionPanel: {
     group: 'Название группы',
@@ -418,6 +426,10 @@ export const messagesEn: Messages = {
     hint: 'Drag the handle at either end to reroute. Delete — remove.',
     clearLabel: 'Clear label',
     delete: 'Delete connection',
+    labelFontSize: 'Label size',
+    labelFontSizeDecrease: 'Decrease label size',
+    labelFontSizeIncrease: 'Increase label size',
+    labelColor: 'Label color',
   },
   selectionPanel: {
     group: 'Group name',
@@ -598,6 +610,10 @@ export const messagesEs: Messages = {
     hint: 'Arrastra el punto en un extremo para redirigir. Delete — eliminar.',
     clearLabel: 'Quitar etiqueta',
     delete: 'Eliminar conexión',
+    labelFontSize: 'Tamaño de la etiqueta',
+    labelFontSizeDecrease: 'Reducir tamaño de la etiqueta',
+    labelFontSizeIncrease: 'Aumentar tamaño de la etiqueta',
+    labelColor: 'Color de la etiqueta',
   },
   selectionPanel: {
     group: 'Nombre del grupo',
@@ -777,6 +793,10 @@ export const messagesZh: Messages = {
     hint: '拖动端点圆点可改线路。Delete — 删除。',
     clearLabel: '清除标签',
     delete: '删除连线',
+    labelFontSize: '标签字号',
+    labelFontSizeDecrease: '减小标签字号',
+    labelFontSizeIncrease: '增大标签字号',
+    labelColor: '标签颜色',
   },
   selectionPanel: {
     group: '分组名称',

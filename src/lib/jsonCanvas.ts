@@ -2,7 +2,7 @@ import type { Edge, Node } from '@xyflow/react';
 import type {
   CanvasSide,
   CardNodeData,
-  EdgeI18n,
+  EdgeData,
   HandleSlot,
   JsonCanvas,
   JsonCanvasEdge,
@@ -72,17 +72,22 @@ export function canvasToFlow(canvas: JsonCanvas): { nodes: Node<CardNodeData>[];
 
   const edges: Edge[] = syncEdgesWithSourceColors(
     nodes,
-    (canvas.edges ?? []).map((edge) =>
-      normalizeFlowEdge({
+    (canvas.edges ?? []).map((edge) => {
+      const data: EdgeData = {
+        ...(edge.i18n ? { i18n: edge.i18n } : {}),
+        ...(edge.labelFontSize != null ? { labelFontSize: edge.labelFontSize } : {}),
+        ...(edge.labelColor != null ? { labelColor: edge.labelColor } : {}),
+      };
+      return normalizeFlowEdge({
         id: edge.id,
         source: edge.fromNode,
         target: edge.toNode,
         sourceHandle: sideToHandle(edge.fromSide, edge.fromSlot, 'source'),
         targetHandle: sideToHandle(edge.toSide, edge.toSlot, 'target'),
         ...edgeLabelProps(edge.label),
-        data: edge.i18n ? { i18n: edge.i18n } : undefined,
-      }),
-    ),
+        data: Object.keys(data).length > 0 ? data : undefined,
+      });
+    }),
   );
 
   return { nodes, edges };
@@ -154,7 +159,8 @@ export function flowToCanvas(nodes: Node<CardNodeData>[], edges: Edge[]): JsonCa
   const canvasEdges: JsonCanvasEdge[] = edges.map((edge) => {
     const from = handleToSideAndSlot(edge.sourceHandle, 'right');
     const to = handleToSideAndSlot(edge.targetHandle, 'left');
-    const i18n = edge.data?.i18n as EdgeI18n | undefined;
+    const data = edge.data as EdgeData | undefined;
+    const i18n = data?.i18n;
     return {
       id: edge.id,
       fromNode: edge.source,
@@ -167,6 +173,8 @@ export function flowToCanvas(nodes: Node<CardNodeData>[], edges: Edge[]): JsonCa
       toEnd: 'arrow',
       label: typeof edge.label === 'string' ? edge.label : undefined,
       color: nodes.find((node) => node.id === edge.source)?.data.color,
+      ...(data?.labelFontSize != null ? { labelFontSize: data.labelFontSize } : {}),
+      ...(data?.labelColor != null ? { labelColor: data.labelColor } : {}),
       ...(i18n ? { i18n } : {}),
     };
   });

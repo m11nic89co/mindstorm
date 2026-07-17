@@ -5,6 +5,10 @@ import {
   type EdgeProps,
 } from '@xyflow/react';
 import type { CSSProperties } from 'react';
+import { textInk } from '../../lib/colors';
+import { resolveEdgeLabelFontSize } from '../../lib/edgeLabel';
+import type { CanvasColor, EdgeData } from '../../types/jsonCanvas';
+import { useTheme } from '../../theme/ThemeProvider';
 
 /**
  * Smoothstep-ребро с HTML-подписью (EdgeLabelRenderer).
@@ -22,8 +26,11 @@ export function MindSmoothStepEdge({
   markerEnd,
   markerStart,
   label,
+  data,
   interactionWidth,
 }: EdgeProps) {
+  const { theme } = useTheme();
+  const edgeData = data as EdgeData | undefined;
   const [path, labelX, labelY] = getSmoothStepPath({
     sourceX,
     sourceY,
@@ -34,11 +41,21 @@ export function MindSmoothStepEdge({
   });
 
   const text = typeof label === 'string' ? label.trim() : '';
+  const fontSize = resolveEdgeLabelFontSize(edgeData?.labelFontSize);
+  const labelColor = edgeData?.labelColor as CanvasColor | undefined;
+  const ink = labelColor ? textInk(labelColor, theme) : undefined;
 
   const labelBoxStyle: CSSProperties = {
     position: 'absolute',
     transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
     pointerEvents: 'none',
+    fontSize,
+    ...(ink
+      ? ({
+          color: ink,
+          ['--ms-edge-label-ink' as string]: ink,
+        } as CSSProperties)
+      : {}),
   };
 
   return (

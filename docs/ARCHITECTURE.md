@@ -28,7 +28,7 @@
 
 1. **Старт:** `mindstorm.canvas.v1` → `canvasToFlow` → state; если пусто — `getDemoCanvas(readLocale())`.
 2. **Редактирование:** debounce 400 ms → localStorage; history commit на drag stop и на **конец resize группы**.
-3. **Сохранить:** системный `showSaveFilePicker` (имя = `suggestSaveTitle`) → **`.mindstorm`** + **PNG** в `png/`; startIn из IndexedDB.
+3. **Сохранить:** `suggestSaveTitle` → системный `showSaveFilePicker` → `.mindstorm` + PNG в `png/`; startIn из IndexedDB.
 4. **Загрузить:** `showOpenFilePicker` / File → `parseBoardFile` → state (не PNG).
 5. **Сначала:** confirm → `commitNow()` → пустые nodes/edges **без** `resetHistory` → Undo.
 6. **Демо:** `demoFlowPresentation(locale)` → анимация появления.
@@ -61,11 +61,30 @@
 
 ## Save / load
 
+```
+💾 клик
+  → suggestSaveTitle(activeBoardName)   // префикс + текущий timestamp
+  → showSaveFilePicker (системный диалог: имя + папка)
+  → capturePng (после выбора файла)
+  → .mindstorm в выбранную папку
+  → png/<то же имя>.png в подпапку png/ (создать при необходимости)
+```
+
 | Модуль | Роль |
 |--------|------|
-| `localBoardFile.ts` | `showSaveFilePicker` + `suggestSaveTitle`; PNG в `png/`; open picker с `startIn` |
+| `localBoardFile.ts` | `suggestSaveTitle`, `saveBoardToDisk` (`showSaveFilePicker`), open |
 | `exportPng.ts` | Снимок холста через `html-to-image` |
 | `fileHandleStorage.ts` | IndexedDB `mindstorm.fs.v1` — папка saves + последний файл |
+| `FileModals.tsx` | `SaveBoardModal` — fallback без File System Access API; `PrintBoardModal` |
+
+Пример раскладки на диске после сохранения `SUH2026-07-17_10-25-01`:
+
+```
+MySaves/
+  SUH2026-07-17_10-25-01.mindstorm
+  png/
+    SUH2026-07-17_10-25-01.png
+```
 
 ## Узлы на холсте
 

@@ -201,20 +201,25 @@ export function applyConnection(
 
   const sourceColor = nodes.find((node) => node.id === source)?.data.color;
   const idx = findEdgeIndexForConnection(edges, connection);
+  const existing = idx >= 0 ? edges[idx] : undefined;
 
   const nextEdge: Edge = normalizeFlowEdge(
     {
-      id: idx >= 0 ? edges[idx].id : createId('edge'),
+      id: existing?.id ?? createId('edge'),
       source,
       target,
       sourceHandle,
       targetHandle,
+      ...(existing && typeof existing.label === 'string'
+        ? edgeLabelProps(existing.label)
+        : {}),
+      data: existing?.data,
     },
     sourceColor,
   );
 
   const nextEdges =
-    idx >= 0 ? edges.map((edge, i) => (i === idx ? { ...edges[idx], ...nextEdge } : edge)) : [...edges, nextEdge];
+    idx >= 0 ? edges.map((edge, i) => (i === idx ? { ...existing, ...nextEdge } : edge)) : [...edges, nextEdge];
 
   return syncEdgesWithSourceColors(nodes, nextEdges);
 }

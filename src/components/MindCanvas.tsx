@@ -81,7 +81,7 @@ import {
   suggestSaveTitle,
 } from '../lib/localBoardFile';
 import { captureBoardPng } from '../lib/exportPng';
-import type { CardNodeData, JsonCanvas, NodeI18n } from '../types/jsonCanvas';
+import type { CardNodeData, EdgeData, JsonCanvas, NodeI18n } from '../types/jsonCanvas';
 import { HintBar, EdgeSelectionPanel, SelectionPanel, Toolbar } from './Toolbar';
 import { GroupCardNode, PlainTextNode, TextCardNode } from './nodes/CardNodes';
 import { useCanvasHistory } from '../hooks/useCanvasHistory';
@@ -339,6 +339,19 @@ function MindCanvasInner() {
       );
     },
     [locale, setEdges],
+  );
+
+  const updateEdgeData = useCallback(
+    (edgeId: string, patch: Partial<EdgeData>) => {
+      setEdges((eds) =>
+        eds.map((edge) =>
+          edge.id === edgeId
+            ? { ...edge, data: { ...edge.data, ...patch } }
+            : edge,
+        ),
+      );
+    },
+    [setEdges],
   );
 
   const deleteEdge = useCallback(
@@ -794,7 +807,15 @@ function MindCanvasInner() {
         {selectedEdge && (
           <EdgeSelectionPanel
             label={typeof selectedEdge.label === 'string' ? selectedEdge.label : ''}
+            labelFontSize={(selectedEdge.data as EdgeData | undefined)?.labelFontSize}
+            labelColor={(selectedEdge.data as EdgeData | undefined)?.labelColor}
             onLabelChange={(label) => updateEdgeLabel(selectedEdge.id, label)}
+            onLabelFontSizeChange={(size) =>
+              updateEdgeData(selectedEdge.id, { labelFontSize: size })
+            }
+            onLabelColorChange={(color) =>
+              updateEdgeData(selectedEdge.id, { labelColor: color })
+            }
             onClear={() => updateEdgeLabel(selectedEdge.id, '')}
             onDelete={() => deleteEdge(selectedEdge.id)}
           />

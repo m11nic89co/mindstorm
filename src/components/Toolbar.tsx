@@ -20,6 +20,12 @@ import {
   MIN_PLAIN_FONT_SIZE,
 } from '../lib/cardTypography';
 import {
+  clampEdgeLabelFontSize,
+  DEFAULT_EDGE_LABEL_FONT_SIZE,
+  MAX_EDGE_LABEL_FONT_SIZE,
+  MIN_EDGE_LABEL_FONT_SIZE,
+} from '../lib/edgeLabel';
+import {
   clampGroupLabelFontSize,
   DEFAULT_GROUP_LABEL_FONT_SIZE,
   MAX_GROUP_LABEL_FONT_SIZE,
@@ -736,20 +742,29 @@ export function HintBar() {
 
 export function EdgeSelectionPanel({
   label,
+  labelFontSize,
+  labelColor,
   onLabelChange,
+  onLabelFontSizeChange,
+  onLabelColorChange,
   onClear,
   onDelete,
 }: {
   label: string;
+  labelFontSize?: number;
+  labelColor?: string;
   onLabelChange: (label: string) => void;
+  onLabelFontSizeChange: (size: number) => void;
+  onLabelColorChange: (color: string) => void;
   onClear: () => void;
   onDelete: () => void;
 }) {
   const { m } = useLocale();
+  const resolvedSize = labelFontSize ?? DEFAULT_EDGE_LABEL_FONT_SIZE;
 
   return (
     <div
-      className="no-print pointer-events-auto absolute right-2 top-20 z-20 flex w-44 flex-col gap-2 rounded-2xl border p-3 backdrop-blur-2xl sm:right-4 sm:top-24 sm:w-48"
+      className="no-print pointer-events-auto absolute right-2 top-20 z-20 flex w-52 flex-col gap-3 rounded-2xl border p-3 backdrop-blur-2xl sm:right-4 sm:top-24 sm:w-56"
       style={{
         borderColor: 'var(--ms-panel-border)',
         background: 'var(--ms-panel-bg)',
@@ -770,6 +785,36 @@ export function EdgeSelectionPanel({
           color: 'var(--ms-text)',
         }}
       />
+      <FontSizeControl
+        label={m.edgePanel.labelFontSize}
+        value={resolvedSize}
+        onChange={onLabelFontSizeChange}
+        decreaseAria={m.edgePanel.labelFontSizeDecrease}
+        increaseAria={m.edgePanel.labelFontSizeIncrease}
+        unit={m.selectionPanel.fontSizeUnit}
+        min={MIN_EDGE_LABEL_FONT_SIZE}
+        max={MAX_EDGE_LABEL_FONT_SIZE}
+        clamp={clampEdgeLabelFontSize}
+      />
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--ms-text-muted)' }}>
+          {m.edgePanel.labelColor}
+        </span>
+        <div className="grid grid-cols-6 gap-1.5">
+          {COLOR_IDS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => onLabelColorChange(c)}
+              className={`h-6 w-6 rounded-full border-2 transition hover:scale-110 ${
+                labelColor === c ? 'scale-110 border-indigo-500' : 'border-transparent'
+              }`}
+              style={{ background: swatchFill(c) }}
+              title={swatchTitle(c, m.colors, m.colorsCustom)}
+            />
+          ))}
+        </div>
+      </div>
       <p className="text-[9px] leading-snug" style={{ color: 'var(--ms-text-faint)' }}>
         {m.edgePanel.hint}
       </p>

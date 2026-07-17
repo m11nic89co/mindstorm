@@ -11,7 +11,7 @@
 - Тема: **dark по умолчанию**, переключение light/dark (`src/theme/`, `mindstorm.theme.v1`).
 - Печать: диалог вся/выделение; A4 landscape, `fitView` + `PRINT_SCALE = 1`, читаемый текст (`setPrintLight` + print CSS), подписи связей — HTML (`.ms-edge-label`, без обрезки), без minimap.
 - Простой текст: `plainText` / `plain: true` — цвет + размер, без рамки карточки.
-- Сохранение: в папку saves — `.mindstorm` в корень + PNG в подпапку `png/` (`exportPng.ts`, `showDirectoryPicker`); `png/` создаётся автоматически; папка saves — IndexedDB (`fileHandleStorage.ts`).
+- Сохранение: системный **«Сохранить как»** (`showSaveFilePicker`); имя = префикс прошлого + текущие дата/время (`suggestSaveTitle`); `.mindstorm` + PNG в `png/` (`exportPng.ts`, `localBoardFile.ts`); папка — IndexedDB (`fileHandleStorage.ts`).
 - Toolbar: справа **Сначала → Загрузить → Сохранить → Печать → Тема**; текстовые **Демо → Текст → Карточка → Группа**; hover-подсказки под курсором (`useHoverTip`).
 - Коммиты и push — **только по явной просьбе**.
 
@@ -24,7 +24,7 @@
 | Тема light/dark | `src/theme/ThemeProvider.tsx`, `src/index.css` (`--ms-*`) |
 | Печать (вся / выделение) | `src/lib/printBoard.ts`, `src/lib/printLayout.ts`, `PrintBoardModal` |
 | Простой текст | `PlainTextNode` в `CardNodes.tsx`, `plain` в `jsonCanvas.ts` |
-| PNG / папка save-load | `src/lib/exportPng.ts`, `src/lib/fileHandleStorage.ts` |
+| PNG / save-load | `src/lib/exportPng.ts`, `localBoardFile.ts` (`suggestSaveTitle`, `showSaveFilePicker`), `fileHandleStorage.ts` |
 | Локализация | `src/i18n/messages.ts`, `src/i18n/locales.ts`, `LocaleProvider.tsx` |
 | Точки связи | `src/components/nodes/edgeHandles.tsx` |
 | Подписи связей | `src/components/edges/MindSmoothStepEdge.tsx` (HTML `EdgeLabelRenderer`) |
@@ -60,8 +60,8 @@
 - Тема: chrome через `--ms-*` и `data-theme`; карточки — `resolveColor(..., theme)`; не хардкодить только dark-цвета в новом UI.
 - Печать: не писать `hidden` в черновик — пауза `dragPausedRef` + restore после `afterprint`; UI chrome — `.no-print`; layout — A4 landscape + `PRINT_SCALE` 1 (`printLayout.ts`); на время печати — `setPrintLight(true)`; подписи рёбер — **HTML** `.ms-edge-label` (не SVG EdgeText — иначе длинный текст режется на печати); серый фон на `@media print`; **MiniMap/Controls** — не рендерить при `isPrinting`.
 - Toolbar: **New → Load → Save → Print → Theme** — `IconToolbarButton` справа («Сначала» = чистый лист с +); подсказки снизу от курсора.
-- Save: системный диалог **«Сохранить как»** (`showSaveFilePicker`); имя = префикс прошлого + текущие дата/время (`suggestSaveTitle`) → **`.mindstorm`** + **`.png`** в `png/`.
-- PNG — превью в подпапке `png/`; редактируемая схема — `.mindstorm` / `.canvas`.
+- Save: системный диалог **«Сохранить как»** (`showSaveFilePicker`, сразу по клику); предлагаемое имя = префикс прошлого + текущие дата/время (`suggestSaveTitle`: `SUH2026-07-17_10-13-28` → `SUH` + сейчас); пользователь может сменить имя и папку → **`.mindstorm`** + **`.png`** в подпапку `png/` (создаётся автоматически).
+- PNG — превью в `png/`; редактируемая схема — `.mindstorm` / `.canvas`. Fallback UI (`SaveBoardModal`) — только если системный picker недоступен.
 - Группировка содержимого группы — см. [docs/GROUPING.md](./docs/GROUPING.md) (пока не реализовано).
 
 ## Деплoy (Windows)
