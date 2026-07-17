@@ -1,5 +1,5 @@
 export type CanvasSide = 'top' | 'right' | 'bottom' | 'left';
-export type HandleSlot = 'a' | 'b';
+export type HandleSlot = 'a' | 'b' | 'c' | 'd';
 export type CanvasColor = '1' | '2' | '3' | '4' | '5' | '6' | string;
 
 export type LocaleCopy = {
@@ -78,7 +78,7 @@ export interface JsonCanvasEdge {
   id: string;
   fromNode: string;
   fromSide?: CanvasSide;
-  /** MindStorm: точка на стороне (25% = a, 75% = b) */
+  /** MindStorm: точка на стороне (a–d: 12.5% / 37.5% / 62.5% / 87.5%) */
   fromSlot?: HandleSlot;
   fromEnd?: 'none' | 'arrow';
   toNode: string;

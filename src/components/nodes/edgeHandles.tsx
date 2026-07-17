@@ -7,8 +7,9 @@ const sides = [
   { id: 'left', position: Position.Left },
 ] as const;
 
-const offsets = ['25%', '75%'] as const;
-const suffixes = ['a', 'b'] as const;
+/** Четыре точки на сторону: центры четвертей. */
+const offsets = ['12.5%', '37.5%', '62.5%', '87.5%'] as const;
+const suffixes = ['a', 'b', 'c', 'd'] as const;
 
 type EdgeHandlesProps = {
   accentClass?: string;

@@ -177,9 +177,10 @@ function MindCanvasInner() {
   const onNodeDragStop = useCallback(() => {
     dragPausedRef.current = false;
     setCanvasDragging(false);
+    setEdges((eds) => syncEdgesWithSourceColors(nodesRef.current, eds));
     commitNow();
     persistCanvas(nodesRef.current, edgesRef.current);
-  }, [commitNow]);
+  }, [commitNow, setEdges]);
 
   const onGroupResizeStart = useCallback((groupId: string) => {
     const group = nodesRef.current.find((n) => n.id === groupId);

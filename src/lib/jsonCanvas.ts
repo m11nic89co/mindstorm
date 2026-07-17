@@ -25,7 +25,7 @@ function handleToSideAndSlot(
   fallback: CanvasSide,
 ): { side: CanvasSide; slot: HandleSlot } {
   if (!handleId) return { side: fallback, slot: 'a' };
-  const match = handleId.match(/^source-(top|right|bottom|left)(?:-(a|b))?$/);
+  const match = handleId.match(/^source-(top|right|bottom|left)(?:-(a|b|c|d))?$/);
   if (match) {
     return { side: match[1] as CanvasSide, slot: (match[2] as HandleSlot | undefined) ?? 'a' };
   }

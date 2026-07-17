@@ -188,7 +188,7 @@ MindStorm/
 ### `jsonCanvas.ts`
 
 - `canvasToFlow` / `flowToCanvas` — JSON Canvas ↔ React Flow.
-- Handles в runtime: `source-{side}-a|b`; в файле — `fromSide` / `toSide`.
+- Handles в runtime: `source-{side}-a|b|c|d` (4 на сторону, 16 всего); в файле — `fromSide` / `toSide` (+ `fromSlot` / `toSlot`).
 - Группы: `groupCard`, `zIndex: -1`. Карточки и plain: `zIndex: 1`.
 - Text-карточка: `label` — заголовок (верх), `text` — тело (низ).
 - Plain: `canvasType: 'plain'` → в файле `type: "text"` + `plain: true`.

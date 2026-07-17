@@ -152,7 +152,7 @@ toggle     → updateNode({ locked }) в GroupCardNode (кнопка на badge)
 - **Text-карточка:** `data.label` — заголовок (верх), `data.text` — тело (низ); в `CardNodes.tsx` — отдельное редактирование по двойному клику.
 - **Plain:** `data.text` + `textFontSize` + `color` → цвет шрифта (`textInk`); без handles.
 - Рёбра: `smoothstep`, `animated`, цвет от **source**, стрелка на **target**.
-- Handles: `EdgeHandles` — 8 точек (`source-{side}-{a|b}`), `ConnectionMode.Loose` (не у plain).
+- Handles: `EdgeHandles` — 16 точек (`source-{side}-{a|b|c|d}`, по 4 на сторону), `ConnectionMode.Loose` (не у plain).
 - `zIndexMode="manual"`, `elevateNodesOnSelect={false}`.
 
 ## Слои (z-index)

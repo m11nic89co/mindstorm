@@ -151,7 +151,7 @@ MindStorm-расширения подписи связи:
 | `labelFontSize` | Размер шрифта (px, 8–36, default 9) |
 | `labelColor` | Цвет текста (палитра `1`–`12`) |
 
-В runtime MindStorm использует 8 handles на узел; при сохранении достаточно `fromSide` / `toSide`.
+В runtime MindStorm использует 16 handles на узел (по 4 на сторону, слоты `a`–`d`); при сохранении достаточно `fromSide` / `toSide` (+ опционально `fromSlot` / `toSlot`).
 
 ## Совместимость
 

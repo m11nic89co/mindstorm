@@ -27,6 +27,7 @@ export function MindSmoothStepEdge({
   markerStart,
   label,
   data,
+  pathOptions,
   interactionWidth,
 }: EdgeProps) {
   const { theme } = useTheme();
@@ -38,6 +39,9 @@ export function MindSmoothStepEdge({
     targetY,
     sourcePosition,
     targetPosition,
+    borderRadius: pathOptions?.borderRadius,
+    offset: pathOptions?.offset,
+    stepPosition: pathOptions?.stepPosition,
   });
 
   const text = typeof label === 'string' ? label.trim() : '';
