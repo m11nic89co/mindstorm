@@ -19,7 +19,7 @@
 │         │                                               │
 │         ▼                                               │
 │  localStorage ◄──────── flowToCanvas / canvasToFlow     │
-│  PNG / .mindstorm  ◄── localBoardFile + exportPng       │
+│  PNG(png/) + .mindstorm ◄── localBoardFile + exportPng  │
 │  last folder (IDB) ◄── fileHandleStorage.ts             │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -28,7 +28,7 @@
 
 1. **Старт:** `mindstorm.canvas.v1` → `canvasToFlow` → state; если пусто — `getDemoCanvas(readLocale())`.
 2. **Редактирование:** debounce 400 ms → localStorage; history commit на drag stop и на **конец resize группы**.
-3. **Сохранить:** `flowToCanvas` → папка saves → **`.mindstorm` + PNG**; `startIn` из IndexedDB.
+3. **Сохранить:** `flowToCanvas` → папка saves → **`.mindstorm`** (корень) + **PNG** в `png/`; `startIn` из IndexedDB.
 4. **Загрузить:** `showOpenFilePicker` / File → `parseBoardFile` → state (не PNG).
 5. **Сначала:** confirm → `commitNow()` → пустые nodes/edges **без** `resetHistory` → Undo.
 6. **Демо:** `demoFlowPresentation(locale)` → анимация появления.
@@ -63,7 +63,7 @@
 
 | Модуль | Роль |
 |--------|------|
-| `localBoardFile.ts` | В папку: `.mindstorm` + PNG; open picker с `startIn` |
+| `localBoardFile.ts` | В папку: `.mindstorm` + PNG в `png/`; open picker с `startIn` |
 | `exportPng.ts` | Снимок холста через `html-to-image` |
 | `fileHandleStorage.ts` | IndexedDB `mindstorm.fs.v1` — папка saves + последний файл |
 

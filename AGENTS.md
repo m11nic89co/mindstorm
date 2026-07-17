@@ -11,7 +11,7 @@
 - Тема: **dark по умолчанию**, переключение light/dark (`src/theme/`, `mindstorm.theme.v1`).
 - Печать: диалог вся/выделение; A4 landscape, `fitView` + `PRINT_SCALE = 1`, читаемый текст (`setPrintLight` + print CSS), подписи связей — HTML (`.ms-edge-label`, без обрезки), без minimap.
 - Простой текст: `plainText` / `plain: true` — цвет + размер, без рамки карточки.
-- Сохранение: оба файла в папку saves — `.mindstorm` + PNG (`exportPng.ts`, `showDirectoryPicker`); папка — IndexedDB (`fileHandleStorage.ts`).
+- Сохранение: в папку saves — `.mindstorm` в корень + PNG в подпапку `png/` (`exportPng.ts`, `showDirectoryPicker`); `png/` создаётся автоматически; папка saves — IndexedDB (`fileHandleStorage.ts`).
 - Toolbar: справа **Сначала → Загрузить → Сохранить → Печать → Тема**; текстовые **Демо → Текст → Карточка → Группа**; hover-подсказки под курсором (`useHoverTip`).
 - Коммиты и push — **только по явной просьбе**.
 
@@ -60,8 +60,8 @@
 - Тема: chrome через `--ms-*` и `data-theme`; карточки — `resolveColor(..., theme)`; не хардкодить только dark-цвета в новом UI.
 - Печать: не писать `hidden` в черновик — пауза `dragPausedRef` + restore после `afterprint`; UI chrome — `.no-print`; layout — A4 landscape + `PRINT_SCALE` 1 (`printLayout.ts`); на время печати — `setPrintLight(true)`; подписи рёбер — **HTML** `.ms-edge-label` (не SVG EdgeText — иначе длинный текст режется на печати); серый фон на `@media print`; **MiniMap/Controls** — не рендерить при `isPrinting`.
 - Toolbar: **New → Load → Save → Print → Theme** — `IconToolbarButton` справа («Сначала» = чистый лист с +); подсказки снизу от курсора.
-- Save: в выбранную папку сразу **`.mindstorm` + `.png`** (`resolveSavesDirectory`).
-- PNG — превью рядом с JSON; редактируемая схема — `.mindstorm` / `.canvas`.
+- Save: в выбранную папку — **`.mindstorm`** в корень + **`.png`** в `png/` (`resolveSavesDirectory`, `resolvePngDirectory`).
+- PNG — превью в подпапке `png/`; редактируемая схема — `.mindstorm` / `.canvas`.
 - Группировка содержимого группы — см. [docs/GROUPING.md](./docs/GROUPING.md) (пока не реализовано).
 
 ## Деплoy (Windows)

@@ -11,7 +11,7 @@ alwaysApply: true
 - UI: **RU** по умолчанию, переключатель **RU/EN/ES/中** в toolbar. Строки — `src/i18n/messages.ts`, локали — `src/i18n/locales.ts`.
 - Коммиты только по запросу пользователя.
 - Группы всегда под линиями связей (`src/index.css`, z-index -1).
-- Сохранение локальное (`.mindstorm`), GitHub auth удалён.
+- Сохранение локальное (`.mindstorm` в корень, PNG в `png/`), GitHub auth удалён.
 - Live: https://m11nic89co.github.io/mindstorm/
 
 Ключевые файлы: `MindCanvas.tsx`, `localBoardFile.ts`, `jsonCanvas.ts`, `CardNodes.tsx`.

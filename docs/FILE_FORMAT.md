@@ -27,7 +27,7 @@
 
 Расширение редактируемой схемы: **`.mindstorm`**
 
-**PNG + JSON:** кнопка «Сохранить» пишет в выбранную папку **оба** файла с одним именем: редактируемый `.mindstorm` и PNG-превью. PNG **не** открывается обратно в редактор — для правок нужен `.mindstorm`.
+**PNG + JSON:** кнопка «Сохранить» пишет **`.mindstorm`** в корень выбранной папки и PNG-превью с тем же именем в подпапку **`png/`** (создаётся автоматически). PNG **не** открывается обратно в редактор — для правок нужен `.mindstorm`.
 
 ## JSON Canvas (поле `canvas`)
 
@@ -140,7 +140,7 @@
 
 ## Реализация
 
-- `src/lib/localBoardFile.ts` — serialize / parse / save (PNG + `.mindstorm`) / open
+- `src/lib/localBoardFile.ts` — serialize / parse / save (`.mindstorm` + PNG в `png/`) / open
 - `src/lib/exportPng.ts` — снимок холста
 - `src/lib/fileHandleStorage.ts` — запоминание папки (IndexedDB)
 - `src/lib/jsonCanvas.ts` — `canvasToFlow` / `flowToCanvas`

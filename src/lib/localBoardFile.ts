@@ -10,6 +10,8 @@ import { parseCanvasFile } from './jsonCanvas';
 /** Формат файла MindStorm — JSON Canvas + метаданные, расширение .mindstorm */
 export const BOARD_FILE_EXTENSION = '.mindstorm';
 export const PNG_FILE_EXTENSION = '.png';
+/** Подпапка для PNG-превью внутри папки сохранений (создаётся при первом save). */
+export const PNG_SUBDIR = 'png';
 export const BOARD_FILE_ACCEPT = '.mindstorm,.mindshtorm,.canvas,application/json';
 
 export const BOARD_FORMAT_ID = 'mindstorm-board';
@@ -91,6 +93,18 @@ export function buildPngFilename(title: string): string {
   return `${sanitizeFilename(title)}${PNG_FILE_EXTENSION}`;
 }
 
+/** Относительный путь PNG внутри папки saves, например `png/board.png`. */
+export function buildPngRelativePath(title: string): string {
+  return `${PNG_SUBDIR}/${buildPngFilename(title)}`;
+}
+
+/** Папка `png` внутри saves — создаётся, если ещё нет. */
+export async function resolvePngDirectory(
+  savesDir: FileSystemDirectoryHandle,
+): Promise<FileSystemDirectoryHandle> {
+  return savesDir.getDirectoryHandle(PNG_SUBDIR, { create: true });
+}
+
 /** Имя файла по локальной дате и времени, например `2026-06-22_20-54-33`. */
 export function buildTimestampSaveTitle(now: Date = new Date()): string {
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -140,13 +154,14 @@ export type SaveBoardOptions = {
   defaultTitle?: string;
   typeDescription?: string;
   pngTypeDescription?: string;
-  /** PNG-снимок схемы — пишется рядом с .mindstorm */
+  /** PNG-снимок схемы — пишется в подпапку `png/` внутри saves */
   pngBlob?: Blob;
 };
 
 /**
- * Сохраняет схему в папку: `.mindstorm` (JSON) + PNG (если есть снимок).
- * Chrome/Edge: выбор/запоминание папки. Иначе — оба файла в «Загрузки».
+ * Сохраняет схему в папку: `.mindstorm` (JSON) в корень saves + PNG в `png/` (если есть снимок).
+ * Подпапка `png` создаётся автоматически. Chrome/Edge: выбор/запоминание папки.
+ * Иначе — оба файла в «Загрузки».
  */
 export async function saveBoardToDisk(
   title: string,
@@ -155,6 +170,7 @@ export async function saveBoardToDisk(
 ): Promise<SaveBoardResult> {
   const safeTitle = title.trim() || options?.defaultTitle || 'my-board';
   const pngName = buildPngFilename(safeTitle);
+  const pngRelPath = buildPngRelativePath(safeTitle);
   const boardName = buildFilename(safeTitle);
   const json = JSON.stringify(buildBoardFile(safeTitle, canvas), null, 2);
   const jsonBlob = new Blob([json], { type: 'application/json;charset=utf-8' });
@@ -167,9 +183,10 @@ export async function saveBoardToDisk(
       await rememberFileHandle(boardHandle);
 
       if (pngBlob) {
-        await writeBlobToDirectory(dir, pngName, pngBlob);
+        const pngDir = await resolvePngDirectory(dir);
+        await writeBlobToDirectory(pngDir, pngName, pngBlob);
         return {
-          filename: `${boardName} + ${pngName}`,
+          filename: `${boardName} + ${pngRelPath}`,
           method: 'folder',
           format: 'both',
         };

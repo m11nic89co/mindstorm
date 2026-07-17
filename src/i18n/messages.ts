@@ -196,7 +196,7 @@ export const messagesRu: Messages = {
     addGroup: 'Добавить группу',
     addGroupShort: '◻ Группа',
     save: 'Сохранить',
-    saveTitle: 'Сохранить в папку: .mindstorm + PNG',
+    saveTitle: 'Сохранить: .mindstorm + PNG в папку png/',
     load: 'Загрузить',
     loadTitle: 'Загрузить схему .mindstorm из папки сохранений',
     newBoard: 'Сначала',
@@ -264,7 +264,7 @@ export const messagesRu: Messages = {
   saveModal: {
     title: 'Сохранить схему',
     description:
-      'Выберите папку сохранений: туда запишутся два файла — редактируемый .mindstorm и PNG-превью с тем же именем.',
+      'Выберите папку сохранений: .mindstorm — в корень, PNG-превью — в подпапку png/ (создаётся автоматически).',
     nameLabel: 'Название',
     namePlaceholder: 'брейншторм-2026',
     filenamePrefix: 'Будут сохранены файлы:',
@@ -376,7 +376,7 @@ export const messagesEn: Messages = {
     addGroup: 'Add group',
     addGroupShort: '◻ Group',
     save: 'Save',
-    saveTitle: 'Save to folder: .mindstorm + PNG',
+    saveTitle: 'Save: .mindstorm + PNG into png/',
     load: 'Open',
     loadTitle: 'Open a .mindstorm board from the saves folder',
     newBoard: 'New',
@@ -444,7 +444,7 @@ export const messagesEn: Messages = {
   saveModal: {
     title: 'Save board',
     description:
-      'Pick a saves folder: both an editable .mindstorm and a PNG preview with the same name will be written there.',
+      'Pick a saves folder: .mindstorm goes in the root; the PNG preview goes into png/ (created automatically).',
     nameLabel: 'Name',
     namePlaceholder: 'brainstorm-2026',
     filenamePrefix: 'Files to save:',
@@ -556,7 +556,7 @@ export const messagesEs: Messages = {
     addGroup: 'Añadir grupo',
     addGroupShort: '◻ Grupo',
     save: 'Guardar',
-    saveTitle: 'Guardar en carpeta: .mindstorm + PNG',
+    saveTitle: 'Guardar: .mindstorm + PNG en png/',
     load: 'Abrir',
     loadTitle: 'Abrir un .mindstorm desde la carpeta de guardados',
     newBoard: 'Nuevo',
@@ -624,7 +624,7 @@ export const messagesEs: Messages = {
   saveModal: {
     title: 'Guardar esquema',
     description:
-      'Elige una carpeta de guardados: se escribirán un .mindstorm editable y un PNG con el mismo nombre.',
+      'Elige una carpeta de guardados: .mindstorm en la raíz; el PNG en la subcarpeta png/ (se crea sola).',
     nameLabel: 'Nombre',
     namePlaceholder: 'brainstorm-2026',
     filenamePrefix: 'Archivos a guardar:',
@@ -736,7 +736,7 @@ export const messagesZh: Messages = {
     addGroup: '添加分组',
     addGroupShort: '◻ 分组',
     save: '保存',
-    saveTitle: '保存到文件夹：.mindstorm + PNG',
+    saveTitle: '保存：.mindstorm + PNG 到 png/',
     load: '打开',
     loadTitle: '从保存文件夹打开 .mindstorm',
     newBoard: '新建',
@@ -802,7 +802,7 @@ export const messagesZh: Messages = {
   },
   saveModal: {
     title: '保存画布',
-    description: '选择保存文件夹：将写入可编辑的 .mindstorm 和同名 PNG 预览。',
+    description: '选择保存文件夹：.mindstorm 在根目录，PNG 预览写入 png/（自动创建）。',
     nameLabel: '名称',
     namePlaceholder: 'brainstorm-2026',
     filenamePrefix: '将保存文件：',

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { buildFilename, buildPngFilename, buildTimestampSaveTitle } from './localBoardFile';
+import {
+  buildFilename,
+  buildPngFilename,
+  buildPngRelativePath,
+  buildTimestampSaveTitle,
+  PNG_SUBDIR,
+} from './localBoardFile';
 
 describe('buildTimestampSaveTitle', () => {
   it('formats local date and time for filenames', () => {
@@ -7,5 +13,7 @@ describe('buildTimestampSaveTitle', () => {
     expect(title).toBe('2026-06-22_20-54-03');
     expect(buildFilename(title)).toBe('2026-06-22_20-54-03.mindstorm');
     expect(buildPngFilename(title)).toBe('2026-06-22_20-54-03.png');
+    expect(buildPngRelativePath(title)).toBe('png/2026-06-22_20-54-03.png');
+    expect(PNG_SUBDIR).toBe('png');
   });
 });

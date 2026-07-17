@@ -96,7 +96,7 @@ npm.cmd run build
 4. На время печати: `setPrintLight(true)` + MiniMap/Controls **не монтируются** (`isPrinting`) — иначе Tailwind `sm:!block` пробивает `@media print`.
 5. Print CSS: A4 landscape; тёмный текст карточек; подписи рёбер — HTML `.ms-edge-label` (не SVG EdgeText); chrome — `.no-print`.
 6. Plain-текст: RF `plainText`, файл `plain: true` на `type: "text"`.
-7. Сохранение: папка saves → **`.mindstorm` + PNG**; подсказки toolbar — снизу от курсора.
+7. Сохранение: папка saves → **`.mindstorm`** в корень + **PNG** в `png/` (создаётся автоматически); подсказки toolbar — снизу от курсора.
 8. Рёбра: `edgeTypes.smoothstep` → `MindSmoothStepEdge`.
 
 ## Git
