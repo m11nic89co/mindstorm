@@ -12,6 +12,7 @@ import {
   useReactFlow,
   type Connection,
   type Edge,
+  type EdgeTypes,
   type Node,
   type NodeTypes,
 } from '@xyflow/react';
@@ -21,6 +22,7 @@ import { CanvasActionsContext } from '../context/canvasActions';
 import { PrintBoardModal, SaveBoardModal } from './FileModals';
 import { DemoSplash, DEMO_WELCOME_SEEN_KEY } from './DemoSplash';
 import { Toast } from './Toast';
+import { MindSmoothStepEdge } from './edges/MindSmoothStepEdge';
 import { canvasToFlow, flowToCanvas, EMPTY_CANVAS } from '../lib/jsonCanvas';
 import { applyConnection, connectionFromDragStart, FLOW_EDGE_STYLE, strokeForNodeColor, syncEdgesWithSourceColors } from '../lib/flowEdges';
 import { useLocale } from '../i18n/LocaleProvider';
@@ -98,6 +100,10 @@ const nodeTypes: NodeTypes = {
   textCard: TextCardNode,
   plainText: PlainTextNode,
   groupCard: GroupCardNode,
+};
+
+const edgeTypes: EdgeTypes = {
+  smoothstep: MindSmoothStepEdge,
 };
 
 function MindCanvasInner() {
@@ -828,6 +834,7 @@ function MindCanvasInner() {
           onEdgeClick={onEdgeClick}
           onPaneClick={onPaneClick}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           connectionMode={ConnectionMode.Loose}
           fitView
           fitViewOptions={{ padding: 0.2 }}
