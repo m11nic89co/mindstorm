@@ -57,12 +57,16 @@ export function DemoSplash({
     <div
       role="status"
       aria-live="polite"
-      className="demo-welcome-host pointer-events-none absolute inset-x-0 z-[21] flex justify-center px-3 sm:px-4"
+      className="demo-welcome-host no-print pointer-events-none absolute inset-x-0 z-[21] flex justify-center px-3 sm:px-4"
       data-exiting={exiting || undefined}
     >
-      <div className="demo-welcome pointer-events-auto flex w-full max-w-xl items-start gap-3 rounded-2xl border border-cyan-400/20 bg-[#12162a]/94 p-3 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:gap-4 sm:p-4">
+      <div
+        className="demo-welcome pointer-events-auto flex w-full max-w-xl items-start gap-3 rounded-2xl border border-cyan-400/25 p-3 shadow-[var(--ms-panel-shadow)] backdrop-blur-2xl sm:gap-4 sm:p-4"
+        style={{ background: 'var(--ms-modal-bg)', color: 'var(--ms-text)' }}
+      >
         <div
-          className="demo-welcome-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-cyan-400/25 bg-gradient-to-br from-cyan-400/15 to-indigo-500/10 text-lg text-cyan-200 sm:h-12 sm:w-12 sm:text-xl"
+          className="demo-welcome-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-cyan-400/25 bg-gradient-to-br from-cyan-400/15 to-indigo-500/10 text-lg sm:h-12 sm:w-12 sm:text-xl"
+          style={{ color: 'var(--ms-accent-text)' }}
           aria-hidden
         >
           ✦
@@ -71,19 +75,34 @@ export function DemoSplash({
         <div className="min-w-0 flex-1 pt-0.5">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-cyan-300/70 sm:text-[11px]">
+              <p
+                className="text-[10px] font-medium uppercase tracking-[0.14em] sm:text-[11px]"
+                style={{ color: 'var(--ms-accent-text)' }}
+              >
                 {m.demoSplash.welcome}
               </p>
-              <h2 className="truncate text-sm font-semibold tracking-tight text-white sm:text-base">
+              <h2
+                className="truncate text-sm font-semibold tracking-tight sm:text-base"
+                style={{ color: 'var(--ms-text)' }}
+              >
                 {m.demoSplash.title}
               </h2>
-              <p className="mt-0.5 text-xs leading-snug text-white/50 sm:text-[13px]">{m.demoSplash.subtitle}</p>
+              <p
+                className="mt-0.5 text-xs leading-snug sm:text-[13px]"
+                style={{ color: 'var(--ms-text-muted)' }}
+              >
+                {m.demoSplash.subtitle}
+              </p>
             </div>
 
             <button
               type="button"
               onClick={dismiss}
-              className="demo-welcome-close -mr-1 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 text-sm text-white/45 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
+              className="demo-welcome-close -mr-1 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border text-sm transition hover:opacity-80"
+              style={{
+                borderColor: 'var(--ms-panel-border)',
+                color: 'var(--ms-text-muted)',
+              }}
               aria-label={m.demoSplash.close}
             >
               ✕
@@ -103,7 +122,14 @@ export function DemoSplash({
 
 function StatChip({ label }: { label: string }) {
   return (
-    <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] text-white/45 sm:px-2.5 sm:py-1 sm:text-[11px]">
+    <span
+      className="rounded-full border px-2 py-0.5 text-[10px] sm:px-2.5 sm:py-1 sm:text-[11px]"
+      style={{
+        borderColor: 'var(--ms-panel-border)',
+        background: 'var(--ms-chip-bg)',
+        color: 'var(--ms-text-muted)',
+      }}
+    >
       {label}
     </span>
   );

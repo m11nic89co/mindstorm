@@ -12,7 +12,7 @@ export function Toast({ message, onClose, variant = 'success' }: ToastProps) {
 
   return (
     <div
-      className={`board-toast pointer-events-auto absolute inset-x-3 z-30 mx-auto max-w-md sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 ${
+      className={`board-toast no-print pointer-events-auto absolute inset-x-3 z-30 mx-auto max-w-md sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 ${
         isError ? '' : ''
       }`}
     >

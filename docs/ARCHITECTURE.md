@@ -5,16 +5,18 @@
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  Browser                                                │
-│  LocaleProvider (RU/EN/ES/ZH)                           │
+│  ThemeProvider (light/dark) + LocaleProvider (RU/EN/…)  │
 │  ┌─────────────┐    ┌─────────────────────────────────┐ │
 │  │ Toolbar     │    │ React Flow (MindCanvas)         │ │
 │  │ Undo/Redo   │    │  · TextCardNode (z=1)           │ │
 │  │ Save/Open   │    │  · GroupCardNode (z=-1)         │ │
-│  │ Сначала/Демо│    │  · Edges (z=0, animated)        │ │
-│  │ RU|EN|ES|中 │    └─────────────────────────────────┘ │
+│  │ Print/Theme │    │  · Edges (z=0, animated)        │ │
+│  │ Сначала/Демо│    └─────────────────────────────────┘ │
+│  │ RU|EN|ES|中 │                                        │
 │  └─────────────┘                                        │
 │  SelectionPanel ──► название + 12 цветов                │
 │  EdgeSelectionPanel ► подпись связи                     │
+│  PrintBoardModal ──► вся схема / выделение              │
 │         │                                               │
 │         ▼                                               │
 │  localStorage ◄──────── flowToCanvas / canvasToFlow     │
@@ -30,6 +32,29 @@
 4. **Загрузить:** File → `parseBoardFile` → state.
 5. **Сначала:** confirm → `commitNow()` → пустые nodes/edges **без** `resetHistory` → Undo.
 6. **Демо:** `demoFlowPresentation(locale)` → анимация появления.
+7. **Печать:** `PrintBoardModal` → `printBoard.ts` (hide non-fragment) → `fitView` → `window.print()` → `afterprint` restore.
+
+## Тема (light / dark)
+
+| Модуль | Роль |
+|--------|------|
+| `ThemeProvider.tsx` | Контекст, `data-theme` на `<html>`, meta `theme-color` |
+| `themeStorage.ts` | Ключ `mindstorm.theme.v1` |
+| `index.css` | Переменные `--ms-*` для chrome UI |
+| `colors.ts` | `resolveColor(color, theme)` — палитры карточек |
+
+Компоненты: `const { theme, toggleTheme } = useTheme()`. По умолчанию — **dark**.
+
+## Печать
+
+| Модуль | Роль |
+|--------|------|
+| `printBoard.ts` | Фрагмент из выделения; `applyPrintVisibility` |
+| `PrintBoardModal` | Диалог: вся схема / только выделенное |
+| `MindCanvas.tsx` | Пауза history/persist, fitView, restore viewport |
+| `index.css` | `@media print` + класс `.no-print` |
+
+Выделение: клик / Shift+клик / ПКМ-рамка. В фрагмент входят выделенные узлы, endpoints выделенных рёбер и все рёбра между узлами фрагмента.
 
 ## Локализация
 
@@ -126,6 +151,8 @@ toggle     → updateNode({ locked }) в GroupCardNode (кнопка на badge)
 | Кнопка | Стиль |
 |--------|--------|
 | **Сначала** / **New** | `accent` (бирюзовая рамка) |
+| **Печать** / **Print** | обычная → `PrintBoardModal` |
+| **☀ / ☾** | переключатель темы |
 | **↺ Демо** / **↺ Demo** | обычная |
 | **RU \| EN \| ES \| 中** | компактный переключатель справа |
 

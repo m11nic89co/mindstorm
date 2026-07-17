@@ -18,7 +18,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CanvasActionsContext } from '../context/canvasActions';
-import { SaveBoardModal } from './FileModals';
+import { PrintBoardModal, SaveBoardModal } from './FileModals';
 import { DemoSplash, DEMO_WELCOME_SEEN_KEY } from './DemoSplash';
 import { Toast } from './Toast';
 import { canvasToFlow, flowToCanvas, EMPTY_CANVAS } from '../lib/jsonCanvas';
@@ -27,6 +27,7 @@ import { useLocale } from '../i18n/LocaleProvider';
 import { readLocale } from '../i18n/localeStorage';
 import { messagesFor } from '../i18n/messages';
 import { LOCALES } from '../i18n/locales';
+import { useTheme } from '../theme/ThemeProvider';
 import {
   applyGroupResizeToNodes,
   createGroupResizeSnapshot,
@@ -78,6 +79,12 @@ import { useCanvasHistory } from '../hooks/useCanvasHistory';
 import { useCanvasShortcuts } from '../hooks/useCanvasShortcuts';
 import { useDebouncedPersist } from '../hooks/useDebouncedPersist';
 import { useRightClickMarquee } from '../hooks/useRightClickMarquee';
+import {
+  applyPrintVisibility,
+  hasPrintableSelection,
+  resolvePrintFragment,
+  type PrintScope,
+} from '../lib/printBoard';
 
 const nodeTypes: NodeTypes = {
   textCard: TextCardNode,
@@ -86,6 +93,7 @@ const nodeTypes: NodeTypes = {
 
 function MindCanvasInner() {
   const { locale, m } = useLocale();
+  const { theme } = useTheme();
   const initialFlow = useMemo(() => {
     const loc = readLocale();
     const flow = canvasToFlow(loadStoredCanvas());
@@ -109,7 +117,7 @@ function MindCanvasInner() {
     setEdges,
     dragPausedRef,
   );
-  const { screenToFlowPosition, fitView } = useReactFlow();
+  const { screenToFlowPosition, fitView, getViewport, setViewport } = useReactFlow();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const nodesRef = useRef(nodes);
   const edgesRef = useRef(edges);
@@ -123,6 +131,12 @@ function MindCanvasInner() {
   const toastTimer = useRef<number | undefined>(undefined);
 
   const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [printModalOpen, setPrintModalOpen] = useState(false);
+  const printRestoreRef = useRef<{
+    nodes: Node<CardNodeData>[];
+    edges: Edge[];
+    viewport: { x: number; y: number; zoom: number };
+  } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [connectLineStyle, setConnectLineStyle] = useState(FLOW_EDGE_STYLE);
@@ -548,6 +562,77 @@ function MindCanvasInner() {
     onPasteClipboard: pasteClipboard,
   });
 
+  const canPrintSelection = useMemo(
+    () => hasPrintableSelection(nodes, edges),
+    [nodes, edges],
+  );
+
+  const restoreAfterPrint = useCallback(() => {
+    const snapshot = printRestoreRef.current;
+    printRestoreRef.current = null;
+    if (!snapshot) {
+      dragPausedRef.current = false;
+      return;
+    }
+    setNodes(snapshot.nodes);
+    setEdges(snapshot.edges);
+    setViewport(snapshot.viewport, { duration: 0 });
+    window.requestAnimationFrame(() => {
+      dragPausedRef.current = false;
+    });
+  }, [setEdges, setNodes, setViewport]);
+
+  const runPrint = useCallback(
+    (scope: PrintScope) => {
+      setPrintModalOpen(false);
+
+      const sourceNodes = nodesRef.current;
+      const sourceEdges = edgesRef.current;
+      const viewport = getViewport();
+      printRestoreRef.current = {
+        nodes: structuredClone(sourceNodes),
+        edges: structuredClone(sourceEdges),
+        viewport,
+      };
+
+      dragPausedRef.current = true;
+
+      const fragment =
+        scope === 'selection' ? resolvePrintFragment(sourceNodes, sourceEdges) : null;
+      const prepared = applyPrintVisibility(sourceNodes, sourceEdges, fragment);
+      setNodes(prepared.nodes);
+      setEdges(prepared.edges);
+
+      const visibleNodes = prepared.nodes.filter((node) => !node.hidden);
+      const finish = () => {
+        window.setTimeout(() => window.print(), 60);
+      };
+
+      window.requestAnimationFrame(() => {
+        void fitView({
+          nodes: visibleNodes.length ? visibleNodes : undefined,
+          padding: 0.12,
+          duration: 0,
+          maxZoom: 1.25,
+        }).then(finish);
+      });
+    },
+    [fitView, getViewport, setEdges, setNodes],
+  );
+
+  useEffect(() => {
+    const onAfterPrint = () => restoreAfterPrint();
+    window.addEventListener('afterprint', onAfterPrint);
+    return () => {
+      window.removeEventListener('afterprint', onAfterPrint);
+      if (printRestoreRef.current) restoreAfterPrint();
+    };
+  }, [restoreAfterPrint]);
+
+  const onPrint = useCallback(() => {
+    setPrintModalOpen(true);
+  }, []);
+
   const actions = useMemo(
     () => ({
       updateNode,
@@ -558,13 +643,23 @@ function MindCanvasInner() {
     [updateNode, onGroupResizeStart, onGroupResize, onGroupResizeEnd],
   );
 
+  const dotsColor = theme === 'light' ? 'rgba(15, 23, 42, 0.12)' : 'rgba(255, 255, 255, 0.06)';
+  const minimapMask = theme === 'light' ? 'rgba(238, 241, 247, 0.62)' : 'rgba(0, 0, 0, 0.65)';
+
   return (
     <CanvasActionsContext.Provider value={actions}>
       <div
-        className="relative h-dvh w-screen overflow-hidden bg-[#0b0d14]"
+        className="mind-board-shell relative h-dvh w-screen overflow-hidden"
+        style={{ background: 'var(--ms-app-bg)' }}
         data-demo-welcome={demoSplash || undefined}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(99,102,241,0.18),transparent_50%),radial-gradient(ellipse_at_80%_100%,rgba(168,85,247,0.12),transparent_50%)]" />
+        <div
+          className="mind-board-glow pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse at 20% 0%, var(--ms-grad-a), transparent 50%), radial-gradient(ellipse at 80% 100%, var(--ms-grad-b), transparent 50%)',
+          }}
+        />
 
         <Toolbar
           onAddText={() => addTextCard()}
@@ -573,6 +668,7 @@ function MindCanvasInner() {
           onLoad={onPickFile}
           onReset={onReset}
           onNewBoard={onNewBoard}
+          onPrint={onPrint}
           onUndo={undo}
           onRedo={redo}
           canUndo={canUndo}
@@ -623,7 +719,7 @@ function MindCanvasInner() {
           ref={fileInputRef}
           type="file"
           accept={BOARD_FILE_ACCEPT}
-          className="hidden"
+          className="no-print hidden"
           onChange={(e) => void onFileSelected(e)}
         />
 
@@ -676,16 +772,24 @@ function MindCanvasInner() {
           proOptions={{ hideAttribution: true }}
           className={`mind-canvas${demoRevealing ? ' mind-canvas--demo-reveal' : ''}${canvasDragging ? ' mind-canvas--dragging' : ''}${hasSelectedGroup ? ' mind-canvas--group-selected' : ''}${groupResizingId ? ' mind-canvas--group-resizing' : ''}`}
         >
-          <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="rgba(255,255,255,0.06)" />
+          <Background variant={BackgroundVariant.Dots} gap={22} size={1} color={dotsColor} />
           <Controls
             showInteractive={false}
             position="bottom-left"
-            className="!mb-[calc(3.5rem+env(safe-area-inset-bottom))] !ml-2 !rounded-xl !border !border-white/10 !bg-white/5 !shadow-xl !backdrop-blur-xl [&>button]:!h-8 [&>button]:!w-8 [&>button]:!border-white/10 [&>button]:!bg-transparent [&>button]:!text-white/70 [&>button:hover]:!bg-white/10 sm:!mb-4 sm:!ml-4"
+            className="no-print !mb-[calc(3.5rem+env(safe-area-inset-bottom))] !ml-2 !rounded-xl !border !shadow-xl !backdrop-blur-xl [&>button]:!h-8 [&>button]:!w-8 [&>button]:!border-[var(--ms-panel-border)] [&>button]:!bg-transparent [&>button]:!text-[var(--ms-control-text)] [&>button:hover]:!bg-[var(--ms-btn-hover)] sm:!mb-4 sm:!ml-4"
+            style={{
+              borderColor: 'var(--ms-panel-border)',
+              background: 'var(--ms-control-bg)',
+            }}
           />
           <MiniMap
             nodeColor={() => 'rgba(99, 102, 241, 0.55)'}
-            maskColor="rgba(0,0,0,0.65)"
-            className="!mb-[calc(3.5rem+env(safe-area-inset-bottom))] !mr-2 !hidden !rounded-xl !border !border-white/10 !bg-black/40 !backdrop-blur-md sm:!mb-4 sm:!mr-4 sm:!block"
+            maskColor={minimapMask}
+            className="no-print !mb-[calc(3.5rem+env(safe-area-inset-bottom))] !mr-2 !hidden !rounded-xl !border !backdrop-blur-md sm:!mb-4 sm:!mr-4 sm:!block"
+            style={{
+              borderColor: 'var(--ms-panel-border)',
+              background: 'var(--ms-minimap-bg)',
+            }}
           />
         </ReactFlow>
 
@@ -699,6 +803,14 @@ function MindCanvasInner() {
               setActiveBoardName(name);
               showToast(message);
             }}
+          />
+        )}
+
+        {printModalOpen && (
+          <PrintBoardModal
+            hasSelection={canPrintSelection}
+            onClose={() => setPrintModalOpen(false)}
+            onConfirm={runPrint}
           />
         )}
       </div>

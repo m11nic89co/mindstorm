@@ -18,6 +18,12 @@ export type Messages = {
     newBoardTitle: string;
     demo: string;
     demoTitle: string;
+    print: string;
+    printShort: string;
+    printTitle: string;
+    themeToLight: string;
+    themeToDark: string;
+    themeAria: string;
     statsTitle: string;
     languageAria: string;
   };
@@ -76,6 +82,17 @@ export type Messages = {
     done: string;
     saveButton: string;
     defaultName: string;
+  };
+  printModal: {
+    title: string;
+    description: string;
+    all: string;
+    allHint: string;
+    selection: string;
+    selectionHint: string;
+    selectionEmpty: string;
+    cancel: string;
+    confirm: string;
   };
   demoSplash: {
     welcome: string;
@@ -169,6 +186,12 @@ export const messagesRu: Messages = {
     newBoardTitle: 'Новая пустая схема',
     demo: 'Демо',
     demoTitle: 'Загрузить демо-схему MindStorm',
+    print: 'Печать',
+    printShort: '🖨',
+    printTitle: 'Печать схемы или выделенного фрагмента',
+    themeToLight: 'Светлая тема',
+    themeToDark: 'Тёмная тема',
+    themeAria: 'Переключить тему',
     statsTitle: 'Сколько карточек и линий на доске',
     languageAria: 'Язык интерфейса',
   },
@@ -229,6 +252,17 @@ export const messagesRu: Messages = {
     done: 'Готово',
     saveButton: 'Сохранить на компьютер',
     defaultName: 'моя-схема',
+  },
+  printModal: {
+    title: 'Печать',
+    description: 'Что отправить на печать?',
+    all: 'Вся схема',
+    allHint: 'Все карточки, группы и связи на доске',
+    selection: 'Только выделенное',
+    selectionHint: 'Выделенные узлы и связи между ними',
+    selectionEmpty: 'Сначала выделите карточки, группы или связи (клик / Shift / ПКМ-рамка)',
+    cancel: 'Отмена',
+    confirm: 'Печать',
   },
   demoSplash: {
     welcome: 'Добро пожаловать',
@@ -317,6 +351,12 @@ export const messagesEn: Messages = {
     newBoardTitle: 'Start with a blank board',
     demo: 'Demo',
     demoTitle: 'Load the MindStorm demo board',
+    print: 'Print',
+    printShort: '🖨',
+    printTitle: 'Print the board or the current selection',
+    themeToLight: 'Light theme',
+    themeToDark: 'Dark theme',
+    themeAria: 'Toggle theme',
     statsTitle: 'Number of cards and connections on the board',
     languageAria: 'Interface language',
   },
@@ -377,6 +417,17 @@ export const messagesEn: Messages = {
     done: 'Done',
     saveButton: 'Save to computer',
     defaultName: 'my-board',
+  },
+  printModal: {
+    title: 'Print',
+    description: 'What should be printed?',
+    all: 'Whole board',
+    allHint: 'All cards, groups, and connections',
+    selection: 'Selection only',
+    selectionHint: 'Selected nodes and links between them',
+    selectionEmpty: 'Select cards, groups, or links first (click / Shift / right-drag)',
+    cancel: 'Cancel',
+    confirm: 'Print',
   },
   demoSplash: {
     welcome: 'Welcome',
@@ -465,6 +516,12 @@ export const messagesEs: Messages = {
     newBoardTitle: 'Tablero vacío',
     demo: 'Demo',
     demoTitle: 'Cargar el tablero demo de MindStorm',
+    print: 'Imprimir',
+    printShort: '🖨',
+    printTitle: 'Imprimir el tablero o la selección',
+    themeToLight: 'Tema claro',
+    themeToDark: 'Tema oscuro',
+    themeAria: 'Cambiar tema',
     statsTitle: 'Número de cartas y conexiones en el tablero',
     languageAria: 'Idioma de la interfaz',
   },
@@ -525,6 +582,17 @@ export const messagesEs: Messages = {
     done: 'Listo',
     saveButton: 'Guardar en computadora',
     defaultName: 'mi-esquema',
+  },
+  printModal: {
+    title: 'Imprimir',
+    description: '¿Qué quieres imprimir?',
+    all: 'Todo el tablero',
+    allHint: 'Todas las cartas, grupos y conexiones',
+    selection: 'Solo selección',
+    selectionHint: 'Nodos seleccionados y enlaces entre ellos',
+    selectionEmpty: 'Selecciona cartas, grupos o enlaces (clic / Shift / arrastre derecho)',
+    cancel: 'Cancelar',
+    confirm: 'Imprimir',
   },
   demoSplash: {
     welcome: 'Bienvenido',
@@ -613,6 +681,12 @@ export const messagesZh: Messages = {
     newBoardTitle: '空白画布',
     demo: '演示',
     demoTitle: '加载 MindStorm 演示画布',
+    print: '打印',
+    printShort: '🖨',
+    printTitle: '打印整个画布或当前选中内容',
+    themeToLight: '浅色主题',
+    themeToDark: '深色主题',
+    themeAria: '切换主题',
     statsTitle: '画布上的卡片和连线数量',
     languageAria: '界面语言',
   },
@@ -671,6 +745,17 @@ export const messagesZh: Messages = {
     done: '完成',
     saveButton: '保存到电脑',
     defaultName: '我的画布',
+  },
+  printModal: {
+    title: '打印',
+    description: '要打印什么？',
+    all: '整个画布',
+    allHint: '所有卡片、分组和连线',
+    selection: '仅选中内容',
+    selectionHint: '选中的节点及它们之间的连线',
+    selectionEmpty: '请先选中卡片、分组或连线（单击 / Shift / 右键框选）',
+    cancel: '取消',
+    confirm: '打印',
   },
   demoSplash: {
     welcome: '欢迎',

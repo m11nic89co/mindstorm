@@ -8,6 +8,8 @@
 - Не использовать: MindShtorm, mindshtorm (кроме legacy: `.mindshtorm`, `mindshtorm-board`).
 - Ответы пользователю — **на русском**.
 - UI приложения: **RU по умолчанию**, есть **EN / ES / ZH** (`src/i18n/messages.ts`, `src/i18n/locales.ts`).
+- Тема: **dark по умолчанию**, переключение light/dark (`src/theme/`, `mindstorm.theme.v1`).
+- Печать: диалог вся схема / выделение (`printBoard.ts`, `PrintBoardModal`).
 - Коммиты и push — **только по явной просьбе**.
 
 ## Критичные файлы
@@ -16,6 +18,8 @@
 |--------|------|
 | Холст, UX | `src/components/MindCanvas.tsx` |
 | Toolbar, панели, RU/EN/ES/ZH | `src/components/Toolbar.tsx` |
+| Тема light/dark | `src/theme/ThemeProvider.tsx`, `src/index.css` (`--ms-*`) |
+| Печать (вся / выделение) | `src/lib/printBoard.ts`, `PrintBoardModal` в `FileModals.tsx` |
 | Локализация | `src/i18n/messages.ts`, `src/i18n/locales.ts`, `LocaleProvider.tsx` |
 | Точки связи | `src/components/nodes/edgeHandles.tsx` |
 | Слои групп/рёбер | `src/index.css` |
@@ -46,6 +50,8 @@
 - Text-карточка: `labelFontSize`, `textFontSize` — панель справа; новая карточка по dblclick — цвет **12** (серый).
 - Метка группы: `labelFontSize` до **200 px**; замок на badge в `GroupCardNode` (иконка **1em** — тот же размер, что текст метки).
 - Text-карточка: `label` (заголовок) и `text` (тело) — **раздельные** зоны в `CardNodes.tsx`; не смешивать при редактировании.
+- Тема: chrome через `--ms-*` и `data-theme`; карточки — `resolveColor(..., theme)`; не хардкодить только dark-цвета в новом UI.
+- Печать: не писать `hidden` в черновик — пауза `dragPausedRef` + restore после `afterprint`; UI chrome — класс `.no-print`.
 - Группировка содержимого группы — см. [docs/GROUPING.md](./docs/GROUPING.md) (пока не реализовано).
 
 ## Деплoy (Windows)

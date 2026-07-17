@@ -86,6 +86,14 @@ npm.cmd run build
 3. Демо-схема — `src/lib/demoCanvas.ts` (`DEMO_CANVAS_I18N`) + `src/lib/demoLocaleCopies.ts` (ES/ZH).
 4. Ключ localStorage: `mindstorm.locale.v1`.
 5. План группировки содержимого группы — [GROUPING.md](./GROUPING.md).
+6. Новые строки темы/печати — `m.toolbar.theme*`, `m.toolbar.print*`, `m.printModal.*` (все 4 языка).
+
+## Тема и печать
+
+1. Тема: `src/theme/ThemeProvider.tsx`, стили `--ms-*` в `src/index.css`, ключ `mindstorm.theme.v1`.
+2. Цвета карточек зависят от темы: `resolveColor(color, theme)` в `src/lib/colors.ts`.
+3. Печать: логика фрагмента — `src/lib/printBoard.ts` (+ тесты); UI — `PrintBoardModal` в `FileModals.tsx`.
+4. Элементы, скрываемые при печати, помечайте классом `.no-print`.
 
 ## Git
 

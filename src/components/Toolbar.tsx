@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useLocale } from '../i18n/LocaleProvider';
 import { LOCALE_ARIA, LOCALE_LABEL, LOCALES } from '../i18n/locales';
+import { useTheme } from '../theme/ThemeProvider';
 import { LogoMark, BoardStatsText } from './LogoMark';
 import { DonateChip } from './DonateChip';
 import { AUTHOR_NAME, LIVE_URL, REPO_URL } from '../lib/siteMeta';
@@ -26,6 +27,7 @@ type ToolbarProps = {
   onLoad: () => void;
   onReset: () => void;
   onNewBoard: () => void;
+  onPrint: () => void;
   onUndo: () => void;
   onRedo: () => void;
   canUndo: boolean;
@@ -42,6 +44,7 @@ export function Toolbar({
   onLoad,
   onReset,
   onNewBoard,
+  onPrint,
   onUndo,
   onRedo,
   canUndo,
@@ -53,14 +56,29 @@ export function Toolbar({
   const { m } = useLocale();
 
   return (
-    <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center p-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:p-4">
-      <div className="pointer-events-auto flex max-w-full items-center gap-1 rounded-2xl border border-white/10 bg-white/5 px-2 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-2xl sm:gap-2 sm:px-3">
-        <div className="mr-1 flex shrink-0 items-center gap-2 border-r border-white/10 pr-2 sm:mr-2 sm:pr-3">
+    <header className="no-print pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center p-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:p-4">
+      <div
+        className="pointer-events-auto flex max-w-full items-center gap-1 rounded-2xl border px-2 py-2 backdrop-blur-2xl sm:gap-2 sm:px-3"
+        style={{
+          borderColor: 'var(--ms-panel-border)',
+          background: 'var(--ms-panel-bg)',
+          boxShadow: 'var(--ms-panel-shadow)',
+        }}
+      >
+        <div
+          className="mr-1 flex shrink-0 items-center gap-2 border-r pr-2 sm:mr-2 sm:pr-3"
+          style={{ borderColor: 'var(--ms-panel-border)' }}
+        >
           <LogoMark />
-          <div className="text-sm font-semibold tracking-tight text-white">MindStorm</div>
+          <div className="text-sm font-semibold tracking-tight" style={{ color: 'var(--ms-text)' }}>
+            MindStorm
+          </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1 border-r border-white/10 pr-1.5 sm:pr-2">
+        <div
+          className="flex shrink-0 items-center gap-1 border-r pr-1.5 sm:pr-2"
+          style={{ borderColor: 'var(--ms-panel-border)' }}
+        >
           <HistoryButton
             onClick={onUndo}
             disabled={!canUndo}
@@ -96,6 +114,10 @@ export function Toolbar({
             <span className="sm:hidden">📂</span>
             <span className="hidden sm:inline">{m.toolbar.load}</span>
           </ToolbarButton>
+          <ToolbarButton onClick={onPrint} title={m.toolbar.printTitle}>
+            <span className="sm:hidden">{m.toolbar.printShort}</span>
+            <span className="hidden sm:inline">{m.toolbar.print}</span>
+          </ToolbarButton>
           <ToolbarButton onClick={onNewBoard} title={m.toolbar.newBoardTitle} accent>
             <span className="sm:hidden">↺</span>
             <span className="hidden sm:inline">{m.toolbar.newBoard}</span>
@@ -106,14 +128,16 @@ export function Toolbar({
           </ToolbarButton>
         </div>
 
+        <ThemeToggle />
         <LanguageToggle />
 
         <div
-          className="ml-1 hidden border-l border-white/10 pl-2 text-[11px] text-white/35 sm:ml-2 sm:block sm:pl-3"
+          className="ml-1 hidden border-l pl-2 text-[11px] sm:ml-2 sm:block sm:pl-3"
+          style={{ borderColor: 'var(--ms-panel-border)', color: 'var(--ms-text-muted)' }}
           title={m.toolbar.statsTitle}
         >
           {activeBoardName ? (
-            <span className="text-white/50">{activeBoardName} · </span>
+            <span style={{ color: 'var(--ms-text-soft)' }}>{activeBoardName} · </span>
           ) : null}
           <BoardStatsText nodeCount={nodeCount} edgeCount={edgeCount} />
         </div>
@@ -122,12 +146,36 @@ export function Toolbar({
   );
 }
 
+function ThemeToggle() {
+  const { m } = useLocale();
+  const { theme, toggleTheme } = useTheme();
+  const toLight = theme === 'dark';
+
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      title={toLight ? m.toolbar.themeToLight : m.toolbar.themeToDark}
+      aria-label={m.toolbar.themeAria}
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition active:scale-95 sm:h-10 sm:w-10"
+      style={{
+        borderColor: 'var(--ms-btn-border)',
+        background: 'var(--ms-btn-bg)',
+        color: 'var(--ms-text-soft)',
+      }}
+    >
+      {toLight ? <SunIcon /> : <MoonIcon />}
+    </button>
+  );
+}
+
 function LanguageToggle() {
   const { locale, m, setLocale } = useLocale();
 
   return (
     <div
-      className="flex shrink-0 items-center rounded-lg border border-white/10 bg-black/20 p-0.5"
+      className="flex shrink-0 items-center rounded-lg border p-0.5"
+      style={{ borderColor: 'var(--ms-panel-border)', background: 'var(--ms-chip-bg)' }}
       role="group"
       aria-label={m.toolbar.languageAria}
     >
@@ -136,11 +184,12 @@ function LanguageToggle() {
           key={code}
           type="button"
           onClick={() => setLocale(code)}
-          className={`min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition sm:min-w-[2rem] sm:px-2 sm:text-[11px] ${
+          className="min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition sm:min-w-[2rem] sm:px-2 sm:text-[11px]"
+          style={
             locale === code
-              ? 'bg-indigo-500/35 text-white shadow-sm'
-              : 'text-white/40 hover:text-white/70'
-          }`}
+              ? { background: 'var(--ms-lang-active)', color: 'var(--ms-text)', boxShadow: '0 1px 2px rgba(0,0,0,0.08)' }
+              : { color: 'var(--ms-text-muted)' }
+          }
           aria-pressed={locale === code}
           title={LOCALE_ARIA[code]}
         >
@@ -172,13 +221,44 @@ function HistoryButton({
       disabled={disabled}
       onClick={onClick}
       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition active:scale-95 sm:h-10 sm:w-10 ${
-        disabled
-          ? 'cursor-not-allowed border-white/5 bg-white/[0.02] text-white/20'
-          : 'border-white/12 bg-white/[0.06] text-white/85 hover:border-indigo-400/35 hover:bg-indigo-500/15 hover:text-white'
+        disabled ? 'cursor-not-allowed opacity-35' : 'hover:border-indigo-400/40 hover:bg-indigo-500/15'
       }`}
+      style={{
+        borderColor: 'var(--ms-btn-border)',
+        background: 'var(--ms-btn-bg)',
+        color: 'var(--ms-text-soft)',
+      }}
     >
       {children}
     </button>
+  );
+}
+
+function SunIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+      <path
+        d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
@@ -247,12 +327,25 @@ function ToolbarButton({
       disabled={disabled}
       onClick={onClick}
       className={`shrink-0 rounded-xl px-2.5 py-1.5 text-xs font-medium transition active:scale-95 sm:px-3 ${
-        disabled
-          ? 'cursor-not-allowed text-white/25'
-          : accent
-            ? 'border border-cyan-400/25 bg-cyan-400/10 text-cyan-100 hover:border-cyan-400/40 hover:bg-cyan-400/20 hover:text-white'
-            : 'text-white/80 hover:bg-white/10 hover:text-white'
+        disabled ? 'cursor-not-allowed opacity-35' : ''
       }`}
+      style={
+        accent
+          ? {
+              border: '1px solid var(--ms-accent-border)',
+              background: 'var(--ms-accent-bg)',
+              color: 'var(--ms-accent-text)',
+            }
+          : { color: 'var(--ms-text-soft)' }
+      }
+      onMouseEnter={(e) => {
+        if (disabled || accent) return;
+        e.currentTarget.style.background = 'var(--ms-btn-hover)';
+      }}
+      onMouseLeave={(e) => {
+        if (disabled || accent) return;
+        e.currentTarget.style.background = 'transparent';
+      }}
     >
       {children}
     </button>
@@ -263,29 +356,49 @@ export function HintBar() {
   const { m } = useLocale();
 
   return (
-    <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-1 p-1.5 pb-[max(0.35rem,env(safe-area-inset-bottom))] sm:gap-1 sm:p-2">
-      <div className="rounded-full border border-white/5 bg-black/15 px-2.5 py-0.5 text-[8px] text-white/28 backdrop-blur-md sm:px-3 sm:text-[9px]">
+    <footer className="no-print pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-1 p-1.5 pb-[max(0.35rem,env(safe-area-inset-bottom))] sm:gap-1 sm:p-2">
+      <div
+        className="rounded-full border px-2.5 py-0.5 text-[8px] backdrop-blur-md sm:px-3 sm:text-[9px]"
+        style={{
+          borderColor: 'var(--ms-hint-border)',
+          background: 'var(--ms-hint-bg)',
+          color: 'var(--ms-text-faint)',
+        }}
+      >
         <span className="hidden sm:inline">{m.hints.desktop}</span>
         <span className="sm:hidden">{m.hints.mobile}</span>
       </div>
-      <div className="pointer-events-auto relative rounded-full border border-white/6 bg-white/[0.02] px-2 py-0.5 text-[8px] text-white/25 backdrop-blur-md sm:text-[9px]">
-        <span className="text-white/20">by </span>
+      <div
+        className="pointer-events-auto relative rounded-full border px-2 py-0.5 text-[8px] backdrop-blur-md sm:text-[9px]"
+        style={{
+          borderColor: 'var(--ms-hint-border)',
+          background: 'var(--ms-panel-bg)',
+          color: 'var(--ms-text-faint)',
+        }}
+      >
+        <span style={{ color: 'var(--ms-text-faint)' }}>by </span>
         <a
           href={REPO_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-cyan-300/45 transition hover:text-cyan-200/70"
+          className="text-cyan-600/70 transition hover:text-cyan-500 dark:text-cyan-300/45"
+          style={{ color: 'var(--ms-accent-text)' }}
         >
           {AUTHOR_NAME}
         </a>
-        <span className="mx-1 text-white/10">·</span>
+        <span className="mx-1" style={{ color: 'var(--ms-text-faint)' }}>
+          ·
+        </span>
         <DonateChip />
-        <span className="mx-1 text-white/10">·</span>
+        <span className="mx-1" style={{ color: 'var(--ms-text-faint)' }}>
+          ·
+        </span>
         <a
           href={LIVE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-white/30 transition hover:text-white/50"
+          className="transition hover:opacity-80"
+          style={{ color: 'var(--ms-text-muted)' }}
           title={LIVE_URL}
         >
           mindstorm
@@ -309,20 +422,37 @@ export function EdgeSelectionPanel({
   const { m } = useLocale();
 
   return (
-    <div className="pointer-events-auto absolute right-2 top-20 z-20 flex w-44 flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-2xl sm:right-4 sm:top-24 sm:w-48">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">{m.edgePanel.title}</span>
+    <div
+      className="no-print pointer-events-auto absolute right-2 top-20 z-20 flex w-44 flex-col gap-2 rounded-2xl border p-3 backdrop-blur-2xl sm:right-4 sm:top-24 sm:w-48"
+      style={{
+        borderColor: 'var(--ms-panel-border)',
+        background: 'var(--ms-panel-bg)',
+        boxShadow: 'var(--ms-panel-shadow)',
+      }}
+    >
+      <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--ms-text-muted)' }}>
+        {m.edgePanel.title}
+      </span>
       <input
         value={label}
         onChange={(e) => onLabelChange(e.target.value)}
         placeholder={m.edgePanel.placeholder}
-        className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white outline-none ring-indigo-400/40 focus:ring-2"
+        className="rounded-xl border px-3 py-2 text-xs outline-none ring-indigo-400/40 focus:ring-2"
+        style={{
+          borderColor: 'var(--ms-panel-border)',
+          background: 'var(--ms-input-bg)',
+          color: 'var(--ms-text)',
+        }}
       />
-      <p className="text-[9px] leading-snug text-white/30">{m.edgePanel.hint}</p>
+      <p className="text-[9px] leading-snug" style={{ color: 'var(--ms-text-faint)' }}>
+        {m.edgePanel.hint}
+      </p>
       {label.trim() ? (
         <button
           type="button"
           onClick={onClear}
-          className="rounded-lg px-2 py-1.5 text-[10px] text-white/45 transition hover:bg-white/10 hover:text-white/70"
+          className="rounded-lg px-2 py-1.5 text-[10px] transition hover:opacity-80"
+          style={{ color: 'var(--ms-text-muted)' }}
         >
           {m.edgePanel.clearLabel}
         </button>
@@ -330,7 +460,7 @@ export function EdgeSelectionPanel({
       <button
         type="button"
         onClick={onDelete}
-        className="rounded-lg border border-red-400/20 bg-red-400/10 px-2 py-1.5 text-[10px] font-medium text-red-200/90 transition hover:bg-red-400/20"
+        className="rounded-lg border border-red-400/20 bg-red-400/10 px-2 py-1.5 text-[10px] font-medium text-red-600 transition hover:bg-red-400/20"
       >
         {m.edgePanel.delete}
       </button>
@@ -363,14 +493,21 @@ function FontSizeControl({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">{label}</span>
+      <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--ms-text-muted)' }}>
+        {label}
+      </span>
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={() => step(-1)}
           disabled={value <= min}
           aria-label={decreaseAria}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-black/30 text-sm text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-sm transition hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-35"
+          style={{
+            borderColor: 'var(--ms-panel-border)',
+            background: 'var(--ms-input-bg)',
+            color: 'var(--ms-text-soft)',
+          }}
         >
           −
         </button>
@@ -384,15 +521,27 @@ function FontSizeControl({
             if (Number.isFinite(next)) onChange(clamp(next));
           }}
           aria-label={label}
-          className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-2 py-1.5 text-center text-xs text-white outline-none ring-indigo-400/40 focus:ring-2 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          className="min-w-0 flex-1 rounded-xl border px-2 py-1.5 text-center text-xs outline-none ring-indigo-400/40 focus:ring-2 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          style={{
+            borderColor: 'var(--ms-panel-border)',
+            background: 'var(--ms-input-bg)',
+            color: 'var(--ms-text)',
+          }}
         />
-        <span className="shrink-0 text-[10px] text-white/40">{unit}</span>
+        <span className="shrink-0 text-[10px]" style={{ color: 'var(--ms-text-muted)' }}>
+          {unit}
+        </span>
         <button
           type="button"
           onClick={() => step(1)}
           disabled={value >= max}
           aria-label={increaseAria}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-black/30 text-sm text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-sm transition hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-35"
+          style={{
+            borderColor: 'var(--ms-panel-border)',
+            background: 'var(--ms-input-bg)',
+            color: 'var(--ms-text-soft)',
+          }}
         >
           +
         </button>
@@ -430,16 +579,28 @@ export function SelectionPanel({
   const resolvedGroupLabelSize = labelFontSize ?? DEFAULT_GROUP_LABEL_FONT_SIZE;
 
   return (
-    <div className="pointer-events-auto absolute right-2 top-20 z-20 flex w-52 flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-2xl sm:right-4 sm:top-24 sm:w-56">
+    <div
+      className="no-print pointer-events-auto absolute right-2 top-20 z-20 flex w-52 flex-col gap-3 rounded-2xl border p-3 backdrop-blur-2xl sm:right-4 sm:top-24 sm:w-56"
+      style={{
+        borderColor: 'var(--ms-panel-border)',
+        background: 'var(--ms-panel-bg)',
+        boxShadow: 'var(--ms-panel-shadow)',
+      }}
+    >
       <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">
+        <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--ms-text-muted)' }}>
           {isGroup ? m.selectionPanel.group : m.selectionPanel.card}
         </span>
         <input
           value={label ?? ''}
           onChange={(e) => onLabelChange(e.target.value)}
           placeholder={isGroup ? m.selectionPanel.groupNamePlaceholder : m.selectionPanel.cardNamePlaceholder}
-          className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white outline-none ring-indigo-400/40 focus:ring-2"
+          className="rounded-xl border px-3 py-2 text-xs outline-none ring-indigo-400/40 focus:ring-2"
+          style={{
+            borderColor: 'var(--ms-panel-border)',
+            background: 'var(--ms-input-bg)',
+            color: 'var(--ms-text)',
+          }}
         />
       </div>
       {isGroup && onLabelFontSizeChange && (
@@ -482,7 +643,9 @@ export function SelectionPanel({
         />
       )}
       <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">{m.selectionPanel.color}</span>
+        <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--ms-text-muted)' }}>
+          {m.selectionPanel.color}
+        </span>
         <div className="grid grid-cols-6 gap-1.5">
           {COLOR_IDS.map((c) => (
             <button
@@ -490,7 +653,7 @@ export function SelectionPanel({
               type="button"
               onClick={() => onColorChange(c)}
               className={`h-6 w-6 rounded-full border-2 transition hover:scale-110 ${
-                color === c ? 'border-white scale-110' : 'border-transparent'
+                color === c ? 'scale-110 border-indigo-500' : 'border-transparent'
               }`}
               style={{ background: swatchFill(c) }}
               title={swatchTitle(c, m.colors, m.colorsCustom)}

@@ -9,6 +9,7 @@ import { useLocale } from '../../i18n/LocaleProvider';
 import { resolveColor } from '../../lib/colors';
 import { groupLabelBadgeStyle } from '../../lib/groupLabel';
 import { resolveLabelFontSize, resolveTextFontSize } from '../../lib/cardTypography';
+import { useTheme } from '../../theme/ThemeProvider';
 import type { CardNodeData } from '../../types/jsonCanvas';
 import { EdgeHandles } from './edgeHandles';
 
@@ -20,12 +21,12 @@ const resizerHandles =
 const resizerLines = '!border-indigo-400/45';
 
 const cardTitleTypography =
-  'w-full truncate font-semibold leading-snug tracking-tight text-white/95';
+  'w-full truncate font-semibold leading-snug tracking-tight text-[var(--ms-card-text)]';
 
-const cardTitlePlaceholderClass = 'font-medium text-white/35';
+const cardTitlePlaceholderClass = 'font-medium text-[var(--ms-card-text-muted)]';
 
 const cardBodyTypography =
-  'min-h-[2.5rem] w-full flex-1 leading-relaxed text-white/88 whitespace-pre-wrap';
+  'min-h-[2.5rem] w-full flex-1 leading-relaxed text-[var(--ms-card-text-body)] whitespace-pre-wrap';
 
 function LockOpenIcon() {
   return (
@@ -71,7 +72,7 @@ function CardBodyText({
   style?: CSSProperties;
 }) {
   if (!text) {
-    return <span className={`${cardBodyTypography} text-white/35`} style={style}>{placeholder}</span>;
+    return <span className={`${cardBodyTypography} text-[var(--ms-card-text-muted)]`} style={style}>{placeholder}</span>;
   }
   return <div className={cardBodyTypography} style={style}>{text}</div>;
 }
@@ -79,6 +80,7 @@ function CardBodyText({
 export function TextCardNode({ id, data, selected }: TextCardProps) {
   const { updateNode } = useCanvasActions();
   const { m } = useLocale();
+  const { theme } = useTheme();
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleEditSession, setTitleEditSession] = useState(0);
   const [optimisticTitle, setOptimisticTitle] = useState<string | null>(null);
@@ -87,7 +89,7 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
   const [bodyEditSession, setBodyEditSession] = useState(0);
   const [optimisticBody, setOptimisticBody] = useState<string | null>(null);
   const bodyTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const palette = resolveColor(data.color);
+  const palette = resolveColor(data.color, theme);
   const titleFontSize = resolveLabelFontSize(data.labelFontSize);
   const titleStyle = { fontSize: titleFontSize };
   const bodyFontSize = resolveTextFontSize(data.textFontSize);
@@ -191,7 +193,7 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
         <EdgeHandles />
 
         <div className="flex h-full min-h-0 flex-col">
-          <div className="shrink-0 border-b border-white/40 px-4 pb-2.5 pt-3">
+          <div className="shrink-0 border-b border-[var(--ms-card-divider)] px-4 pb-2.5 pt-3">
             {editingTitle ? (
               <input
                 key={titleEditSession}
@@ -212,7 +214,7 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
                     cancelTitleEdit();
                   }
                 }}
-                className={`${cardTitleTypography} nodrag nopan rounded-md bg-transparent outline-none ring-2 ring-indigo-400/35 placeholder:text-white/35`}
+                className={`${cardTitleTypography} nodrag nopan rounded-md bg-transparent outline-none ring-2 ring-indigo-400/35 placeholder:text-[var(--ms-card-text-muted)]`}
                 style={titleStyle}
                 placeholder={m.card.titlePlaceholder}
                 spellCheck
@@ -259,7 +261,7 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
                     cancelBodyEdit();
                   }
                 }}
-                className={`${cardBodyTypography} nodrag nopan h-full resize-none bg-transparent outline-none placeholder:text-white/35`}
+                className={`${cardBodyTypography} nodrag nopan h-full resize-none bg-transparent outline-none placeholder:text-[var(--ms-card-text-muted)]`}
                 style={bodyStyle}
                 placeholder={m.card.placeholder}
                 spellCheck
@@ -277,11 +279,12 @@ export function TextCardNode({ id, data, selected }: TextCardProps) {
 export function GroupCardNode({ id, data, selected }: TextCardProps) {
   const { updateNode, onGroupResizeStart, onGroupResize, onGroupResizeEnd } = useCanvasActions();
   const { m } = useLocale();
+  const { theme } = useTheme();
   const [editingLabel, setEditingLabel] = useState(false);
   const [labelEditSession, setLabelEditSession] = useState(0);
   const [optimisticLabel, setOptimisticLabel] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const palette = resolveColor(data.color);
+  const palette = resolveColor(data.color, theme);
   const badgeStyle = groupLabelBadgeStyle(data.labelFontSize);
   const badgePositionStyle = {
     top: badgeStyle.top,
@@ -322,7 +325,7 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
   };
 
   const badgeShellClass =
-    'group-label-badge pointer-events-auto absolute left-4 z-[1] flex max-w-[200px] items-center rounded-full font-medium text-white/80';
+    'group-label-badge pointer-events-auto absolute left-4 z-[1] flex max-w-[200px] items-center rounded-full font-medium text-[var(--ms-card-text)]';
 
   const commitLabelEdit = () => {
     const next = inputRef.current?.value ?? '';
@@ -376,7 +379,7 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
         )}
         {editingLabel && !locked ? (
           <div
-            className={`${badgeShellClass} border border-white/20 bg-[#1a1f35] outline-none ring-2 ring-cyan-400/40`}
+            className={`${badgeShellClass} border border-[var(--ms-badge-border)] bg-[var(--ms-badge-bg)] outline-none ring-2 ring-cyan-400/40`}
             style={badgePositionStyle}
           >
             <input
@@ -398,13 +401,13 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
                   cancelLabelEdit();
                 }
               }}
-              className="nodrag nopan min-w-0 flex-1 truncate bg-transparent text-inherit outline-none placeholder:text-white/35"
+              className="nodrag nopan min-w-0 flex-1 truncate bg-transparent text-inherit outline-none placeholder:text-[var(--ms-card-text-muted)]"
               placeholder={m.group.namePlaceholder}
               onClick={(e) => e.stopPropagation()}
             />
             <button
               type="button"
-              className="group-lock-btn nodrag nopan shrink-0 rounded-full text-white/75 transition hover:bg-white/10 hover:text-white"
+              className="group-lock-btn nodrag nopan shrink-0 rounded-full text-[var(--ms-card-text-body)] transition hover:bg-black/5 hover:opacity-100"
               style={lockButtonStyle}
               onClick={toggleLock}
               title={m.group.lockTitle}
@@ -416,7 +419,7 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
         ) : (
           <div
             style={{ background: palette.border, ...badgePositionStyle }}
-            className={`${badgeShellClass} transition hover:ring-1 hover:ring-white/25`}
+            className={`${badgeShellClass} text-white transition hover:ring-1 hover:ring-white/40`}
           >
             <span
               className={`group-label-text min-w-0 flex-1 truncate ${locked ? '' : 'cursor-text'}`}
@@ -430,7 +433,7 @@ export function GroupCardNode({ id, data, selected }: TextCardProps) {
             </span>
             <button
               type="button"
-              className="group-lock-btn nodrag nopan shrink-0 rounded-full text-white/75 transition hover:bg-white/10 hover:text-white"
+              className="group-lock-btn nodrag nopan shrink-0 rounded-full text-white/90 transition hover:bg-white/15 hover:text-white"
               style={lockButtonStyle}
               onClick={toggleLock}
               title={locked ? m.group.unlockTitle : m.group.lockTitle}
