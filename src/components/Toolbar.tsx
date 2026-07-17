@@ -1,4 +1,6 @@
-import type { ReactNode } from 'react';
+import type { FocusEvent, MouseEvent, ReactNode } from 'react';
+import { useCallback, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocale } from '../i18n/LocaleProvider';
 import { LOCALE_ARIA, LOCALE_LABEL, LOCALES } from '../i18n/locales';
 import { useTheme } from '../theme/ThemeProvider';
@@ -146,6 +148,74 @@ export function Toolbar({
   );
 }
 
+/** Подсказка при наведении — portal, чтобы не обрезалась overflow toolbar. */
+function ToolbarHoverTip({
+  tip,
+  open,
+  left,
+  top,
+}: {
+  tip: string;
+  open: boolean;
+  left: number;
+  top: number;
+}) {
+  if (!open || !tip) return null;
+  return createPortal(
+    <div
+      role="tooltip"
+      className="ms-toolbar-tip no-print pointer-events-none fixed z-[200] max-w-[min(260px,80vw)] rounded-lg border px-2.5 py-1.5 text-center text-[11px] font-medium leading-snug"
+      style={{
+        left,
+        top,
+        transform: 'translate(-50%, calc(-100% - 8px))',
+        borderColor: 'var(--ms-badge-border)',
+        background: 'var(--ms-badge-bg)',
+        color: 'var(--ms-text)',
+        boxShadow: 'var(--ms-panel-shadow)',
+      }}
+    >
+      {tip}
+    </div>,
+    document.body,
+  );
+}
+
+function useHoverTip(tip: string, disabled = false) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({ left: 0, top: 0 });
+
+  const showAt = useCallback(
+    (el: HTMLElement) => {
+      if (disabled || !tip) return;
+      const r = el.getBoundingClientRect();
+      setPos({ left: r.left + r.width / 2, top: r.top });
+      setOpen(true);
+    },
+    [disabled, tip],
+  );
+
+  const onEnter = useCallback(
+    (e: MouseEvent<HTMLElement>) => showAt(e.currentTarget),
+    [showAt],
+  );
+
+  const onFocus = useCallback(
+    (e: FocusEvent<HTMLElement>) => showAt(e.currentTarget),
+    [showAt],
+  );
+
+  const hide = useCallback(() => setOpen(false), []);
+
+  return {
+    onEnter,
+    onFocus,
+    onLeave: hide,
+    onBlur: hide,
+    tipNode: <ToolbarHoverTip tip={tip} open={open} left={pos.left} top={pos.top} />,
+  };
+}
+
 function IconToolbarButton({
   onClick,
   title,
@@ -159,29 +229,37 @@ function IconToolbarButton({
   children: ReactNode;
   accent?: boolean;
 }) {
+  const tip = useHoverTip(title);
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      aria-label={ariaLabel}
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition active:scale-95 sm:h-10 sm:w-10"
-      style={
-        accent
-          ? {
-              borderColor: 'var(--ms-accent-border)',
-              background: 'var(--ms-accent-bg)',
-              color: 'var(--ms-accent-text)',
-            }
-          : {
-              borderColor: 'var(--ms-btn-border)',
-              background: 'var(--ms-btn-bg)',
-              color: 'var(--ms-text-soft)',
-            }
-      }
-    >
-      {children}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={ariaLabel}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition active:scale-95 sm:h-10 sm:w-10"
+        style={
+          accent
+            ? {
+                borderColor: 'var(--ms-accent-border)',
+                background: 'var(--ms-accent-bg)',
+                color: 'var(--ms-accent-text)',
+              }
+            : {
+                borderColor: 'var(--ms-btn-border)',
+                background: 'var(--ms-btn-bg)',
+                color: 'var(--ms-text-soft)',
+              }
+        }
+        onMouseEnter={tip.onEnter}
+        onMouseLeave={tip.onLeave}
+        onFocus={tip.onFocus}
+        onBlur={tip.onBlur}
+      >
+        {children}
+      </button>
+      {tip.tipNode}
+    </>
   );
 }
 
@@ -200,7 +278,7 @@ function NewBoardButton({ onClick }: { onClick: () => void }) {
     <IconToolbarButton
       onClick={onClick}
       title={m.toolbar.newBoardTitle}
-      ariaLabel={m.toolbar.newBoard}
+      ariaLabel={m.toolbar.newBoardTitle}
       accent
     >
       <NewBoardIcon />
@@ -253,23 +331,53 @@ function LanguageToggle() {
       aria-label={m.toolbar.languageAria}
     >
       {LOCALES.map((code) => (
-        <button
+        <LangButton
           key={code}
-          type="button"
+          active={locale === code}
+          label={LOCALE_LABEL[code]}
+          tip={LOCALE_ARIA[code]}
           onClick={() => setLocale(code)}
-          className="min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition sm:min-w-[2rem] sm:px-2 sm:text-[11px]"
-          style={
-            locale === code
-              ? { background: 'var(--ms-lang-active)', color: 'var(--ms-text)', boxShadow: '0 1px 2px rgba(0,0,0,0.08)' }
-              : { color: 'var(--ms-text-muted)' }
-          }
-          aria-pressed={locale === code}
-          title={LOCALE_ARIA[code]}
-        >
-          {LOCALE_LABEL[code]}
-        </button>
+        />
       ))}
     </div>
+  );
+}
+
+function LangButton({
+  active,
+  label,
+  tip,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  tip: string;
+  onClick: () => void;
+}) {
+  const hover = useHoverTip(tip);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={onClick}
+        className="min-w-[1.75rem] rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition sm:min-w-[2rem] sm:px-2 sm:text-[11px]"
+        style={
+          active
+            ? { background: 'var(--ms-lang-active)', color: 'var(--ms-text)', boxShadow: '0 1px 2px rgba(0,0,0,0.08)' }
+            : { color: 'var(--ms-text-muted)' }
+        }
+        aria-pressed={active}
+        aria-label={tip}
+        onMouseEnter={hover.onEnter}
+        onMouseLeave={hover.onLeave}
+        onFocus={hover.onFocus}
+        onBlur={hover.onBlur}
+      >
+        {label}
+      </button>
+      {hover.tipNode}
+    </>
   );
 }
 
@@ -286,24 +394,32 @@ function HistoryButton({
   disabled?: boolean;
   ariaLabel?: string;
 }) {
+  const tip = useHoverTip(title, disabled);
+
   return (
-    <button
-      type="button"
-      title={title}
-      aria-label={ariaLabel ?? title}
-      disabled={disabled}
-      onClick={onClick}
-      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition active:scale-95 sm:h-10 sm:w-10 ${
-        disabled ? 'cursor-not-allowed opacity-35' : 'hover:border-indigo-400/40 hover:bg-indigo-500/15'
-      }`}
-      style={{
-        borderColor: 'var(--ms-btn-border)',
-        background: 'var(--ms-btn-bg)',
-        color: 'var(--ms-text-soft)',
-      }}
-    >
-      {children}
-    </button>
+    <>
+      <button
+        type="button"
+        aria-label={ariaLabel ?? title}
+        disabled={disabled}
+        onClick={onClick}
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition active:scale-95 sm:h-10 sm:w-10 ${
+          disabled ? 'cursor-not-allowed opacity-35' : 'hover:border-indigo-400/40 hover:bg-indigo-500/15'
+        }`}
+        style={{
+          borderColor: 'var(--ms-btn-border)',
+          background: 'var(--ms-btn-bg)',
+          color: 'var(--ms-text-soft)',
+        }}
+        onMouseEnter={tip.onEnter}
+        onMouseLeave={tip.onLeave}
+        onFocus={tip.onFocus}
+        onBlur={tip.onBlur}
+      >
+        {children}
+      </button>
+      {tip.tipNode}
+    </>
   );
 }
 
@@ -499,36 +615,44 @@ function ToolbarButton({
   disabled?: boolean;
   ariaLabel?: string;
 }) {
+  const tip = useHoverTip(title, disabled);
+
   return (
-    <button
-      type="button"
-      title={title}
-      aria-label={ariaLabel ?? title}
-      disabled={disabled}
-      onClick={onClick}
-      className={`shrink-0 rounded-xl px-2.5 py-1.5 text-xs font-medium transition active:scale-95 sm:px-3 ${
-        disabled ? 'cursor-not-allowed opacity-35' : ''
-      }`}
-      style={
-        accent
-          ? {
-              border: '1px solid var(--ms-accent-border)',
-              background: 'var(--ms-accent-bg)',
-              color: 'var(--ms-accent-text)',
-            }
-          : { color: 'var(--ms-text-soft)' }
-      }
-      onMouseEnter={(e) => {
-        if (disabled || accent) return;
-        e.currentTarget.style.background = 'var(--ms-btn-hover)';
-      }}
-      onMouseLeave={(e) => {
-        if (disabled || accent) return;
-        e.currentTarget.style.background = 'transparent';
-      }}
-    >
-      {children}
-    </button>
+    <>
+      <button
+        type="button"
+        aria-label={ariaLabel ?? title}
+        disabled={disabled}
+        onClick={onClick}
+        className={`shrink-0 rounded-xl px-2.5 py-1.5 text-xs font-medium transition active:scale-95 sm:px-3 ${
+          disabled ? 'cursor-not-allowed opacity-35' : ''
+        }`}
+        style={
+          accent
+            ? {
+                border: '1px solid var(--ms-accent-border)',
+                background: 'var(--ms-accent-bg)',
+                color: 'var(--ms-accent-text)',
+              }
+            : { color: 'var(--ms-text-soft)' }
+        }
+        onMouseEnter={(e) => {
+          tip.onEnter(e);
+          if (disabled || accent) return;
+          e.currentTarget.style.background = 'var(--ms-btn-hover)';
+        }}
+        onMouseLeave={(e) => {
+          tip.onLeave();
+          if (disabled || accent) return;
+          e.currentTarget.style.background = 'transparent';
+        }}
+        onFocus={tip.onFocus}
+        onBlur={tip.onBlur}
+      >
+        {children}
+      </button>
+      {tip.tipNode}
+    </>
   );
 }
 
