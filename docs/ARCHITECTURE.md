@@ -9,10 +9,9 @@
 │  ┌─────────────┐    ┌─────────────────────────────────┐ │
 │  │ Toolbar     │    │ React Flow (MindCanvas)         │ │
 │  │ Undo/Redo   │    │  · TextCardNode (z=1)           │ │
-│  │ Text/Card/Grp│   │  · PlainTextNode (z=1)         │ │
-│  │ 📂💾🖨☀☾   │    │  · GroupCardNode (z=-1)         │ │
-│  │ Сначала/Демо│    └─────────────────────────────────┘ │
-│  │ RU|EN|ES|中 │                                        │
+│  │ Демо/Text…  │    │  · PlainTextNode (z=1)         │ │
+│  │ 📄+📂💾🖨☀☾ │    │  · GroupCardNode (z=-1)         │ │
+│  │ RU|EN|ES|中 │    └─────────────────────────────────┘ │
 │  └─────────────┘                                        │
 │  SelectionPanel ──► карточка / plain / группа + цвета   │
 │  EdgeSelectionPanel ► подпись связи                     │
@@ -170,10 +169,8 @@ toggle     → updateNode({ locked }) в GroupCardNode (кнопка на badge)
 
 | Кнопка | Стиль |
 |--------|--------|
-| **Сначала** / **New** | `accent` (бирюзовая рамка) |
-| **T Текст** → **+ Карточка** → **◻ Группа** | слева направо: plain → card → group |
-| **📂 → 💾 → 🖨 → ☀☾** | справа: Load → Save → Print → Theme (`IconToolbarButton`) |
-| **↺ Демо** / **↺ Demo** | обычная |
+| **↺ Демо → T Текст → + Карточка → ◻ Группа** | слева направо после Undo/Redo |
+| **📄+ → 📂 → 💾 → 🖨 → ☀☾** | справа: Сначала → Load → Save → Print → Theme; «Сначала» — accent |
 | **RU \| EN \| ES \| 中** | компактный переключатель справа |
 
 ## PWA

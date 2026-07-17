@@ -104,6 +104,10 @@ export function Toolbar({
         </div>
 
         <div className="flex max-w-[calc(100vw-8rem)] items-center gap-1 overflow-x-auto sm:max-w-[calc(100vw-10rem)] sm:gap-2">
+          <ToolbarButton onClick={onReset} title={m.toolbar.demoTitle}>
+            <span className="sm:hidden">✦</span>
+            <span className="hidden sm:inline">{m.toolbar.demo}</span>
+          </ToolbarButton>
           <ToolbarButton onClick={onAddPlain} title={m.toolbar.addPlain}>
             <span className="sm:hidden">T</span>
             <span className="hidden sm:inline">{m.toolbar.addPlainShort}</span>
@@ -116,17 +120,10 @@ export function Toolbar({
             <span className="sm:hidden">◻</span>
             <span className="hidden sm:inline">{m.toolbar.addGroupShort}</span>
           </ToolbarButton>
-          <ToolbarButton onClick={onNewBoard} title={m.toolbar.newBoardTitle} accent>
-            <span className="sm:hidden">↺</span>
-            <span className="hidden sm:inline">{m.toolbar.newBoard}</span>
-          </ToolbarButton>
-          <ToolbarButton onClick={onReset} title={m.toolbar.demoTitle}>
-            <span className="sm:hidden">✦</span>
-            <span className="hidden sm:inline">{m.toolbar.demo}</span>
-          </ToolbarButton>
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
+          <NewBoardButton onClick={onNewBoard} />
           <LoadButton onClick={onLoad} />
           <SaveButton onClick={onSave} />
           <PrintButton onClick={onPrint} />
@@ -154,11 +151,13 @@ function IconToolbarButton({
   title,
   ariaLabel,
   children,
+  accent = false,
 }: {
   onClick: () => void;
   title: string;
   ariaLabel: string;
   children: ReactNode;
+  accent?: boolean;
 }) {
   return (
     <button
@@ -167,11 +166,19 @@ function IconToolbarButton({
       title={title}
       aria-label={ariaLabel}
       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition active:scale-95 sm:h-10 sm:w-10"
-      style={{
-        borderColor: 'var(--ms-btn-border)',
-        background: 'var(--ms-btn-bg)',
-        color: 'var(--ms-text-soft)',
-      }}
+      style={
+        accent
+          ? {
+              borderColor: 'var(--ms-accent-border)',
+              background: 'var(--ms-accent-bg)',
+              color: 'var(--ms-accent-text)',
+            }
+          : {
+              borderColor: 'var(--ms-btn-border)',
+              background: 'var(--ms-btn-bg)',
+              color: 'var(--ms-text-soft)',
+            }
+      }
     >
       {children}
     </button>
@@ -183,6 +190,20 @@ function PrintButton({ onClick }: { onClick: () => void }) {
   return (
     <IconToolbarButton onClick={onClick} title={m.toolbar.printTitle} ariaLabel={m.toolbar.print}>
       <PrinterIcon />
+    </IconToolbarButton>
+  );
+}
+
+function NewBoardButton({ onClick }: { onClick: () => void }) {
+  const { m } = useLocale();
+  return (
+    <IconToolbarButton
+      onClick={onClick}
+      title={m.toolbar.newBoardTitle}
+      ariaLabel={m.toolbar.newBoard}
+      accent
+    >
+      <NewBoardIcon />
     </IconToolbarButton>
   );
 }
@@ -337,6 +358,34 @@ function PrinterIcon() {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/** Чистый лист с плюсом — новая пустая схема («Сначала»). */
+function NewBoardIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M14 3v5h5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 11v6M9 14h6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
       />
     </svg>
   );
