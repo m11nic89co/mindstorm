@@ -92,10 +92,11 @@ npm.cmd run build
 
 1. Тема: `src/theme/ThemeProvider.tsx`, стили `--ms-*` в `src/index.css`, ключ `mindstorm.theme.v1`.
 2. Цвета карточек зависят от темы: `resolveColor(color, theme)`; цвет plain-текста — `textInk(color, theme)`.
-3. Печать: фрагмент — `src/lib/printBoard.ts`; layout 50% — `src/lib/printLayout.ts`; UI — `PrintBoardModal`.
-4. На время печати MiniMap и Controls **не монтируются** (`isPrinting` в `MindCanvas.tsx`) — иначе Tailwind `sm:!block` пробивает `@media print`.
-5. Print CSS: A4 landscape, центр; элементы chrome — `.no-print`.
+3. Печать: фрагмент — `src/lib/printBoard.ts`; layout — `PRINT_SCALE = 1` в `src/lib/printLayout.ts`; UI — `PrintBoardModal`.
+4. На время печати: `setPrintLight(true)` + MiniMap/Controls **не монтируются** (`isPrinting`) — иначе Tailwind `sm:!block` пробивает `@media print`.
+5. Print CSS: A4 landscape; тёмный текст карточек (иначе white-on-white в dark); chrome — `.no-print`.
 6. Plain-текст: RF `plainText`, файл `plain: true` на `type: "text"`.
+7. Save: PNG по умолчанию (`exportPng.ts`); папка — `fileHandleStorage.ts` (IndexedDB).
 
 ## Git
 

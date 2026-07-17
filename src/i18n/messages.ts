@@ -158,6 +158,7 @@ export type Messages = {
     savedAs: (filename: string) => string;
     savedDownloads: (filename: string) => string;
     typeDescription: string;
+    pngTypeDescription: string;
   };
   demoBoardName: string;
 };
@@ -194,9 +195,9 @@ export const messagesRu: Messages = {
     addGroup: 'Добавить группу',
     addGroupShort: '◻ Группа',
     save: 'Сохранить',
-    saveTitle: 'Сохранить схему в файл на компьютер',
+    saveTitle: 'Сохранить схему (PNG по умолчанию или .mindstorm)',
     load: 'Загрузить',
-    loadTitle: 'Загрузить схему с компьютера',
+    loadTitle: 'Загрузить схему .mindstorm из той же папки',
     newBoard: '↺ Сначала',
     newBoardTitle: 'Новая пустая схема',
     demo: 'Демо',
@@ -262,7 +263,7 @@ export const messagesRu: Messages = {
   saveModal: {
     title: 'Сохранить схему',
     description:
-      'Укажите имя — файл появится на вашем компьютере. Потом его можно снова открыть через «Загрузить».',
+      'По умолчанию сохраняется PNG (быстрый просмотр). В диалоге можно выбрать .mindstorm — чтобы потом снова открыть и править.',
     nameLabel: 'Название',
     namePlaceholder: 'брейншторм-2026',
     filenamePrefix: 'Будет сохранён файл:',
@@ -281,7 +282,7 @@ export const messagesRu: Messages = {
     selection: 'Только выделенное',
     selectionHint: 'Выделенные узлы и связи между ними',
     selectionEmpty: 'Сначала выделите карточки, группы или связи (клик / Shift / ПКМ-рамка)',
-    layoutHint: 'A4 альбом · по центру · масштаб 50% · без мини-карты · в диалоге печати выберите 300 DPI',
+    layoutHint: 'A4 альбом · весь холст на странице · читаемый текст · без мини-карты · в диалоге печати выберите 300 DPI',
     cancel: 'Отмена',
     confirm: 'Печать',
   },
@@ -354,7 +355,8 @@ export const messagesRu: Messages = {
     fallbackTitle: 'схема',
     savedAs: (filename) => `Сохранено: ${filename}`,
     savedDownloads: (filename) => `Файл ${filename} отправлен в папку «Загрузки»`,
-    typeDescription: 'Схема MindStorm',
+    typeDescription: 'Схема MindStorm (.mindstorm)',
+    pngTypeDescription: 'Картинка схемы (PNG)',
   },
   demoBoardName: 'Демо · Запуск MindStorm',
 };
@@ -372,9 +374,9 @@ export const messagesEn: Messages = {
     addGroup: 'Add group',
     addGroupShort: '◻ Group',
     save: 'Save',
-    saveTitle: 'Save board to your computer',
+    saveTitle: 'Save board (PNG by default or .mindstorm)',
     load: 'Open',
-    loadTitle: 'Open board from your computer',
+    loadTitle: 'Open a .mindstorm board from the same folder',
     newBoard: '↺ New',
     newBoardTitle: 'Start with a blank board',
     demo: 'Demo',
@@ -440,7 +442,7 @@ export const messagesEn: Messages = {
   saveModal: {
     title: 'Save board',
     description:
-      'Choose a name — the file will be saved on your computer. Open it later with Open.',
+      'PNG is the default (quick preview). Pick .mindstorm in the dialog if you want to reopen and edit later.',
     nameLabel: 'Name',
     namePlaceholder: 'brainstorm-2026',
     filenamePrefix: 'File to save:',
@@ -459,7 +461,7 @@ export const messagesEn: Messages = {
     selection: 'Selection only',
     selectionHint: 'Selected nodes and links between them',
     selectionEmpty: 'Select cards, groups, or links first (click / Shift / right-drag)',
-    layoutHint: 'A4 landscape · centered · 50% scale · no minimap · choose 300 DPI in the print dialog',
+    layoutHint: 'A4 landscape · full board on page · readable text · no minimap · choose 300 DPI in the print dialog',
     cancel: 'Cancel',
     confirm: 'Print',
   },
@@ -532,7 +534,8 @@ export const messagesEn: Messages = {
     fallbackTitle: 'board',
     savedAs: (filename) => `Saved: ${filename}`,
     savedDownloads: (filename) => `${filename} was saved to your Downloads folder`,
-    typeDescription: 'MindStorm board',
+    typeDescription: 'MindStorm board (.mindstorm)',
+    pngTypeDescription: 'Board image (PNG)',
   },
   demoBoardName: 'Demo · MindStorm Launch',
 };
@@ -550,9 +553,9 @@ export const messagesEs: Messages = {
     addGroup: 'Añadir grupo',
     addGroupShort: '◻ Grupo',
     save: 'Guardar',
-    saveTitle: 'Guardar esquema en tu computadora',
+    saveTitle: 'Guardar esquema (PNG por defecto o .mindstorm)',
     load: 'Abrir',
-    loadTitle: 'Abrir esquema desde tu computadora',
+    loadTitle: 'Abrir un .mindstorm desde la misma carpeta',
     newBoard: '↺ Nuevo',
     newBoardTitle: 'Tablero vacío',
     demo: 'Demo',
@@ -618,7 +621,7 @@ export const messagesEs: Messages = {
   saveModal: {
     title: 'Guardar esquema',
     description:
-      'Elige un nombre — el archivo se guardará en tu computadora. Ábrelo después con Abrir.',
+      'Por defecto se guarda PNG (vista rápida). Elige .mindstorm en el diálogo si quieres volver a editarlo.',
     nameLabel: 'Nombre',
     namePlaceholder: 'brainstorm-2026',
     filenamePrefix: 'Archivo a guardar:',
@@ -637,7 +640,7 @@ export const messagesEs: Messages = {
     selection: 'Solo selección',
     selectionHint: 'Nodos seleccionados y enlaces entre ellos',
     selectionEmpty: 'Selecciona cartas, grupos o enlaces (clic / Shift / arrastre derecho)',
-    layoutHint: 'A4 horizontal · centrado · escala 50% · sin minimapa · elige 300 DPI en el diálogo de impresión',
+    layoutHint: 'A4 horizontal · tablero completo · texto legible · sin minimapa · elige 300 DPI en el diálogo de impresión',
     cancel: 'Cancelar',
     confirm: 'Imprimir',
   },
@@ -710,7 +713,8 @@ export const messagesEs: Messages = {
     fallbackTitle: 'esquema',
     savedAs: (filename) => `Guardado: ${filename}`,
     savedDownloads: (filename) => `${filename} se guardó en Descargas`,
-    typeDescription: 'Esquema MindStorm',
+    typeDescription: 'Esquema MindStorm (.mindstorm)',
+    pngTypeDescription: 'Imagen del esquema (PNG)',
   },
   demoBoardName: 'Demo · Lanzamiento MindStorm',
 };
@@ -728,9 +732,9 @@ export const messagesZh: Messages = {
     addGroup: '添加分组',
     addGroupShort: '◻ 分组',
     save: '保存',
-    saveTitle: '将画布保存到电脑',
+    saveTitle: '保存画布（默认 PNG 或 .mindstorm）',
     load: '打开',
-    loadTitle: '从电脑打开画布',
+    loadTitle: '从同一文件夹打开 .mindstorm',
     newBoard: '↺ 新建',
     newBoardTitle: '空白画布',
     demo: '演示',
@@ -794,7 +798,7 @@ export const messagesZh: Messages = {
   },
   saveModal: {
     title: '保存画布',
-    description: '输入名称 — 文件将保存到电脑。之后可用「打开」重新加载。',
+    description: '默认保存 PNG（快速预览）。若需再次编辑，请在对话框中选择 .mindstorm。',
     nameLabel: '名称',
     namePlaceholder: 'brainstorm-2026',
     filenamePrefix: '将保存文件：',
@@ -813,7 +817,7 @@ export const messagesZh: Messages = {
     selection: '仅选中内容',
     selectionHint: '选中的节点及它们之间的连线',
     selectionEmpty: '请先选中卡片、分组或连线（单击 / Shift / 右键框选）',
-    layoutHint: 'A4 横向 · 居中 · 50% 缩放 · 无小地图 · 请在打印对话框中选择 300 DPI',
+    layoutHint: 'A4 横向 · 整板入页 · 可读文字 · 无小地图 · 请在打印对话框中选择 300 DPI',
     cancel: '取消',
     confirm: '打印',
   },
@@ -885,7 +889,8 @@ export const messagesZh: Messages = {
     fallbackTitle: '画布',
     savedAs: (filename) => `已保存：${filename}`,
     savedDownloads: (filename) => `${filename} 已保存到下载文件夹`,
-    typeDescription: 'MindStorm 画布',
+    typeDescription: 'MindStorm 画布 (.mindstorm)',
+    pngTypeDescription: '画布图片 (PNG)',
   },
   demoBoardName: '演示 · MindStorm 发布',
 };

@@ -9,7 +9,7 @@
 │  ┌─────────────┐    ┌─────────────────────────────────┐ │
 │  │ Toolbar     │    │ React Flow (MindCanvas)         │ │
 │  │ Undo/Redo   │    │  · TextCardNode (z=1)           │ │
-│  │ Card/Text/Grp│   │  · PlainTextNode (z=1)         │ │
+│  │ Text/Card/Grp│   │  · PlainTextNode (z=1)         │ │
 │  │ Save/Open   │    │  · GroupCardNode (z=-1)         │ │
 │  │ 🖨 / ☀☾    │    │  · Edges (z=0, animated)        │ │
 │  │ Сначала/Демо│    └─────────────────────────────────┘ │
@@ -21,7 +21,8 @@
 │         │                                               │
 │         ▼                                               │
 │  localStorage ◄──────── flowToCanvas / canvasToFlow     │
-│  .mindstorm file ◄────── localBoardFile.ts              │
+│  PNG / .mindstorm  ◄── localBoardFile + exportPng       │
+│  last folder (IDB) ◄── fileHandleStorage.ts             │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -29,11 +30,11 @@
 
 1. **Старт:** `mindstorm.canvas.v1` → `canvasToFlow` → state; если пусто — `getDemoCanvas(readLocale())`.
 2. **Редактирование:** debounce 400 ms → localStorage; history commit на drag stop и на **конец resize группы**.
-3. **Сохранить:** `flowToCanvas` → `MindStormBoardFile` → диск.
-4. **Загрузить:** File → `parseBoardFile` → state.
+3. **Сохранить:** `flowToCanvas` → PNG (по умолчанию) и/или `MindStormBoardFile` → диск; `startIn` из IndexedDB.
+4. **Загрузить:** `showOpenFilePicker` / File → `parseBoardFile` → state (не PNG).
 5. **Сначала:** confirm → `commitNow()` → пустые nodes/edges **без** `resetHistory` → Undo.
 6. **Демо:** `demoFlowPresentation(locale)` → анимация появления.
-7. **Печать:** `PrintBoardModal` → `printBoard.ts` → `isPrinting` (без MiniMap) → `fitView` → zoom ×0.5 (`printLayout.ts`) → `window.print()` (A4 landscape) → `afterprint` restore.
+7. **Печать:** `PrintBoardModal` → `printBoard.ts` → `setPrintLight(true)` + `isPrinting` (без MiniMap) → `fitView` → `PRINT_SCALE` 1 (`printLayout.ts`) → `window.print()` (A4 landscape) → `afterprint` restore.
 
 ## Тема (light / dark)
 
@@ -44,19 +45,28 @@
 | `index.css` | Переменные `--ms-*` для chrome UI |
 | `colors.ts` | `resolveColor` (карточки), `textInk` (plain) |
 
-Компоненты: `const { theme, toggleTheme } = useTheme()`. По умолчанию — **dark**.
+Компоненты: `const { theme, toggleTheme, setPrintLight } = useTheme()`. По умолчанию — **dark**. На печати — `setPrintLight(true)`.
 
 ## Печать
 
 | Модуль | Роль |
 |--------|------|
 | `printBoard.ts` | Фрагмент из выделения; `applyPrintVisibility` |
-| `printLayout.ts` | `PRINT_SCALE = 0.5`, `viewportAtScale` |
+| `printLayout.ts` | `PRINT_SCALE = 1`, `viewportAtScale` |
 | `PrintBoardModal` | Диалог: вся схема / только выделенное + layoutHint |
-| `MindCanvas.tsx` | Пауза history/persist; `isPrinting` — без MiniMap/Controls; fitView + scale; restore |
-| `index.css` | `@page A4 landscape`, центр, скрытие panel/minimap / `.no-print` |
+| `MindCanvas.tsx` | Пауза history/persist; `isPrinting` — без MiniMap/Controls; `setPrintLight`; fitView; restore |
+| `ThemeProvider` | `setPrintLight` — light-палитра на время печати (читаемый текст) |
+| `index.css` | `@page A4 landscape`, тёмный текст карточек, скрытие panel/minimap / `.no-print` |
 
 Выделение: клик / Shift+клик / ПКМ-рамка. В фрагмент входят выделенные узлы, endpoints выделенных рёбер и все рёбра между узлами фрагмента. **300 DPI** задаётся в диалоге печати ОС (браузер не форсирует DPI).
+
+## Save / load
+
+| Модуль | Роль |
+|--------|------|
+| `localBoardFile.ts` | PNG по умолчанию + `.mindstorm`; open picker с `startIn` |
+| `exportPng.ts` | Снимок холста через `html-to-image` |
+| `fileHandleStorage.ts` | IndexedDB `mindstorm.fs.v1` — последний FileSystem handle (папка) |
 
 ## Узлы на холсте
 
@@ -162,7 +172,7 @@ toggle     → updateNode({ locked }) в GroupCardNode (кнопка на badge)
 | Кнопка | Стиль |
 |--------|--------|
 | **Сначала** / **New** | `accent` (бирюзовая рамка) |
-| **T Текст** | обычная → `plainText` узел |
+| **T Текст** → **+ Карточка** → **◻ Группа** | слева направо: plain → card → group |
 | **🖨** / **☀☾** | одинаковые icon-кнопки рядом → PrintModal / theme toggle |
 | **↺ Демо** / **↺ Demo** | обычная |
 | **RU \| EN \| ES \| 中** | компактный переключатель справа |

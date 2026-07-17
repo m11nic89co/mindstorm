@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocale } from '../i18n/LocaleProvider';
+import { captureBoardPng } from '../lib/exportPng';
 import type { PrintScope } from '../lib/printBoard';
 import type { JsonCanvas } from '../types/jsonCanvas';
 import {
   SaveCancelledError,
   buildFilename,
+  buildPngFilename,
   buildTimestampSaveTitle,
   saveBoardToDisk,
   saveSuccessMessage,
 } from '../lib/localBoardFile';
+import { useTheme } from '../theme/ThemeProvider';
 
 type ModalShellProps = {
   title: string;
@@ -62,12 +65,14 @@ export function SaveBoardModal({
   onSaved: (name: string, message: string) => void;
 }) {
   const { m } = useLocale();
+  const { theme } = useTheme();
   const [name, setName] = useState(defaultName ?? buildTimestampSaveTitle());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
 
-  const previewFilename = useMemo(() => buildFilename(name), [name]);
+  const previewFilename = useMemo(() => buildPngFilename(name), [name]);
+  const boardFilename = useMemo(() => buildFilename(name), [name]);
 
   const handleSave = async () => {
     const trimmed = name.trim();
@@ -79,9 +84,18 @@ export function SaveBoardModal({
     setBusy(true);
     setError(null);
     try {
+      const bg = theme === 'light' ? '#eef1f7' : '#0b0d14';
+      let pngBlob: Blob | undefined;
+      try {
+        pngBlob = await captureBoardPng({ backgroundColor: bg, pixelRatio: 2 });
+      } catch {
+        pngBlob = undefined;
+      }
       const result = await saveBoardToDisk(trimmed, canvas, {
         defaultTitle: m.file.defaultTitle,
         typeDescription: m.file.typeDescription,
+        pngTypeDescription: m.file.pngTypeDescription,
+        pngBlob,
       });
       const message = saveSuccessMessage(result, m.file);
       setDone(message);
@@ -125,6 +139,8 @@ export function SaveBoardModal({
       <p className="mb-4 text-[11px]" style={{ color: 'var(--ms-text-muted)' }}>
         {m.saveModal.filenamePrefix}{' '}
         <code style={{ color: 'var(--ms-accent-text)' }}>{previewFilename}</code>
+        <span className="mx-1 opacity-40">/</span>
+        <code style={{ color: 'var(--ms-text-faint)' }}>{boardFilename}</code>
       </p>
       {error && <p className="mb-3 text-xs text-red-300">{error}</p>}
       {done && (

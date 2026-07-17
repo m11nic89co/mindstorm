@@ -104,13 +104,13 @@ export function Toolbar({
         </div>
 
         <div className="flex max-w-[calc(100vw-8rem)] items-center gap-1 overflow-x-auto sm:max-w-[calc(100vw-10rem)] sm:gap-2">
-          <ToolbarButton onClick={onAddText} title={m.toolbar.addCard}>
-            <span className="sm:hidden">+</span>
-            <span className="hidden sm:inline">{m.toolbar.addCardShort}</span>
-          </ToolbarButton>
           <ToolbarButton onClick={onAddPlain} title={m.toolbar.addPlain}>
             <span className="sm:hidden">T</span>
             <span className="hidden sm:inline">{m.toolbar.addPlainShort}</span>
+          </ToolbarButton>
+          <ToolbarButton onClick={onAddText} title={m.toolbar.addCard}>
+            <span className="sm:hidden">+</span>
+            <span className="hidden sm:inline">{m.toolbar.addCardShort}</span>
           </ToolbarButton>
           <ToolbarButton onClick={onAddGroup} title={m.toolbar.addGroup}>
             <span className="sm:hidden">◻</span>

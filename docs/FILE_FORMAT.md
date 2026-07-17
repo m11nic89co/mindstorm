@@ -25,7 +25,9 @@
 | `savedAt` | ISO 8601 | Время сохранения |
 | `canvas` | object | JSON Canvas |
 
-Расширение: **`.mindstorm`**
+Расширение редактируемой схемы: **`.mindstorm`**
+
+**PNG:** кнопка «Сохранить» по умолчанию предлагает снимок `.png` (превью). PNG **не** является форматом схемы — открыть его обратно в редактор нельзя. Для повторного редактирования сохраняйте `.mindstorm`.
 
 ## JSON Canvas (поле `canvas`)
 
@@ -134,10 +136,13 @@
 | `.mindshtorm` (`mindshtorm-board`) | ✓ legacy |
 | `.canvas` (чистый JSON Canvas) | ✓ |
 | Obsidian `.canvas` | ✓ |
+| `.png` | ✗ (только превью при сохранении) |
 
 ## Реализация
 
-- `src/lib/localBoardFile.ts` — serialize / parse / download / FileReader
+- `src/lib/localBoardFile.ts` — serialize / parse / save (PNG + `.mindstorm`) / open
+- `src/lib/exportPng.ts` — снимок холста
+- `src/lib/fileHandleStorage.ts` — запоминание папки (IndexedDB)
 - `src/lib/jsonCanvas.ts` — `canvasToFlow` / `flowToCanvas`
 
 ## Демо в коде

@@ -71,12 +71,15 @@ import {
   BOARD_FILE_ACCEPT,
   SaveCancelledError,
   buildTimestampSaveTitle,
+  canUseOpenFilePicker,
   canUseSaveFilePicker,
+  openBoardFromDisk,
   readBoardFromFile,
   saveBoardToDisk,
   saveSuccessMessage,
   titleFromFilename,
 } from '../lib/localBoardFile';
+import { captureBoardPng } from '../lib/exportPng';
 import type { CardNodeData, JsonCanvas, NodeI18n } from '../types/jsonCanvas';
 import { HintBar, EdgeSelectionPanel, SelectionPanel, Toolbar } from './Toolbar';
 import { GroupCardNode, PlainTextNode, TextCardNode } from './nodes/CardNodes';
@@ -99,7 +102,7 @@ const nodeTypes: NodeTypes = {
 
 function MindCanvasInner() {
   const { locale, m } = useLocale();
-  const { theme } = useTheme();
+  const { theme, setPrintLight } = useTheme();
   const initialFlow = useMemo(() => {
     const loc = readLocale();
     const flow = canvasToFlow(loadStoredCanvas());
@@ -513,29 +516,69 @@ function MindCanvasInner() {
 
   const onSave = useCallback(async () => {
     const title = buildTimestampSaveTitle();
+    const canvas = flowToCanvas(nodes, edges);
+    const bg = theme === 'light' ? '#eef1f7' : '#0b0d14';
+
+    const runSave = async (pngBlob?: Blob) => {
+      const result = await saveBoardToDisk(title, canvas, {
+        defaultTitle: m.file.defaultTitle,
+        typeDescription: m.file.typeDescription,
+        pngTypeDescription: m.file.pngTypeDescription,
+        pngBlob,
+      });
+      const savedTitle = titleFromFilename(result.filename);
+      setActiveBoardName(savedTitle);
+      showToast(saveSuccessMessage(result, m.file));
+    };
 
     if (canUseSaveFilePicker()) {
       try {
-        const result = await saveBoardToDisk(title, flowToCanvas(nodes, edges), {
-          defaultTitle: m.file.defaultTitle,
-          typeDescription: m.file.typeDescription,
+        setIsPrinting(true);
+        await new Promise<void>((resolve) => {
+          window.requestAnimationFrame(() => resolve());
         });
-        const savedTitle = titleFromFilename(result.filename);
-        setActiveBoardName(savedTitle);
-        showToast(saveSuccessMessage(result, m.file));
+        await fitView({ padding: 0.15, duration: 0, maxZoom: 1.25 });
+        await new Promise<void>((resolve) => {
+          window.setTimeout(() => resolve(), 40);
+        });
+        const pngBlob = await captureBoardPng({ backgroundColor: bg, pixelRatio: 2 });
+        setIsPrinting(false);
+        await runSave(pngBlob);
         return;
       } catch (err) {
+        setIsPrinting(false);
         if (err instanceof SaveCancelledError) return;
       }
     }
 
     setSaveModalOpen(true);
-  }, [m.file, nodes, edges, showToast]);
+  }, [fitView, m.file, nodes, edges, showToast, theme]);
 
   const onPickFile = useCallback(() => {
     setLoadError(null);
+
+    if (canUseOpenFilePicker()) {
+      void (async () => {
+        try {
+          const opened = await openBoardFromDisk({
+            typeDescription: m.file.typeDescription,
+          });
+          loadCanvas(opened.canvas, opened.title);
+          showToast(m.toast.opened(opened.filename));
+        } catch (err) {
+          if (err instanceof SaveCancelledError) return;
+          if (err instanceof Error && err.message === 'OPEN_PICKER_UNAVAILABLE') {
+            fileInputRef.current?.click();
+            return;
+          }
+          setLoadError(m.errors.loadFailed);
+        }
+      })();
+      return;
+    }
+
     fileInputRef.current?.click();
-  }, []);
+  }, [loadCanvas, m.errors.loadFailed, m.file.typeDescription, m.toast, showToast]);
 
   const onFileSelected = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -606,6 +649,7 @@ function MindCanvasInner() {
     const snapshot = printRestoreRef.current;
     printRestoreRef.current = null;
     setIsPrinting(false);
+    setPrintLight(false);
     if (!snapshot) {
       dragPausedRef.current = false;
       return;
@@ -616,11 +660,12 @@ function MindCanvasInner() {
     window.requestAnimationFrame(() => {
       dragPausedRef.current = false;
     });
-  }, [setEdges, setNodes, setViewport]);
+  }, [setEdges, setNodes, setPrintLight, setViewport]);
 
   const runPrint = useCallback(
     (scope: PrintScope) => {
       setPrintModalOpen(false);
+      setPrintLight(true);
       setIsPrinting(true);
 
       const sourceNodes = nodesRef.current;
@@ -654,13 +699,13 @@ function MindCanvasInner() {
       window.requestAnimationFrame(() => {
         void fitView({
           nodes: visibleNodes.length ? visibleNodes : undefined,
-          padding: 0.18,
+          padding: 0.08,
           duration: 0,
-          maxZoom: 1.25,
+          maxZoom: 1.75,
         }).then(finish);
       });
     },
-    [fitView, getViewport, setEdges, setNodes, setViewport],
+    [fitView, getViewport, setEdges, setNodes, setPrintLight, setViewport],
   );
 
   useEffect(() => {

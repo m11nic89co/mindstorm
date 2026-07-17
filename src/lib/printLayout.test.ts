@@ -5,8 +5,9 @@ describe('viewportAtScale', () => {
   it('keeps the flow point under the screen center when zooming', () => {
     const viewport = { x: 100, y: 50, zoom: 1 };
     const center = { x: 400, y: 300 };
-    const next = viewportAtScale(viewport, PRINT_SCALE, center);
+    const next = viewportAtScale(viewport, 0.5, center);
 
+    expect(PRINT_SCALE).toBe(1);
     expect(next.zoom).toBeCloseTo(0.5);
     const flowBeforeX = (center.x - viewport.x) / viewport.zoom;
     const flowBeforeY = (center.y - viewport.y) / viewport.zoom;

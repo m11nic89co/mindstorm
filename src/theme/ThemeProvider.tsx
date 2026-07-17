@@ -3,9 +3,14 @@ import { readTheme, writeTheme } from './themeStorage';
 import type { Theme } from './themes';
 
 type ThemeContextValue = {
+  /** Тема для UI и палитр (во время печати может быть принудительно light). */
   theme: Theme;
+  /** Сохранённая тема пользователя (без print-override). */
+  preferredTheme: Theme;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
+  /** На время печати — светлая тема, чтобы текст/фоны читались на бумаге. */
+  setPrintLight: (active: boolean) => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -17,27 +22,37 @@ function applyThemeToDocument(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
+  const [preferredTheme, setPreferredTheme] = useState<Theme>(() => {
     const initial = readTheme();
     applyThemeToDocument(initial);
     return initial;
   });
+  const [printLight, setPrintLightState] = useState(false);
+
+  const theme: Theme = printLight ? 'light' : preferredTheme;
 
   const setTheme = useCallback((next: Theme) => {
-    setThemeState(next);
+    setPreferredTheme(next);
     writeTheme(next);
-    applyThemeToDocument(next);
-  }, []);
+    if (!printLight) applyThemeToDocument(next);
+  }, [printLight]);
 
   const toggleTheme = useCallback(() => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  }, [setTheme, theme]);
+    setTheme(preferredTheme === 'dark' ? 'light' : 'dark');
+  }, [setTheme, preferredTheme]);
+
+  const setPrintLight = useCallback((active: boolean) => {
+    setPrintLightState(active);
+  }, []);
 
   useEffect(() => {
     applyThemeToDocument(theme);
   }, [theme]);
 
-  const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme, setTheme, toggleTheme]);
+  const value = useMemo(
+    () => ({ theme, preferredTheme, setTheme, toggleTheme, setPrintLight }),
+    [theme, preferredTheme, setTheme, toggleTheme, setPrintLight],
+  );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

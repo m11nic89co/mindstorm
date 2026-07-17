@@ -1,8 +1,8 @@
-/** Масштаб печати по умолчанию (50%). */
-export const PRINT_SCALE = 0.5;
+/** Масштаб после fitView: 1 = весь контент максимально крупно на странице. */
+export const PRINT_SCALE = 1;
 
 /**
- * Сохраняет центр viewport при смене zoom (для печати 50% после fitView).
+ * Сохраняет центр viewport при смене zoom (для печати после fitView).
  */
 export function viewportAtScale(
   viewport: { x: number; y: number; zoom: number },

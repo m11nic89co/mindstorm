@@ -376,11 +376,20 @@ body {
   animation: donate-copy-pulse 0.45s ease-out;
 }
 
-/* --- Печать: A4 альбом, по центру, без chrome/minimap --- */
+/* --- Печать: A4 альбом, весь холст, читаемый текст на белой бумаге --- */
 @media print {
   @page {
     size: A4 landscape;
-    margin: 12mm;
+    margin: 10mm;
+  }
+
+  :root,
+  [data-theme="dark"],
+  [data-theme="light"] {
+    --ms-card-text: #0f172a !important;
+    --ms-card-text-body: #1e293b !important;
+    --ms-card-text-muted: #64748b !important;
+    --ms-card-divider: rgba(15, 23, 42, 0.14) !important;
   }
 
   html,
@@ -391,6 +400,7 @@ body {
     margin: 0 !important;
     overflow: hidden !important;
     background: #fff !important;
+    color: #0f172a !important;
   }
 
   body * {
@@ -444,5 +454,45 @@ body {
   .mind-canvas .react-flow__edge.animated .react-flow__edge-path,
   .mind-canvas .react-flow__connection-path {
     animation: none !important;
+  }
+
+  .mind-canvas .react-flow__edge-path,
+  .mind-canvas .react-flow__connection-path {
+    stroke: #334155 !important;
+    stroke-width: 2.5px !important;
+  }
+
+  /*
+   * Тёмная тема: белый текст на почти прозрачной карточке → на белой бумаге
+   * не виден. Печать: тёмный текст + непрозрачность; фон — из light-палитры
+   * (setPrintLight) или белый fallback.
+   */
+  .mind-canvas .react-flow__node-textCard .card-face,
+  .mind-canvas .react-flow__node-groupCard .card-face {
+    box-shadow: none !important;
+    opacity: 1 !important;
+  }
+
+  .mind-canvas .react-flow__node-textCard .card-face,
+  .mind-canvas .react-flow__node-textCard .card-face * {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+  }
+
+  .mind-canvas .react-flow__node-textCard .truncate,
+  .mind-canvas .react-flow__node-groupCard .truncate {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+  }
+
+  .mind-canvas .react-flow__node-textCard .overflow-auto {
+    overflow: visible !important;
+  }
+
+  .mind-canvas .react-flow__node-groupCard .group-label-badge {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    background-color: #e2e8f0 !important;
   }
 }
